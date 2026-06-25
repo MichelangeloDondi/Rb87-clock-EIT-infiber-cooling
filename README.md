@@ -130,7 +130,7 @@ cooling.py` (< 10 s).
 
 ![cooling curve from a hot start, and the final motional distribution](cooling_curve.png)
 
-*Left: starting hot (n̄₀ = 5), the axial motion cools exponentially to the floor in τ ≈ 0.2 ms — the same
+*Left: starting hot (n̄₀ = 2.8), the axial motion cools exponentially to the floor in τ ≈ 142 us — the same
 steady state, reached as a rate (the slowest Liouvillian mode). Right: at steady state essentially all the
 population is in the motional ground state, P(n=0) ≈ 0.999. From [`plots.py`](plots.py).*
 
