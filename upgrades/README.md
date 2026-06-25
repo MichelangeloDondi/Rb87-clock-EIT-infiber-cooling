@@ -34,13 +34,22 @@ both** (5/6 → F=1, 1/6 → F=2) — so it clears the dark sublevels and balanc
 This needs a *new* frequency source: the F′1↔F′2 spacing (157 MHz) is **not** a sideband of the 7.23 GHz EOM,
 so the single comb cannot make it. That is the hardware the two upgrades add.
 
+![24-level scheme with dedicated F′1 repumpers](level_scheme_dedicated.png)
+
+*The **atomic** scheme is identical for both upgrades: the cooling Λ (control σ⁻ / probe σ⁺ → |F′2,0⟩,
+blue-detuned Δ≈+45 MHz) plus the two dedicated repumpers resonant **on F′1**, 157 MHz below the cooling F′2.
+Only the **delivery** — how those tones are generated and injected — differs between the two configs (the
+optical benches below).*
+
 ---
 
 ## The two upgrades
 
-![delivery comparison](delivery_comparison.png)
+The two configs share the atomic scheme above; they differ only in the **optical bench** — shown for each below.
 
 ### Upgrade A — single-end tagged retro + dedicated repumpers → **~0.0072** [parent, V]
+
+![Upgrade A optical bench](bench_single_end.png)
 
 Keep the *single-ended* delivery (one fibre end + a retro mirror + the double-passed **tag AOM** `2f_A`), and
 **add** the dedicated repumpers:
@@ -54,6 +63,8 @@ lands at **~0.0072** rather than the cleaner dual-end value.
 *Hardware added vs the minimal chain:* one 157 MHz repumper AOM + the master beam into the fibre.
 
 ### Upgrade B — dual-end (double injection) + dedicated repumpers → **~0.0048** [parent, V]
+
+![Upgrade B optical bench](bench_dual_end.png)
 
 Inject from **both** fibre ends (this is the "double injection"): control σ⁻ from one end, the EOM comb σ⁺
 (carrier-suppressed) from the other — **dropping the retro mirror and the tag AOM entirely**. With the dedicated
