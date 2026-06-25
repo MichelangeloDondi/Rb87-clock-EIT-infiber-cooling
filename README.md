@@ -204,6 +204,8 @@ own off-resonant leak to |F′1,0⟩ — is the first deferred refinement; inclu
 - **Dedicated repumpers / other delivery.** The fuller project uses on-resonant repumpers and dual-end
   delivery, reaching the certified single-atom floor **~0.0048–0.0072** (≈ 0.008–0.010 all-in with the
   anti-trap squeezer). §6 shows *why* you want them: off-resonant comb-tone repumping is the bottleneck.
+  These two upgrade paths — single-end retro (~0.0072) and dual-end double injection (~0.0048), both with
+  dedicated F′1 repumpers — are laid out, with figures, in [`upgrades/`](upgrades/README.md).
 - **The cloud (Layer 3).** Atoms off-axis see a spread of ν_z and light shifts; the floor is then set by the
   radial temperature, removable with a flat-top trap. The hard, still-partly-open part — deliberately out of
   this single-atom repo.
