@@ -29,10 +29,12 @@ The ONE physics addition is the per-(F',m') 1064 tensor Stark from stark.py fed 
 engine's flagged v0.3.0 limitation -- so the off-resonant repumper detunings are referenced to the
 real Stark-shifted F'1/F'3 lines.
 
-SCOPE / caveat: the repumpers are coherent beams in one multi-rotating frame, which the two off-resonant
-tones do not close exactly (residual ~1.4 MHz). At their NATURAL power this is a ~1% effect on weak,
-far-detuned edges, so the natural-power floor is trustworthy; the residual grows with rep_scale, so the
-repumper-POWER scan is only qualitative (a clean power study would model the repumpers as incoherent rates).
+METHOD: the off-resonant repumpers are modeled as INCOHERENT scattering rates -- the virtual F'1/F'2
+excited are adiabatically eliminated (R = Gamma (O/2)^2 / (d^2 + (Gamma/2)^2), with m-resolved decay and
+the two-photon absorb+emit recoil). This is exact in the far-off-resonant limit and, unlike a coherent
+beam, needs no rotating-frame closure -- so the repumper-POWER dependence is trustworthy at ANY power.
+control + probe stay coherent (their frame closes exactly, conf=0); the repumper excited never enter the
+Hilbert space (so the solve is also smaller/faster).
 
 Run:  python cooling_multilevel.py        (needs numpy, qutip, sympy)
 """
@@ -72,45 +74,99 @@ def reference_rabis():
     return Oc, c.OmR * Oc
 
 
-def beams(Oc, Op, d2, with_repump, with_e1, with_e3, rep_scale):
-    """The four tones of the single-EOM chain. control + probe are the Lambda; the repumpers are
-       the forward +1 EOM sideband (sigma-, F=1) and the retro carrier (sigma+, F=2), off-resonant."""
-    def ladder(Fg, q, Fps):
-        out = []
-        for Fp in Fps:
-            for mg in ([-1, 0, 1] if Fg == 1 else [-2, -1, 0, 1, 2]):
-                mp = mg + q
-                if abs(mp) <= Fp:
-                    cc = CGc(Fg, mg, q, Fp, mp)
-                    if abs(cc) > 1e-9:
-                        out.append(((Fg, mg), (Fp, mp), cc))
-        return out
-    # control: F'2 ladder + single contaminant edges from |2,+1> (matches the validated engine)
-    ce = ladder(2, -1, [2])
+def _ladder(Fg, q, Fps):
+    """All CG-allowed dipole edges (Fg,mg)->(Fp,mp=mg+q) for the listed F'."""
+    out = []
+    for Fp in Fps:
+        for mg in ([-1, 0, 1] if Fg == 1 else [-2, -1, 0, 1, 2]):
+            mp = mg + q
+            if abs(mp) <= Fp:
+                cc = CGc(Fg, mg, q, Fp, mp)
+                if abs(cc) > 1e-9:
+                    out.append(((Fg, mg), (Fp, mp), cc))
+    return out
+
+
+def beams(Oc, Op, d2, with_e1, with_e3):
+    """The two COHERENT tones: control sigma- (F2->F'2) and probe sigma+ (F1->F'2), the Lambda.
+       The off-resonant repumpers are NOT here -- they are handled as incoherent rates (repump_cops),
+       so they never enter the rotating frame (which control+probe close exactly, conf=0)."""
+    ce = _ladder(2, -1, [2])
     if with_e3:
         ce = ce + [((2, 1), (3, 0), CGc(2, 1, -1, 3, 0))]          # coherent F'3 admixture
     if with_e1:
-        ce = ce + [((2, 1), (1, 0), CGc(2, 1, -1, 1, 0))]          # off-resonant F'1 spoiler
-    # probe: F'2 ladder + single F'1 contaminant from |1,-1>
-    pe = ladder(1, +1, [2])
+        ce = ce + [((2, 1), (1, 0), CGc(2, 1, -1, 1, 0))]          # F'1 spoiler (cooling-beam leak)
+    pe = _ladder(1, +1, [2])
     if with_e1:
         pe = pe + [((1, -1), (1, 0), CGc(1, -1, 1, 1, 0))]
-    bm = [dict(edges=ce, named=((2, 1), (2, 0)), det=c.Delta, Rabi=Oc, kdir=+1, tag='ctrl'),
-          dict(edges=pe, named=((1, -1), (2, 0)), det=c.Delta + d2, Rabi=Op, kdir=-1, tag='probe')]
-    if with_repump:
-        rep1 = rep_scale * Op / np.sqrt(c.eta_dp)                 # forward +1 EOM sideband amplitude
-        rep2 = rep_scale * Oc * np.sqrt(c.eta_dp)                 # retro carrier amplitude
-        # repump1: sigma- on F=1 -> F'1,F'2 (clears the F=1 dark sublevels). F=1->F'3 is dF=2 FORBIDDEN
-        #   (CG=0, so it never enters even though the tone sits 178 MHz from F'3); F'0 is allowed but
-        #   674 MHz off and decays only to F=1 (no repump) -> inert, omitted. Placed at probe + 2f_A.
-        bm.append(dict(edges=ladder(1, -1, [1, 2]), named=((1, 0), (2, -1)),
-                       det=c.Delta + d2 + c.twofA, Rabi=rep1, kdir=+1, tag='rep1'))
-        # repump2: sigma+ on F=2 -> F'1,F'2 (clears the F=2 dark sublevels). F=2->F'0 is dF=2 FORBIDDEN
-        #   (CG=0, though the tone sits 126 MHz from F'0); F'3 is allowed but 622 MHz off and decays
-        #   only to F=2 (no repump) -> inert, omitted. Placed at control - 2f_A.
-        bm.append(dict(edges=ladder(2, +1, [1, 2]), named=((2, 0), (2, 1)),
-                       det=c.Delta - c.twofA, Rabi=rep2, kdir=-1, tag='rep2'))
-    return bm
+    return [dict(edges=ce, named=((2, 1), (2, 0)), det=c.Delta, Rabi=Oc, kdir=+1, tag='ctrl'),
+            dict(edges=pe, named=((1, -1), (2, 0)), det=c.Delta + d2, Rabi=Op, kdir=-1, tag='probe')]
+
+
+def repump_beams(Oc, Op, d2, rep_scale, shift=-1, twofA=None):
+    """The two off-resonant repumpers (INCOHERENT). `shift` is the tag-AOM order:
+         shift=-1 : retro DOWN-shifted by 2f_A  -> EOM at f_mod = A_HFS + 2f_A  (current config)
+         shift=+1 : retro UP-shifted   by 2f_A  -> EOM at f_mod = A_HFS - 2f_A  (the 'other order')
+    The forward sideband (rep1, F=1) and the retro carrier (rep2, F=2) move OPPOSITELY with `shift`:
+         rep1 det (from F=1->F'2) = Delta + d2 - shift*2f_A
+         rep2 det (from F=2->F'2) = Delta + shift*2f_A
+    Ladders cover the nearby lines: rep1 -> F'0,F'1,F'2 (F=1->F'3 is dF=2 forbidden); rep2 -> F'1,F'2,F'3
+    (F=2->F'0 is dF=2 forbidden). NB F'0 (from F=1) and F'3 (from F=2) decay back to the SAME hyperfine --
+    intra-F m-shuffle + recoil heating, NO inter-F repump -- so a tone landing near them wastes power on heat."""
+    twofA = c.twofA if twofA is None else twofA
+    rep1 = rep_scale * Op / np.sqrt(c.eta_dp)                      # forward +1 EOM sideband amplitude
+    rep2 = rep_scale * Oc * np.sqrt(c.eta_dp)                      # retro carrier amplitude
+    return [
+        dict(edges=_ladder(1, -1, [0, 1, 2]), named=((1, 0), (2, -1)),
+             det=c.Delta + d2 - shift * twofA, Rabi=rep1, kdir=+1, tag='rep1'),
+        dict(edges=_ladder(2, +1, [1, 2, 3]), named=((2, 0), (2, 1)),
+             det=c.Delta + shift * twofA, Rabi=rep2, kdir=-1, tag='rep2'),
+    ]
+
+
+def decay_branch_full(Fp, mp):
+    """m-resolved spontaneous decay of a (virtual) |Fp,mp> to the ground sublevels: {(Fg,mg): weight}."""
+    ch = {}
+    for Fg in (1, 2):
+        for mg in (mp - 1, mp, mp + 1):
+            if abs(mg) <= Fg:
+                cc = CGc(Fg, mg, mp - mg, Fp, mp)
+                if abs(cc) > 1e-12:
+                    ch[(Fg, mg)] = ch.get((Fg, mg), 0.0) + BR[Fp][Fg] * cc**2
+    return ch
+
+
+def repump_cops(bm_rep, gE, idx, P, If, Dsp, Gset, B, theta):
+    """Off-resonant repumpers as INCOHERENT scattering -- exact at any power, frame-free.
+       Each edge (gsrc)->(Fp,mp) at detuning d, edge-Rabi O scatters at R = Gamma (O/2)^2/(d^2+(Gamma/2)^2);
+       the virtual excited |Fp,mp> is adiabatically eliminated and decays m-resolved, carrying the
+       two-photon (absorb kdir + emit u) recoil. Also returns the off-resonant a.c.-Stark shift per ground."""
+    cops, acshift = [], {}
+    Ev = lambda Fp, mp: Ee(Fp, mp, B, theta)                       # virtual excited energy (Stark-shifted)
+    for b in bm_rep:
+        (gn, en) = b['named']
+        cnamed = [cc for (g, e, cc) in b['edges'] if g == gn and e == en][0]
+        nu = b['det'] + (Ev(*en) - gE[gn])                        # tone frequency (centered-energy frame)
+        b['nu'] = nu
+        for (g, e, cc) in b['edges']:
+            if g not in Gset:
+                continue
+            ls = np.sqrt(Sfac(g[0], e[0]) / Sfac(g[0], en[0])) if e[0] != en[0] else 1.0
+            O = b['Rabi'] * ls * (cc / cnamed)                    # this edge's Rabi
+            d = nu - (Ev(*e) - gE[g])                             # this edge's detuning
+            R = GAMMA * (O / 2)**2 / (d**2 + (GAMMA / 2)**2)      # off-resonant scattering rate
+            acshift[g] = acshift.get(g, 0.0) + (O / 2)**2 / d
+            br = decay_branch_full(e[0], e[1])
+            tot = sum(br.values())
+            if tot <= 0:
+                continue
+            for (gd, w) in br.items():
+                if gd not in Gset:
+                    continue
+                for (u, wem) in EM_REC:
+                    cops.append(np.sqrt(R * (w / tot) * wem)
+                                * qt.tensor(P(idx[('g', gd)], idx[('g', g)]), Dsp(u) * Dsp(b['kdir'])))
+    return cops, acshift
 
 
 def build_frame(bm, gE, eE):
@@ -153,9 +209,10 @@ def build_frame(bm, gE, eE):
 
 
 def solve(d2=0.0, clean=False, with_repump=True, with_e1=True, with_e3=True,
-          Nf=None, B=None, theta=None, rep_scale=None, want=False):
+          Nf=None, B=None, theta=None, rep_scale=None, shift=-1, twofA=None, want=False):
     """Steady-state axial <n_z> of the multilevel system. clean=True -> the bare 3-level Lambda.
-       rep_scale multiplies the (chain-natural) off-resonant repumper Rabis."""
+       rep_scale multiplies the (chain-natural) off-resonant repumper Rabis; shift/twofA pick the
+       EOM/AOM configuration (see repump_beams)."""
     B = c.B_field if B is None else B
     theta = c.theta_trap if theta is None else theta
     Nf = c.Nf_multi if Nf is None else Nf
@@ -168,13 +225,16 @@ def solve(d2=0.0, clean=False, with_repump=True, with_e1=True, with_e3=True,
         Gs, Es = [(1, -1), (2, 1)], [(2, 0)]
     else:
         Gs = [(1, m) for m in (-1, 0, 1)] + [(2, m) for m in range(-2, 3)]
-        Es = [(1, m) for m in (-1, 0, 1)] + [(2, m) for m in range(-2, 3)]
+        Es = [(2, m) for m in range(-2, 3)]              # F'2: the cooling Lambda's upper manifold
+        if with_e1:
+            Es = Es + [(1, 0)]                           # F'1 spoiler (cooling-beam off-res leak)
         if with_e3:
-            Es = Es + [(3, 0)]    # F'3 reached ONLY by the control admixture (2,1)->(3,0); repump can't (dF=2)
+            Es = Es + [(3, 0)]                           # F'3 admixture (control)
+        # the repumpers' F'1/F'2 are VIRTUAL (incoherent, eliminated) -- not in the Hilbert space
     gE = {g: Eg(g[0], g[1], B) for g in Gs}
     eE = {e: Ee(e[0], e[1], B, theta) for e in Es}
 
-    bm = beams(Oc, Op, d2, with_repump, with_e1, with_e3, rep_scale)
+    bm = beams(Oc, Op, d2, with_e1, with_e3)
     ng, ne = set(Gs), set(Es)
     for b in bm:
         b['edges'] = [(g, e, cc) for (g, e, cc) in b['edges'] if g in ng and e in ne]
@@ -234,6 +294,16 @@ def solve(d2=0.0, clean=False, with_repump=True, with_e1=True, with_e3=True,
                 cops.append(np.sqrt(GAMMA * (w / tot) * wem)
                             * qt.tensor(P(idx[('g', g)], idx[('e', (Fp, mp))]), Dsp(u)))
 
+    # the off-resonant repumpers: INCOHERENT scattering rates (no rotating-frame loop -> exact at any power)
+    nu_rep = {}
+    if with_repump and not clean:
+        bm_rep = repump_beams(Oc, Op, d2, rep_scale, shift, twofA)
+        rc, acsh = repump_cops(bm_rep, gE, idx, P, If, Dsp, Gset, B, theta)
+        cops += rc
+        for g, sh in acsh.items():
+            H += sh * qt.tensor(P(idx[('g', g)], idx[('g', g)]), If)   # off-resonant a.c.-Stark shift
+        nu_rep = {b['tag']: b['nu'] for b in bm_rep}
+
     L = qt.liouvillian(H, cops)
     try:
         rho = qt.steadystate(L, method='direct')
@@ -247,7 +317,7 @@ def solve(d2=0.0, clean=False, with_repump=True, with_e1=True, with_e3=True,
                    for k in range(Nf)])
     pops = {g: float(np.real(qt.expect(qt.tensor(P(idx[('g', g)], idx[('g', g)]), If), rho)))
             for g in Gs}
-    nu = {b['tag']: b['nu'] for b in bm}
+    nu = {**{b['tag']: b['nu'] for b in bm}, **nu_rep}
     return dict(nbar=nbar, pn=pn, pops=pops, nu=nu, conf=conf)
 
 
@@ -258,7 +328,7 @@ if __name__ == "__main__":
     out("FULL multilevel clock-EIT cooling (87Rb D2) -- single-EOM chain, repumpers IN the computation")
     out(f"  Delta={c.Delta:g}  Omega_c={Oc:.2f}  Omega_p={Op:.3f}  nu_z={c.nu_z:g}  B={c.B_field:g}G  "
         f"theta={c.theta_trap:g}deg  2f_A={c.twofA:g}  eta_dp={c.eta_dp:g}  Nf={c.Nf_multi}")
-    out("  repumpers = forward EOM sideband (probe+2f_A, off-res ~F'3) + retro carrier (control-2f_A, off-res ~F'1)")
+    out("  repumpers = forward EOM sideband + retro carrier, OFF-RESONANT, as INCOHERENT rates (frame-free)")
 
     # 1) validation: the bare 3-level clean Lambda (matches cooling.py / the project realized floor)
     nclean = solve(clean=True)
@@ -268,22 +338,19 @@ if __name__ == "__main__":
     Roff = solve(d2=-0.10, with_repump=False, want=True)
     out(f"  [repump OFF]  <n_z> = {Roff['nbar']:.2f}  (Nf-limited; ~uncooled) -- 100% pumped into dark sublevels")
 
-    # 3) repumpers ON -- they are OFF-RESONANT, so the floor depends on repumper power (rep_scale).
-    #    rep_scale=1 is the chain-natural strength; raise it (more EOM/launch power) to repump faster.
-    out("\n  repumpers ON -- off-resonant, so the floor depends on repumper power:")
+    # 3) repumpers ON -- INCOHERENT off-resonant rates (frame-free), so the floor-vs-power is trustworthy.
+    #    rep_scale=1 is the chain-natural strength (rep1=Op/sqrt(eta_dp), rep2=Oc*sqrt(eta_dp)).
+    out("\n  repumpers ON (incoherent off-resonant rates) -- floor vs repumper power:")
     best = None
-    for sc in (1.0, 3.0, 10.0, 30.0):
+    for sc in (0.3, 1.0, 3.0, 10.0, 30.0):
         R = solve(d2=-0.10, rep_scale=sc, want=True)
         dark = sum(w for g, w in R['pops'].items() if g not in ((1, -1), (2, 1)))
-        out(f"    rep_scale={sc:4.0f}  (rep1={sc * Op / np.sqrt(c.eta_dp):4.1f}, rep2={sc * Oc * np.sqrt(c.eta_dp):4.1f}):  "
+        out(f"    rep_scale={sc:5.1f}  (rep1={sc * Op / np.sqrt(c.eta_dp):5.1f}, rep2={sc * Oc * np.sqrt(c.eta_dp):5.1f}):  "
             f"<n_z> = {R['nbar']:.4f}   dark = {dark:.2f}   P(n=0) = {R['pn'][0]:.3f}")
         if best is None or R['nbar'] < best[0]['nbar']:
             best = (R, sc)
     R, sc = best
-    out(f"  -> best floor {R['nbar']:.4f} at rep_scale={sc:g} (the NATURAL power): the off-resonant repumping")
-    out("     limits the on-axis floor (~40% stays dark). Higher rep_scale looks worse, but that is dominated")
-    out("     by the coherent off-resonant FRAME approximation growing with Rabi -- only the natural-power")
-    out("     point is trustworthy; a clean power study needs an incoherent (rate) repumper treatment.")
+    out(f"  -> best floor {R['nbar']:.4f} at rep_scale={sc:g}  (incoherent rates: trustworthy at any power)")
 
     # 4) the repumper placement -- the offsets you specified (incl. Delta, 2f_A, and the F'1/F'3 Stark)
     nu = R['nu']

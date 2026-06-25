@@ -163,18 +163,36 @@ From [`plots.py`](plots.py).*
 is **0.0032** — the project's "realized" value, just above the recoil-light 0.0013 of §5 (the difference *is*
 the recoil the 3-level model dropped). The EIT mechanism and the (Γ/4Δ)² scaling are untouched.
 
-**(ii) Repumping is essential, and it is the real cost.** Spontaneous decay from F′ spreads population across
-both ground hyperfines into sublevels the Λ never addresses; with the repumpers off, the atom pumps **100 %
-dark and cooling stops** (the solve confirms it). The off-resonant comb-tone repumpers do clear it — but
-slowly and unselectively, because their nearest allowed lines are 200–450 MHz away. At the chain's natural
-power the on-axis solve cools the addressed pair but leaves **~40 % of the population in uncooled dark
-sublevels**, so the population-averaged floor sits at **~0.09** (P(n=0) ≈ 0.93) — ~30× the ideal 0.0032. For
-this minimal chain the **repumping, not the EIT mechanism, is the limit.**
+**(ii) Repumping is essential — and it is the real cost.** Spontaneous decay from F′ spreads population
+across both ground hyperfines into sublevels the Λ never addresses; with the repumpers off, the atom pumps
+**100 % dark and cooling stops**. The comb-tone repumpers — modelled as the rigorous **incoherent** off-resonant
+scattering (the virtual F′ adiabatically eliminated; frame-consistent at any power) — do clear it, but only
+partly: at the chain's natural power the on-axis floor settles at **≈ 0.10** (≈ 39 % of the population still in
+uncooled dark sublevels) — ~30× the ideal 0.0032. **For this minimal chain the repumping, not the EIT
+mechanism, is the limit.**
 
-> *Caveat (honest scope):* the off-resonant repumpers are entered as coherent beams carrying a small
-> rotating-frame inconsistency that grows with their power, so the solve is trustworthy only **near the
-> natural power**. The clean repumper-power study (and the lower floor that *dedicated, on-resonant*
-> repumpers — the fuller scheme's 157 MHz AOM + master — would give) is the next step.
+**(iii) Why the detunings are large — and why one EOM can't do better.** The repumper detunings are *fixed* by
+f_mod and the tag shift 2f_A, and *one* AOM moves repump1 (F=1) and repump2 (F=2) in **opposite** directions, so
+you cannot pull both onto a useful line. Worse, every leftover tone lives near the **cooling F′2 manifold**, and
+a tone close to F′2 scatters the EIT dark state — repump1 drives |1,−1⟩→|F′2,−2⟩, repump2 drives |2,+1⟩→|F′2,+2⟩
+— at a rate Γ(Ω/2)²/δ² that **equals the cooling rate at δ ≈ 200 MHz off F′2**. So the repumpers *must* sit
+≳200 MHz off F′2 or they destroy the cooling: the large detunings are that protection. A configuration sweep
+([`explore_configs.py`](explore_configs.py)) confirms the current choice is the best of them:
+
+| config | EOM / AOM | repumper placement | floor |
+|---|---|---|---|
+| **A (current)** | f_mod 7.23 GHz, 2f_A=400, down | far off F′2 (355/445) — *safe* | **0.105** |
+| B | f_mod 6.43 GHz, 2f_A=400, up | onto F′0/F′3 (decay-back, heat) | 0.45 |
+| C | f_mod 6.53 GHz, 2f_A=300, up | hard onto F′0/F′3 | 1.39 |
+| D | f_mod 7.04 GHz, 2f_A=202, down | repump2 *on* F′1 (157 off F′2) | 0.24 |
+
+Every move that *lowers* a detuning makes it worse — toward F′0/F′3 you hit the decay-back lines (heat, no
+inter-F repump); toward F′2 (small 2f_A) you scatter the dark state and kill the EIT. **So the single-EOM chain
+is capped near ~0.1**, and its "high" detunings are optimal, not an oversight. The way below it is a *separate*
+manifold — repumpers **on F′1** (resonant repump, only weakly touching F′2) — which needs a dedicated repumper
+AOM + the master laser (the fuller scheme, §7, → ~0.005). *(The F′=1 second dark state — the cooling beams'
+own off-resonant leak to |F′1,0⟩ — is the first deferred refinement; included here only as the leading
+`with_e1` spoiler, ~+0.003, swamped by the repump floor above.)*
 
 ---
 
