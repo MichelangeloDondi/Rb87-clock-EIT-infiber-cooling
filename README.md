@@ -140,7 +140,8 @@ population is in the motional ground state, P(n=0) ≈ 0.999. From [`plots.py`](
 
 The clean 3-level Λ idealises two things. `cooling_multilevel.py` puts them back — the full ⁸⁷Rb D2 manifold
 (8 ground sublevels + the 5P₃/₂ levels), real Clebsch–Gordan couplings and photon recoil, with the atomic
-core ported from the project's validated engine. The tones are made and delivered by the finalised chain
+core ported from the project's validated engine. The CG / line-strength conventions are checked against the
+known D2 branching (5/6, 1/6, …) and the 1:5:14 line-strength ratio by [`cg_validate.py`](cg_validate.py). The tones are made and delivered by the finalised chain
 
 ```
 EBLANA (1560) → EOM → EDFA → PPLN (SHG 780) → HCPCF (trap + delivery) → AOM (tag, ×2 pass) → retro
