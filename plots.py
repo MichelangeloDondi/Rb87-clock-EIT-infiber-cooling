@@ -7,10 +7,12 @@ Run:  python plots.py     (writes the PNGs next to this file)
   stark_manifold.png  the 1064 trap + the 5P_3/2 anti-trap shifts                 (README section 1)
 """
 import numpy as np
+import scipy.linalg as sla
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from qutip import basis, qeye, destroy, tensor, steadystate, expect, liouvillian
+from qutip import (basis, qeye, destroy, tensor, steadystate, expect, liouvillian,
+                   operator_to_vector, thermal_dm)
 import config as c
 import stark
 
@@ -51,10 +53,12 @@ def eit_spectrum():
 
 
 # ---------------------------------------------------------------- 2. cooling curve + final Fock
-def cooling_curve(n_init=5.0, N=12):
-    """Steady state (fast) + the Liouvillian cooling rate -> the rate-equation cooling curve.
-    A full time integration is needlessly slow here (cooling is slow, but the Delta=45 carrier
-    dynamics are fast -- a stiff separation); the exponential below IS that solution."""
+def cooling_curve(n_init=3.0, N=16):
+    """EXACT <n_z>(t) from a hot start. The master equation is linear, so <n_z>(t) is an exact sum of
+    decaying Liouvillian modes; we get it by eigendecomposition (no stiff Delta=45 time-stepping needed,
+    and no single-exponential assumption). The relaxation is multi-modal, and the rate that matters is
+    set by the modes <n_z> actually couples to -- NOT the slowest Liouvillian mode (which <n_z> barely
+    touches). [A direct mesolve gives the same curve; it is just slow here because of the Delta=45 stiffness.]"""
     a = tensor(qeye(3), destroy(N)); n = a.dag() * a
     g1, g2, e = basis(3, 0), basis(3, 1), basis(3, 2)
     LD = tensor(qeye(3), qeye(N)) + 1j * c.eta * (a + a.dag())
@@ -65,25 +69,28 @@ def cooling_curve(n_init=5.0, N=12):
          + (c.Omega_p / 2) * (probe + probe.dag()))
     cops = [np.sqrt(c.Gamma / 2) * tensor(g1 * e.dag(), qeye(N)),
             np.sqrt(c.Gamma / 2) * tensor(g2 * e.dag(), qeye(N))]
-
+    L = liouvillian(H, cops)
     rho_ss = steadystate(H, cops)
     n_ss = float(expect(n, rho_ss))
     pn = np.real(rho_ss.ptrace(1).diag())
 
-    # cooling rate W = slowest non-zero decay mode of the Liouvillian (the relaxation bottleneck)
-    decays = -liouvillian(H, cops).eigenenergies().real
-    W = float(decays[decays > 1e-6].min())     # (2pi*MHz)
-    tau_us = 0.159 / W                          # 0.159 us per 1/(2pi MHz)
-    t_us = np.linspace(0, 10 * tau_us, 300)
-    nt = n_ss + (n_init - n_ss) * np.exp(-t_us / tau_us)
+    # exact modal reconstruction: rho(t) = sum_k exp(w_k t) |r_k><l_k|rho0>  =>  <n>(t) = sum_k amp_k exp(w_k t)
+    w, Vr = sla.eig(L.full())
+    rv = operator_to_vector(tensor(g1 * g1.dag(), thermal_dm(N, n_init))).full().ravel()
+    nv = operator_to_vector(n).full().ravel()
+    amp = (nv.conj() @ Vr) * (sla.solve(Vr, rv))
+    t_us = np.linspace(0, 700, 400)
+    nt = np.clip(np.real([np.sum(amp * np.exp(w * (t / 0.159))) for t in t_us]), 1e-6, None)
+    tau_e = t_us[int(np.argmin(np.abs(nt - (n_ss + (nt[0] - n_ss) / np.e))))]
 
     fig, (axL, axR) = plt.subplots(1, 2, figsize=(10.6, 4.2))
     axL.plot(t_us, nt, color=BLUE, lw=2.2)
     axL.axhline(n_ss, color=RED, ls="--", lw=1.2)
-    axL.annotate(f"floor  $\\bar n_z$ ≈ {n_ss:.4f}", xy=(t_us[-1] * 0.4, n_ss),
+    axL.annotate(f"floor  $\\bar n_z$ ≈ {n_ss:.4f}", xy=(t_us[-1] * 0.45, n_ss),
                  xytext=(0, 8), textcoords="offset points", color=RED, fontsize=9.5)
     axL.set_xlabel(r"time ($\mu$s)"); axL.set_ylabel(r"$\langle n_z\rangle$")
-    axL.set_title(f"cooling from a hot start ($\\bar n_0={n_init:g}$,  $\\tau\\approx${tau_us:.0f} $\\mu$s)")
+    axL.set_title(f"exact $\\langle n_z\\rangle(t)$ from $\\bar n_0\\approx{nt[0]:.1f}$ "
+                  f"(1/e $\\approx${tau_e:.0f} $\\mu$s, multi-modal)")
     axL.set_yscale("log")
 
     axR.bar(range(8), pn[:8], color=BLUE, width=0.7)

@@ -166,11 +166,13 @@ the recoil the 3-level model dropped). The EIT mechanism and the (Γ/4Δ)² scal
 
 **(ii) Repumping is essential — and it is the real cost.** Spontaneous decay from F′ spreads population
 across both ground hyperfines into sublevels the Λ never addresses; with the repumpers off, the atom pumps
-**100 % dark and cooling stops**. The comb-tone repumpers — modelled as the rigorous **incoherent** off-resonant
-scattering (the virtual F′ adiabatically eliminated; frame-consistent at any power) — do clear it, but only
-partly: at the chain's natural power the on-axis floor settles at **≈ 0.10** (≈ 39 % of the population still in
-uncooled dark sublevels) — ~30× the ideal 0.0032. **For this minimal chain the repumping, not the EIT
-mechanism, is the limit.**
+**100 % dark and cooling stops**. The comb-tone repumpers — modelled as **incoherent** off-resonant scattering
+(the virtual F′ adiabatically eliminated, so no rotating-frame artifact) — do clear it, but only partly: at the
+chain's **natural** power the on-axis floor settles at **≈ 0.10** (≈ 39 % of the population still in uncooled
+dark sublevels) — ~30× the ideal 0.0032. **For this minimal chain the repumping, not the EIT mechanism, is the
+limit.** *(Scope: the rate `Γ(Ω/2)²/(d²+(Γ/2)²)` is the low-saturation limit — reliable only for repumper
+power ≲ natural. Above that it omits saturation and the a.c.-Stark shift ∝ Ω²/d, so the high-power rise in
+`cooling_multilevel.py`'s sweep is the model breaking, not physics; trust only the natural-power point.)*
 
 **(iii) Why the detunings are large — and why one EOM can't do better.** The repumper detunings are *fixed* by
 f_mod and the tag shift 2f_A, and *one* AOM moves repump1 (F=1) and repump2 (F=2) in **opposite** directions, so

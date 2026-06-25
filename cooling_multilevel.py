@@ -31,10 +31,13 @@ real Stark-shifted F'1/F'3 lines.
 
 METHOD: the off-resonant repumpers are modeled as INCOHERENT scattering rates -- the virtual F'1/F'2
 excited are adiabatically eliminated (R = Gamma (O/2)^2 / (d^2 + (Gamma/2)^2), with m-resolved decay and
-the two-photon absorb+emit recoil). This is exact in the far-off-resonant limit and, unlike a coherent
-beam, needs no rotating-frame closure -- so the repumper-POWER dependence is trustworthy at ANY power.
-control + probe stay coherent (their frame closes exactly, conf=0); the repumper excited never enter the
-Hilbert space (so the solve is also smaller/faster).
+the two-photon absorb+emit recoil). Unlike a coherent beam this needs no rotating-frame closure, so it is
+frame-consistent at any power; control + probe stay coherent (their frame closes exactly, conf=0) and the
+repumper excited never enter the Hilbert space (so the solve is smaller/faster).
+  SCOPE: the rate above is the LOW-SATURATION limit -- it omits saturation (real scatter caps near Gamma/2)
+  and the a.c.-Stark shift ~ Omega^2/d that grows with power. It is reliable only for rep_scale <~ 1
+  (chain-natural power); the rep_scale sweep BELOW is therefore qualitative above ~natural power, and the
+  high-power blow-up is the rate model breaking, not physics. Trust the rep_scale~1 point, not the trend.
 
 Run:  python cooling_multilevel.py        (needs numpy, qutip, sympy)
 """
@@ -137,7 +140,7 @@ def decay_branch_full(Fp, mp):
 
 
 def repump_cops(bm_rep, gE, idx, P, If, Dsp, Gset, B, theta):
-    """Off-resonant repumpers as INCOHERENT scattering -- exact at any power, frame-free.
+    """Off-resonant repumpers as INCOHERENT scattering -- frame-free, but a LOW-SATURATION rate (valid rep_scale<~1).
        Each edge (gsrc)->(Fp,mp) at detuning d, edge-Rabi O scatters at R = Gamma (O/2)^2/(d^2+(Gamma/2)^2);
        the virtual excited |Fp,mp> is adiabatically eliminated and decays m-resolved, carrying the
        two-photon (absorb kdir + emit u) recoil. Also returns the off-resonant a.c.-Stark shift per ground."""
@@ -294,7 +297,7 @@ def solve(d2=0.0, clean=False, with_repump=True, with_e1=True, with_e3=True,
                 cops.append(np.sqrt(GAMMA * (w / tot) * wem)
                             * qt.tensor(P(idx[('g', g)], idx[('e', (Fp, mp))]), Dsp(u)))
 
-    # the off-resonant repumpers: INCOHERENT scattering rates (no rotating-frame loop -> exact at any power)
+    # the off-resonant repumpers: INCOHERENT scattering rates (no rotating-frame loop; low-saturation, valid rep_scale<~1)
     nu_rep = {}
     if with_repump and not clean:
         bm_rep = repump_beams(Oc, Op, d2, rep_scale, shift, twofA)
@@ -338,9 +341,9 @@ if __name__ == "__main__":
     Roff = solve(d2=-0.10, with_repump=False, want=True)
     out(f"  [repump OFF]  <n_z> = {Roff['nbar']:.2f}  (Nf-limited; ~uncooled) -- 100% pumped into dark sublevels")
 
-    # 3) repumpers ON -- INCOHERENT off-resonant rates (frame-free), so the floor-vs-power is trustworthy.
-    #    rep_scale=1 is the chain-natural strength (rep1=Op/sqrt(eta_dp), rep2=Oc*sqrt(eta_dp)).
-    out("\n  repumpers ON (incoherent off-resonant rates) -- floor vs repumper power:")
+    # 3) repumpers ON -- INCOHERENT off-resonant rates. Low-saturation rate: TRUST rep_scale~1, NOT the
+    #    high-power trend (the rate omits saturation + the a.c.-Stark shift, which break above ~natural power).
+    out("\n  repumpers ON (incoherent off-resonant rates; low-saturation -> trust rep_scale~1 only) -- floor vs power:")
     best = None
     for sc in (0.3, 1.0, 3.0, 10.0, 30.0):
         R = solve(d2=-0.10, rep_scale=sc, want=True)
@@ -350,7 +353,8 @@ if __name__ == "__main__":
         if best is None or R['nbar'] < best[0]['nbar']:
             best = (R, sc)
     R, sc = best
-    out(f"  -> best floor {R['nbar']:.4f} at rep_scale={sc:g}  (incoherent rates: trustworthy at any power)")
+    out(f"  -> rep_scale={sc:g} (natural power) gives the lowest, and only TRUSTWORTHY, floor: {R['nbar']:.3f}.")
+    out("     The rise at higher rep_scale is the low-saturation rate model breaking, not physics (see SCOPE).")
 
     # 4) the repumper placement -- the offsets you specified (incl. Delta, 2f_A, and the F'1/F'3 Stark)
     nu = R['nu']
