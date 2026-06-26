@@ -71,11 +71,13 @@ def Ee(Fp, mp, B, theta):                            # excited: hyperfine + Zeem
     return DF[Fp] + gF_e * uB * B * mp + stark.stark_tensor(Fp, mp, theta)   # <-- the v0.3.0 fix
 
 
-def reference_rabis():
-    """Control/probe Rabi from the EIT pinning Omega_tot = sqrt(4 Delta nu_z)."""
-    Otot = np.sqrt(4.0 * c.Delta * c.nu_z)
-    Oc = Otot / np.sqrt(1.0 + c.OmR**2)
-    return Oc, c.OmR * Oc
+def reference_rabis(Delta=None, OmR=None):
+    """Control/probe Rabi from the EIT pinning Omega_tot = sqrt(4 Delta nu_z). Delta/OmR default to config."""
+    Dl = c.Delta if Delta is None else Delta
+    OmRv = c.OmR if OmR is None else OmR
+    Otot = np.sqrt(4.0 * Dl * c.nu_z)
+    Oc = Otot / np.sqrt(1.0 + OmRv**2)
+    return Oc, OmRv * Oc
 
 
 def _ladder(Fg, q, Fps):
@@ -91,10 +93,11 @@ def _ladder(Fg, q, Fps):
     return out
 
 
-def beams(Oc, Op, d2, with_e1, with_e3):
+def beams(Oc, Op, d2, with_e1, with_e3, Delta=None):
     """The two COHERENT tones: control sigma- (F2->F'2) and probe sigma+ (F1->F'2), the Lambda.
        The off-resonant repumpers are NOT here -- they are handled as incoherent rates (repump_cops),
-       so they never enter the rotating frame (which control+probe close exactly, conf=0)."""
+       so they never enter the rotating frame (which control+probe close exactly, conf=0). Delta -> config."""
+    Dl = c.Delta if Delta is None else Delta
     ce = _ladder(2, -1, [2])
     if with_e3:
         ce = ce + [((2, 1), (3, 0), CGc(2, 1, -1, 3, 0))]          # coherent F'3 admixture
@@ -103,12 +106,12 @@ def beams(Oc, Op, d2, with_e1, with_e3):
     pe = _ladder(1, +1, [2])
     if with_e1:
         pe = pe + [((1, -1), (1, 0), CGc(1, -1, 1, 1, 0))]
-    return [dict(edges=ce, named=((2, 1), (2, 0)), det=c.Delta, Rabi=Oc, kdir=+1, tag='ctrl'),
-            dict(edges=pe, named=((1, -1), (2, 0)), det=c.Delta + d2, Rabi=Op, kdir=-1, tag='probe')]
+    return [dict(edges=ce, named=((2, 1), (2, 0)), det=Dl, Rabi=Oc, kdir=+1, tag='ctrl'),
+            dict(edges=pe, named=((1, -1), (2, 0)), det=Dl + d2, Rabi=Op, kdir=-1, tag='probe')]
 
 
-def repump_beams(Oc, Op, d2, rep_scale, shift=-1, twofA=None):
-    """The two off-resonant repumpers (INCOHERENT). `shift` is the tag-AOM order:
+def repump_beams(Oc, Op, d2, rep_scale, shift=-1, twofA=None, master=False, Delta=None):
+    """The off-resonant repumpers (INCOHERENT). `shift` is the tag-AOM order:
          shift=-1 : retro DOWN-shifted by 2f_A  -> EOM at f_mod = A_HFS + 2f_A  (current config)
          shift=+1 : retro UP-shifted   by 2f_A  -> EOM at f_mod = A_HFS - 2f_A  (the 'other order')
     The forward sideband (rep1, F=1) and the retro carrier (rep2, F=2) move OPPOSITELY with `shift`:
@@ -116,16 +119,27 @@ def repump_beams(Oc, Op, d2, rep_scale, shift=-1, twofA=None):
          rep2 det (from F=2->F'2) = Delta + shift*2f_A
     Ladders cover the nearby lines: rep1 -> F'0,F'1,F'2 (F=1->F'3 is dF=2 forbidden); rep2 -> F'1,F'2,F'3
     (F=2->F'0 is dF=2 forbidden). NB F'0 (from F=1) and F'3 (from F=2) decay back to the SAME hyperfine --
-    intra-F m-shuffle + recoil heating, NO inter-F repump -- so a tone landing near them wastes power on heat."""
+    intra-F m-shuffle + recoil heating, NO inter-F repump -- so a tone landing near them wastes power on heat.
+
+    `master=True` appends the OPTIMIZED master: a dedicated F2->F'1 repumper, sigma+, DETUNED off F'1 by
+    config.master_det (~ -30) at Rabi config.master_Om (~0.9) -- a weak far-detuned 'tickle' that clears
+    |2,-2> with minimal F=1 loading (F'1 decays 5/6 -> F=1, so a strong/on-res master over-loads F=1). Being
+    detuned and weak it stays in the low-saturation regime, so the incoherent rate is valid here too. Run it
+    with rep_scale=0 (comb byproducts OFF) for the clean optimum."""
+    Dl = c.Delta if Delta is None else Delta
     twofA = c.twofA if twofA is None else twofA
     rep1 = rep_scale * Op / np.sqrt(c.eta_dp)                      # forward +1 EOM sideband amplitude
     rep2 = rep_scale * Oc * np.sqrt(c.eta_dp)                      # retro carrier amplitude
-    return [
+    bl = [
         dict(edges=_ladder(1, -1, [0, 1, 2]), named=((1, 0), (2, -1)),
-             det=c.Delta + d2 - shift * twofA, Rabi=rep1, kdir=+1, tag='rep1'),
+             det=Dl + d2 - shift * twofA, Rabi=rep1, kdir=+1, tag='rep1'),
         dict(edges=_ladder(2, +1, [1, 2, 3]), named=((2, 0), (2, 1)),
-             det=c.Delta + shift * twofA, Rabi=rep2, kdir=-1, tag='rep2'),
+             det=Dl + shift * twofA, Rabi=rep2, kdir=-1, tag='rep2'),
     ]
+    if master:
+        bl.append(dict(edges=_ladder(2, +1, [1]), named=((2, -2), (1, -1)),
+                       det=c.master_det, Rabi=c.master_Om, kdir=+1, tag='master'))
+    return bl
 
 
 def decay_branch_full(Fp, mp):
@@ -225,16 +239,18 @@ def build_frame(bm, gE, eE):
 
 
 def solve(d2=0.0, clean=False, with_repump=True, with_e1=True, with_e3=True,
-          Nf=None, B=None, theta=None, rep_scale=None, shift=-1, twofA=None, want=False):
+          Nf=None, B=None, theta=None, rep_scale=None, shift=-1, twofA=None,
+          Delta=None, OmR=None, master=False, want=False):
     """Steady-state axial <n_z> of the multilevel system. clean=True -> the bare 3-level Lambda.
        rep_scale multiplies the (chain-natural) off-resonant repumper Rabis; shift/twofA pick the
-       EOM/AOM configuration (see repump_beams)."""
+       EOM/AOM configuration (see repump_beams). Delta/OmR override the operating point (default config).
+       master=True adds the optimized dedicated F'1 master repumper (use with rep_scale=0 for the clean optimum)."""
     B = c.B_field if B is None else B
     theta = c.theta_trap if theta is None else theta
     Nf = c.Nf_multi if Nf is None else Nf
     rep_scale = c.rep_scale if rep_scale is None else rep_scale
     eta, nuz = c.eta, c.nu_z
-    Oc, Op = reference_rabis()
+    Oc, Op = reference_rabis(Delta, OmR)
 
     if clean:
         with_repump = with_e1 = with_e3 = False
@@ -250,7 +266,7 @@ def solve(d2=0.0, clean=False, with_repump=True, with_e1=True, with_e3=True,
     gE = {g: Eg(g[0], g[1], B) for g in Gs}
     eE = {e: Ee(e[0], e[1], B, theta) for e in Es}
 
-    bm = beams(Oc, Op, d2, with_e1, with_e3)
+    bm = beams(Oc, Op, d2, with_e1, with_e3, Delta)
     ng, ne = set(Gs), set(Es)
     for b in bm:
         b['edges'] = [(g, e, cc) for (g, e, cc) in b['edges'] if g in ng and e in ne]
@@ -328,7 +344,7 @@ def solve(d2=0.0, clean=False, with_repump=True, with_e1=True, with_e3=True,
     # the off-resonant repumpers: INCOHERENT scattering rates (no rotating-frame loop; low-saturation, valid rep_scale<~1)
     nu_rep = {}
     if with_repump and not clean:
-        bm_rep = repump_beams(Oc, Op, d2, rep_scale, shift, twofA)
+        bm_rep = repump_beams(Oc, Op, d2, rep_scale, shift, twofA, master, Delta)
         rc, acsh = repump_cops(bm_rep, gE, idx, P, If, Dsp, Gset, B, theta)
         cops += rc
         for g, sh in acsh.items():

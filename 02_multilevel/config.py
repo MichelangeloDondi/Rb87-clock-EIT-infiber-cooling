@@ -44,3 +44,15 @@ eta_dp       = 0.30   # retro double-pass power efficiency (sets the repumper fi
 rep_scale    = 1.0    # multiply the chain-natural repumper Rabis -- raise it to repump FASTER
                       #   (off-resonant repumping is slow; more power/depth speeds it up)
 Nf_multi     = 5      # Fock cutoff for the multilevel solve (kept small; the cold floor is low-n)
+
+# --- the OPTIMIZED master upgrade (the coherent-solver optimization; documented in upgrades/) -----------
+# A dedicated F2->F'1 repumper run as a WEAK, FAR-DETUNED "tickle": it clears |2,-2> (the one F=2 sublevel
+# the sigma- control can't reach) with MINIMAL F=1 loading -- F'1 decays 5/6 -> F=1, so a strong/on-resonance
+# master over-loads F=1 and raises the floor; the lightest touch that still empties |2,-2> is optimal.
+# Reproduce with:  cooling_multilevel.solve(d2=master_d2, Delta=master_Delta, OmR=master_OmR,
+#                                           rep_scale=0.0, master=True)   # rep_scale=0 -> comb byproducts OFF
+master_det   = -30.0  # master detuning from the in-trap F'1 line (2pi MHz; ~ -30..-45, red side)
+master_Om    = 0.9    # master Rabi (2pi MHz); invariant Om^2/det^2 ~ 9e-4 (just balances the |2,-2> feed)
+master_Delta = 80.0   # single-photon detuning at the optimum (rate-driven; floor flat over Delta = 60-100)
+master_OmR   = 0.20   # probe/control ratio at the optimum (small: once F=1 is clear, more probe = more carrier scatter)
+master_d2    = -0.05  # two-photon servo point at the optimum (the full level structure pulls it slightly red)
