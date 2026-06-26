@@ -143,6 +143,7 @@ def repump_cops(bm_rep, gE, idx, P, If, Dsp, Gset, B, theta):
        two-photon (absorb kdir + emit u) recoil. Also returns the off-resonant a.c.-Stark shift per ground."""
     cops, acshift = [], {}
     Ev = lambda Fp, mp: Ee(Fp, mp, B, theta)                       # virtual excited energy (Stark-shifted)
+    mind = np.inf                                                  # closest any repumper tone comes to a line
     for b in bm_rep:
         (gn, en) = b['named']
         cnamed = [cc for (g, e, cc) in b['edges'] if g == gn and e == en][0]
@@ -154,6 +155,7 @@ def repump_cops(bm_rep, gE, idx, P, If, Dsp, Gset, B, theta):
             ls = np.sqrt(Sfac(g[0], e[0]) / Sfac(g[0], en[0])) if e[0] != en[0] else 1.0
             O = b['Rabi'] * ls * (cc / cnamed)                    # this edge's Rabi
             d = nu - (Ev(*e) - gE[g])                             # this edge's detuning
+            mind = min(mind, abs(d))
             R = GAMMA * (O / 2)**2 / (d**2 + (GAMMA / 2)**2)      # off-resonant scattering rate
             acshift[g] = acshift.get(g, 0.0) + (O / 2)**2 / d
             br = decay_branch_full(e[0], e[1])
@@ -166,6 +168,15 @@ def repump_cops(bm_rep, gE, idx, P, If, Dsp, Gset, B, theta):
                 for (u, wem) in EM_REC:
                     cops.append(np.sqrt(R * (w / tot) * wem)
                                 * qt.tensor(P(idx[('g', gd)], idx[('g', g)]), Dsp(u) * Dsp(b['kdir'])))
+    # Guard: the incoherent low-saturation rate (R, acshift) is only valid far off resonance. If a config
+    # (e.g. a small 2f_A in explore_configs) lands a comb tone within a few linewidths of a line, R approaches
+    # the saturation limit and the acshift ~ Omega^2/d diverges -- a near-resonant tone must be treated
+    # coherently (in the Hilbert space), not as a rate. Warn rather than feed a blown-up Liouvillian to qutip.
+    if mind < 3.0 * c.Gamma:
+        import warnings
+        warnings.warn("a repumper tone sits %.0f MHz (< 3*Gamma) from a line: the incoherent rate model is "
+                      "invalid here (treat it coherently); <n_z> is not trustworthy for this config." % mind,
+                      RuntimeWarning)
     return cops, acshift
 
 
@@ -239,6 +250,13 @@ def solve(d2=0.0, clean=False, with_repump=True, with_e1=True, with_e3=True,
         b['edges'] = [(g, e, cc) for (g, e, cc) in b['edges'] if g in ng and e in ne]
     bm = [b for b in bm if b['edges'] and b['named'][0] in ng and b['named'][1] in ne]
     h, conf = build_frame(bm, gE, eE)
+    # Guard: a stationary rotating frame exists only if every loop in the tone graph closes (conf=0).
+    # If a future config (e.g. a microwave tone coupling the two grounds) closes a loop, conf != 0 and
+    # the steady state below would be silently unphysical -- warn loudly rather than return a fake number.
+    if conf > 1e-6:
+        import warnings
+        warnings.warn("rotating-frame conflict conf=%.3g (2pi MHz): no time-independent frame exists for this "
+                      "tone set; the steady-state <n_z> is NOT trustworthy." % conf, RuntimeWarning)
 
     nodes = [('g', g) for g in Gs] + [('e', e) for e in Es]
     for n in nodes:
@@ -258,6 +276,11 @@ def solve(d2=0.0, clean=False, with_repump=True, with_e1=True, with_e3=True,
         (gn, en) = b['named']
         cnamed = [cc for (g, e, cc) in b['edges'] if g == gn and e == en][0]
         for (g, e, cc) in b['edges']:
+            # ls rescales a cross-manifold (e[0]!=en[0]) leak by the relative line strength. NOTE: sqrt(Sfac)
+            # drops the sign of the reduced matrix element, so the *relative phase* of a cross-manifold path is
+            # approximate. This only touches the with_e1/e3 spoilers (the primary dark state lives inside F'=2
+            # and uses the signed CG ratio cc/cnamed, which is exact); negligible for the floor, but it would
+            # need the signed reduced element if cross-manifold interference were made quantitative.
             ls = np.sqrt(Sfac(g[0], e[0]) / Sfac(g[0], en[0])) if e[0] != en[0] else 1.0
             O = b['Rabi'] * ls * (cc / cnamed)
             i, j = idx[('g', g)], idx[('e', e)]

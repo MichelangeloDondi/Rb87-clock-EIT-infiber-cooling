@@ -122,19 +122,25 @@ def draw(with_master, outpath, title):
     dl(0.42, yc(L_R2) + 1, "rep2", C["rep2"], ha="left")                    # |2,-1>->|F'1,0> dm=+1
 
     if with_master:
-        # master fwd: sigma+ ON |F'1,+1> -- the dedicated F=2 repumper (clears |2,-2..0>) from a cooler slave
-        beam((0, yG2), (1.0, yE(1, 1)), C["mast"], 2.8)                     # |2,0>->|F'1,+1> dm=+1 on-res
-        dl(1.20, (yG2 + yE(1, 1)) / 2 + 10, "mfwd", C["mast"], ha="left")
-        # master retro: sigma-, down-shifted by 2f_A -> 400 MHz BELOW F'1 -> benign byproduct (NOT a |2,+2> clear)
-        tick(1.0, yc(L_MR), C["four"]); beam((2, yG2), (1.0, yc(L_MR) - 7), C["four"], 2.0, dashed=True)
-        dl(1.45, yc(L_MR) + 1, "mret", C["four"], ha="left")
-        ax.text(1.45, yc(L_MR) - 16, "benign byproduct\n(400 off F'1)", color=C["four"], fontsize=7.6,
-                ha="left", va="top", linespacing=1.1)
-        # |2,+2> residual: sigma+ on F'1 cannot reach it (needs |F'1,+3>); the retro is 400 off -> NOT cleared
-        ax.plot(+2, yG2, "o", color="#444", ms=9, zorder=6, mec="white", mew=1.0)
-        ax.annotate("$|2,+2\\rangle$ residual:\nno $\\sigma^+$ partner on F'1, and the\nretro is 400 off — the next lever",
-                    xy=(2.0, yG2), xytext=(2.55, yG2 + 26), color="#444", fontsize=7.8, ha="left", va="center",
-                    arrowprops=dict(arrowstyle="-", color="#999", lw=0.8))
+        # master fwd: sigma+ ON F'1. Its KEY job is to clear |2,-2> -- the ONE F=2 sublevel the sigma-
+        # control cannot reach (|2,-2>->|F'2,-3> is forbidden); with no repump 100% piles there.
+        beam((-2, yG2), (-1.0, yE(1, -1)), C["mast"], 2.8)                  # |2,-2>->|F'1,-1> dm=+1 on-res
+        dl(-2.0, (yG2 + yE(1, -1)) / 2, "mfwd", C["mast"], ha="right")
+        ax.annotate("master clears $|2,-2\\rangle$ —\nthe one F=2 state the $\\sigma^-$\ncontrol can't reach",
+                    xy=(-2.0, yG2 + 6), xytext=(-3.95, yG2 + 40), color=C["mast"], fontsize=7.6, ha="left",
+                    va="center", arrowprops=dict(arrowstyle="-", color="#b9a0d0", lw=0.8))
+        # |2,+2> is NOT a residual: the sigma- control clears it (|2,+2>->|F'2,+1>, near-resonant)
+        ax.annotate("the $\\sigma^-$ control clears $|2,+2\\rangle$\n($\\to|F'2,+1\\rangle$) — not a residual",
+                    xy=(2.0, yG2), xytext=(2.45, yG2 + 30), color="#666", fontsize=7.4, ha="left", va="center",
+                    arrowprops=dict(arrowstyle="-", color="#bbb", lw=0.7))
+        # master retro: sigma-, down-shifted 400 MHz below F'1 -> benign off-resonant byproduct
+        tick(0.0, yc(L_MR), C["four"]); beam((1, yG2), (0.0, yc(L_MR) - 7), C["four"], 2.0, dashed=True)
+        ax.text(0.0, yc(L_MR) - 14, "master retro: benign byproduct (400 off F'1)", color=C["four"],
+                fontsize=7.4, ha="center", va="top")
+        # the REAL residual: F=1 (|1,0>,|1,+1>), cleared only weakly by the off-resonant probe
+        ax.annotate("real residual: F=1 ($|1,0\\rangle,|1,\\!+\\!1\\rangle$),\nonly weakly cleared by the probe",
+                    xy=(0.5, yG1), xytext=(2.2, yG1 + 22), color="#b5651d", fontsize=7.6, ha="left",
+                    va="center", arrowprops=dict(arrowstyle="-", color="#d2a679", lw=0.8))
 
     # ---- Delta bracket + |F'2,0> callout ----
     ax.annotate("", xy=(0.60, yE(2, 0)), xytext=(0.60, yc(LV)), arrowprops=dict(arrowstyle="<->", color="#333", lw=1.4))
@@ -203,10 +209,12 @@ def draw(with_master, outpath, title):
     else:
         txt = (common +
                "$\\bf{master\\ upgrade}$: a dedicated F'1 repumper from a cooler-frequency slave. master fwd $\\sigma^+$\n"
-               "   ON F'1 strongly clears the F=2 dark sublevels $|2,\\!-\\!2..0\\rangle$ (spares the bright $|2,\\!+\\!1\\rangle$).\n"
-               "Folded into the tag arm, its retro is DOWN-shifted 400 MHz below F'1 $\\Rightarrow$ benign byproduct.\n"
-               "$|2,\\!+\\!2\\rangle$ has no $\\sigma^+$ partner on F'1 and the retro is 400 off $\\Rightarrow$ it is NOT cleared:\n"
-               "   the residual, and the next lever (a weak $\\pi$/$\\sigma^-$ clean-up tone), not the AOM.")
+               "   ON F'1 clears $|2,\\!-\\!2\\rangle$ — the ONE F=2 sublevel the $\\sigma^-$ control cannot reach\n"
+               "   ($|2,\\!-\\!2\\rangle\\!\\to\\!|F'2,\\!-\\!3\\rangle$ forbidden); with no repump 100% piles there and cooling stops.\n"
+               "$|2,\\!+\\!2\\rangle$ is NOT a residual — the $\\sigma^-$ control clears it ($\\to|F'2,\\!+\\!1\\rangle$, near-resonant).\n"
+               "Folded into the tag arm, the master retro sits 400 MHz off F'1 $\\Rightarrow$ benign byproduct.\n"
+               "$\\bf{The\\ real\\ floor\\ is\\ F{=}1\\!-\\!limited}$: $|1,0\\rangle,|1,\\!+\\!1\\rangle$ accumulate, cleared only weakly by\n"
+               "   the off-resonant probe — the intrinsic cost of cooling the multilevel D2 line ($\\bar n_z\\!\\sim\\!0.1$).")
     ax.text(4.45, yc(-150), txt, fontsize=8.2, va="top", ha="left", linespacing=1.5,
             bbox=dict(boxstyle="round,pad=0.7", fc="#f6f6f8", ec="#888", lw=1.0))
 

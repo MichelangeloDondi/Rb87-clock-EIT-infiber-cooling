@@ -260,9 +260,21 @@ formula you can check by hand.
 
 So the numbers above are read with the right scope:
 
-- **Single atom, on axis, axial motion only** — no atom cloud, and no radial motion or radial–axial coupling
-  (the radial spread is the next layer, deliberately out of this repo; see below).
-- **Lamb–Dicke regime, first order in η** (η = 0.094) — higher-order recoil terms dropped.
+- **Single atom, on axis, axial motion only** — no atom cloud, no radial motion or radial–axial coupling.
+  Off-axis the atom samples a weaker 1064 intensity, and since Ω_c² ∝ I but ν_z ∝ √I the EIT condition
+  Ω_c²/4Δ = ν_z drifts, walking the bright peak off the sideband — so **every number here is a radially-localized
+  best case**; a radially-hot atom cools worse (the radial layer is deliberately out of this repo).
+- **Anti-trapped excited state — checked, negligible.** The 5P₃/₂ is anti-trapped (+38), but its 26 ns lifetime
+  is ≪ the 2.3 µs trap period, so the atom is *frozen* during the excited excursion; setting the excited
+  curvature to ±ν_z moves the floor by < 2 %. The model's shared-potential approximation is therefore safe.
+- **Linear polarization assumed** — the vector (circular) light shift is dropped. Along the quantization axis it
+  acts like a fictitious B-field, which the g_F·m_F-matched pair cancels just like a real one (§2); the residual
+  is the transverse/spatially-varying part — again a radial effect.
+- **Off-resonant tones treated incoherently** (§6) — they are in fact phase-locked to the Λ; the incoherent rate
+  is valid because they sit 100s of MHz off (interference suppressed), while the near-resonant master repumper
+  of the upgrade is treated coherently.
+- **Lamb–Dicke regime, first order in η** (η = 0.094) — higher-order recoil terms dropped (the multilevel solver
+  uses the exact displacement operator; only the 3-level `cooling.py` linearizes it, harmless at this η).
 - **Perfect two-photon servo** (δ₂ held at 0) — no servo noise.
 - **No technical noise** — no laser intensity/phase noise, no magnetic-field noise, no trap-frequency jitter.
 - **Repumper model** (§6) is a low-saturation *incoherent* rate — trustworthy only near natural power (see the §6 scope note).
