@@ -66,6 +66,15 @@ F,m,E = min(allowed, key=lambda t: abs(rb-t[2])); d = abs(rb-E)
 print(f"\n   folded into the EOM arm? its retro byproduct (sigma-) lands at {rb:+.0f} = {d:.0f} off F'{F}:")
 print(f"       scatter {GAMMA*1.6**2/(4*d**2):.0f}/s, AC-Stark {1.6**2/(4*d)/c.nu_z:.3f} nu_z (Om~1.6) -> harmless.")
 
+print("\n   NOTE -- the residual this F'1 rep2 leaves: |2,+2>.  sigma+ on F'1 reaches only")
+print("   |2,-2>,|2,-1>,|2,0> (it spares the bright leg |2,+1>, intended); |2,+2> would need")
+print("   |F'1,+3>, which doesn't exist.  |2,+2> is fed by rep2's own decay |2,0>->|F'1,+1>->")
+print("   |2,+2> (~10% branch) and cleared only slowly by the control (|2,+2>->|F'2,+1>, off-")
+print("   resonant at Delta).  cooling_multilevel.py budgets this for the OFF-RESONANT COMB rep2;")
+print("   with a DEDICATED on-resonant rep2 the other dark states clear faster, so |2,+2> is the")
+print("   bottleneck -- re-run the solve with rep2 on-resonant to size it.  If the measured floor")
+print("   is above target, the lever is a weak pi or sigma- clean-up tone on |2,+2>, NOT the AOM.")
+
 # --------------------------------------------------------------- F=1 leg ----
 print("\n"+"="*72); print("3.  F=1 leg = your MOT repumper (F1->F'2), as-is -- ZERO shift")
 print("="*72)
