@@ -1,9 +1,9 @@
-# The master upgrade — a dedicated F′1 repumper
+# 03 — the master laser (a dedicated F′1 repumper)
 
-This folder is **forward-looking**. The baseline single-EOM chain is **repump-limited at ~0.10** (what
-`02_multilevel/cooling_multilevel.py` computes — see the main README): its repumpers are leftover comb tones
-stuck near the cooling F′2 manifold, and that placement caps the floor. **There is one upgrade worth building,
-and it is simple:**
+**Chapter 03 adds one piece of hardware** to the chapter-02 chain. The baseline single-EOM chain of
+[`02_multilevel/`](../02_multilevel/) is **repump-limited at ~0.10** (what `cooling_multilevel.py` computes — the
+physics is in §6–§7 of the [main README](../README.md)): its repumpers are leftover comb tones stuck near the
+cooling F′2 manifold, and that placement caps the floor. The one fix worth building is simple:
 
 > **Add the 780 master laser as a dedicated F′1 repumper, and keep the existing single-end delivery.**
 > Nothing else changes — same fibre, same retro, same tag. This recovers the floor from ~0.10 toward the

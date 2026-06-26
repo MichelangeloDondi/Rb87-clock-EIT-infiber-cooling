@@ -45,13 +45,13 @@ rep_scale    = 1.0    # multiply the chain-natural repumper Rabis -- raise it to
                       #   (off-resonant repumping is slow; more power/depth speeds it up)
 Nf_multi     = 5      # Fock cutoff for the multilevel solve (kept small; the cold floor is low-n)
 
-# --- the OPTIMIZED master upgrade (the coherent-solver optimization; documented in upgrades/) -----------
+# --- the OPTIMIZED master config (the coherent-solver optimization; documented in 03_master/) -----------
 # A dedicated F2->F'1 repumper run as a WEAK, FAR-DETUNED "tickle": it clears |2,-2> (the one F=2 sublevel
 # the sigma- control can't reach) with MINIMAL F=1 loading -- F'1 decays 5/6 -> F=1, so a strong/on-resonance
 # master over-loads F=1 and raises the floor; the lightest touch that still empties |2,-2> is optimal.
 # CAVEAT: these are a COHERENT-SOLVER optimum (claimed floor ~0.023). This engine does NOT reproduce that --
 # at these knobs it gives ~0.41 (the F=1 recycling here, via the real off-res probe, is far weaker than the
-# coherent solver's phenomenological F=1 model). See ../upgrades/README.md. Trust the recipe, not the 0.023.
+# coherent solver's phenomenological F=1 model). See ../03_master/README.md. Trust the recipe, not the 0.023.
 # Reproduce with:  cooling_multilevel.solve(d2=master_d2, Delta=master_Delta, OmR=master_OmR,
 #                                           rep_scale=0.0, master=True)   # rep_scale=0 -> comb byproducts OFF
 master_det   = -30.0  # master detuning from the in-trap F'1 line (2pi MHz; ~ -30..-45, red side)

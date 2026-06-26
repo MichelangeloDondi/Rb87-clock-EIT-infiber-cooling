@@ -3,7 +3,7 @@ level_scheme.py -- the delivered tones on the 1064-shifted 87Rb 5P3/2 manifold, 
 
 Generates TWO figures (one script so the two stay consistent):
   level_scheme.png                          (here, 02_multilevel/) -- the BASELINE: 4 comb tones, no master
-  ../upgrades/level_scheme_dedicated.png                            -- the MASTER upgrade: + the master F'1 repumper
+  ../03_master/level_scheme_dedicated.png                            -- the MASTER upgrade: + the master F'1 repumper
 
 Colour = comb line (same beam forward AND retro share a colour): carrier = blue, +1 sideband = green,
 780 master = purple.  SOLID = forward pass, DASHED = backward (retro) pass.
@@ -27,7 +27,7 @@ import stark
 import config as c
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-UPG  = os.path.join(os.path.dirname(HERE), "upgrades")
+UPG  = os.path.join(os.path.dirname(HERE), "03_master")
 plt.rcParams.update({"font.size": 11, "font.family": "DejaVu Sans"})
 
 # ---- 1064 light shifts from stark.py (theta = the real transverse-lattice angle) ----

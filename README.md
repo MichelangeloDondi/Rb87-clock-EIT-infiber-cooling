@@ -7,9 +7,10 @@ trap inside a hollow-core photonic-crystal fibre. The Λ legs are |F=1,m=−1⟩
 m_F=0↔m_F=0 clock pair, but it serves the same purpose: a first-order magnetically insensitive two-photon
 resonance (§2). **The question: how low does this model predict the axial motion cools?**
 
-> **Status:** work in progress. The 3-level core is settled and hand-checkable; the multilevel layer is
-> realistic but its repumper model has a stated validity limit (below). Numbers are single-atom and on-axis —
-> the atom cloud is not modelled here.
+> **Status:** work in progress. The 3-level core (ch. 01) is settled and hand-checkable; the multilevel layer
+> (ch. 02) is realistic but its repumper model has a stated validity limit (below); the master (ch. 03) is built,
+> but its floor is a design target, not yet pinned. Numbers are single-atom and on-axis — the atom cloud is not
+> modelled here.
 
 ## The numbers, honestly
 
@@ -20,8 +21,8 @@ resonance (§2). **The question: how low does this model predict the axial motio
 | multilevel, real delivery | **≈ 0.10** | **+ the real off-resonant repumping** (≈ 40 % stuck in dark sublevels) | [`02_multilevel/`](02_multilevel/) |
 
 Quote **0.0032** as the intrinsic cooling limit and **≈ 0.10** as what the minimal single-EOM chain delivers. For this
-chain the **repumping**, not the EIT mechanism, sets the floor — [`upgrades/`](upgrades/README.md) shows how
-dedicated repumpers recover it. The 0.0013 is the idealized 3-level number: a lower bound, not a result.
+chain the **repumping**, not the EIT mechanism, sets the floor — [`03_master/`](03_master/README.md) shows how
+a dedicated repumper recovers it. The 0.0013 is the idealized 3-level number: a lower bound, not a result.
 
 All frequencies are angular, in 2π·MHz (a literal `6.07` means 2π·6.07 MHz). Every physical number lives in the
 `config.py` of each folder.
@@ -218,22 +219,59 @@ and a tone close to F′2 scatters the EIT dark state at a rate that **equals th
 F′2**. So the repumpers *must* sit ≳ 200 MHz off F′2 — the large detunings are that protection. A configuration
 sweep ([`explore_configs.py`](02_multilevel/explore_configs.py)) confirms the current choice is the best of
 them, and **caps the single-EOM chain near ~0.1**. The way below it is a *separate* manifold — dedicated
-repumpers **on F′1** — laid out in [`upgrades/`](upgrades/README.md).
+repumpers **on F′1** — the subject of §7, and of chapter [`03_master/`](03_master/README.md).
 
 ---
 
-## Structure
+## 7. Adding the master laser ([`03_master/`](03_master/README.md))
 
-Built up one stage at a time; each folder is self-contained (its own `config.py`) and readable on its own.
+§6 leaves the minimal chain **repump-limited at ≈ 0.10**: its repumpers are leftover comb tones stuck near the
+cooling **F′2** manifold — too close to repump strongly without scattering the dark state, too far to repump fast.
+**Chapter 03 adds one piece of hardware** to break that tension: the 780 nm **master laser, run as a dedicated
+repumper on F′1**. Nothing else changes — same fibre, same single-end retro, same tag.
 
-- **[`01_three_level/`](01_three_level/)** — the hand-checkable core: the trap + Stark shifts (`stark.py` +
-  `stark_validate.py`), the 3-level cooling floor (`cooling.py`, ~60 lines), the figures (`plots.py`).
-  **Start here.** Runs in seconds.
-- **[`02_multilevel/`](02_multilevel/)** — the real ⁸⁷Rb manifold, photon recoil, and the two off-resonant
-  comb repumpers of the single-EOM chain (`cooling_multilevel.py`), the configuration sweep
-  (`explore_configs.py`), and the level scheme (`level_scheme.py`). **The baseline, without the master laser.**
-- **[`upgrades/`](upgrades/README.md)** — *forward-looking*: how dedicated F′1 repumpers (and the master laser)
-  recover the floor toward the mechanism limit. Not part of the baseline.
+F′=1 is a *separate* hyperfine level of 5P₃/₂, **157 MHz below F′2**. A tone resonant on F′1 repumps **resonantly**
+(strong) yet sits 157 MHz off the cooling F′2, so it barely scatters the dark state. Its specific job is to clear
+**|2,−2⟩** — the *one* F=2 sublevel the σ⁻ control cannot reach (|2,−2⟩→|F′2,−3⟩ is dipole-forbidden; with no
+repump, population piles there and cooling stops). With |2,−2⟩ cleared, all of F=2 is covered, and the limit moves
+to **F=1**: |1,0⟩ and |1,+1⟩ collect spontaneous decay and are recycled only weakly by the off-resonant probe —
+the intrinsic cost of cooling the real D2 line, and why D2 EIT cooling lands near n̄_z ~ 0.1, not the closed-Λ ideal.
+
+![the chapter-03 level scheme: the same delivery with the master F′1 repumper added](03_master/level_scheme_dedicated.png)
+
+*The chapter-02 delivery with the master folded in, on the 1064-shifted manifold (every level from
+[`stark.py`](02_multilevel/stark.py)): the cooling Λ and the leftover comb repumpers as in §6, **plus the master
+forward σ⁺ resonant on F′1**, whose job is to clear |2,−2⟩ (its down-shifted retro lands 400 MHz off F′1 — a benign
+byproduct). Same encoding as §6: colour = comb line (master = purple), solid = forward, dashed = retro. From
+[`02_multilevel/level_scheme.py`](02_multilevel/level_scheme.py).*
+
+**How low does it go — honestly.** The design target is **n̄_z ≈ 0.0072**, but that number is **not computed in this
+repo**: the master sits near resonance, where §6's incoherent-rate repumper model does not apply, so pinning it
+needs a coherent dedicated-repumper solve. An optimization that *claimed* ≈ 0.023 (a weak, far-detuned master) is
+**not reproduced by this repo's engine** — at the same knobs it gives ≈ 0.4, the gap being entirely how F=1
+recycling is modelled. So **trust the recipe direction** — a dedicated F′1 repumper; the master clears |2,−2⟩; F=1
+sets the limit — and read **0.0072 as a target, not a result**. Chapter [`03_master/`](03_master/README.md) has the
+build (how to source the F′1 tone), the full optimization triage, and the heavier delivery alternatives.
+
+---
+
+## The chapters
+
+Built up **one layer of complexity at a time** — each chapter adds a single piece of physics or hardware to the one
+before, and is self-contained (its own `config.py`, runnable on its own). Read them in order.
+
+| # | folder | what it adds | physics in | status |
+|---|---|---|---|---|
+| **01** | [`01_three_level/`](01_three_level/) | the idealized 3-level Λ: trap, Stark shifts, the EIT mechanism, the (Γ/4Δ)² floor | §1–§5 | **built** · n̄_z = 0.0013 |
+| **02** | [`02_multilevel/`](02_multilevel/) | the real ⁸⁷Rb D2 manifold + photon recoil + the single-EOM comb delivery (probe, control, retro-reflection) | §6 | **built** · 0.0032 clean / ≈ 0.10 real |
+| **03** | [`03_master/`](03_master/README.md) | the 780 master laser as a dedicated F′1 repumper | §7 | **built** · target ≈ 0.0072 (floor not yet pinned) |
+| 04 | *(planned)* | the second dark vertex: the cooling pair is two-photon resonant on the F′1 m′=0 state too, so the EIT dark state is not perfectly dark — fold that leak into the solve | — | planned |
+| 05 | *(planned)* | the anti-trapping heating from the expelled (anti-trapped) 5P₃/₂ excited state | — | planned |
+| 06 | *(planned)* | the atom cloud (frozen atoms): a spread of ν_z and light shifts off-axis | — | planned |
+| 07 | *(planned)* | the full semiclassical Monte-Carlo simulation | — | planned |
+| 08 | *(planned)* | beam depletion along the fibre (scattering, absorption, …) | — | planned |
+
+Chapters 04–08 are the roadmap, not yet built.
 
 ## How to run
 
@@ -250,6 +288,10 @@ cd ../02_multilevel
 python level_scheme.py        # the 24-level scheme figure (no solve)
 python cooling_multilevel.py  # the realistic floor with recoil + repumping  (~1 min)
 python explore_configs.py     # the single-EOM configuration sweep
+
+cd ../03_master
+python upgrade_figures.py     # the chapter-03 figures: floor ladder + benches (no solve)
+python master_optimized.py    # the optimized-master double-check (a few minutes; qutip)
 ```
 
 There is no separate test runner: each script prints its own self-check, and the headline floor in §4–§5 is a
@@ -273,7 +315,7 @@ So the numbers above are read with the right scope:
   is the transverse/spatially-varying part — again a radial effect.
 - **Off-resonant tones treated incoherently** (§6) — they are in fact phase-locked to the Λ; the incoherent rate
   is valid because they sit 100s of MHz off (interference suppressed), while the near-resonant master repumper
-  of the upgrade is treated coherently.
+  of chapter 03 is treated coherently.
 - **Lamb–Dicke regime, first order in η** (η = 0.094) — higher-order recoil terms dropped (the multilevel solver
   uses the exact displacement operator; only the 3-level `cooling.py` linearizes it, harmless at this η).
 - **Perfect two-photon servo** (δ₂ held at 0) — no servo noise.
@@ -288,14 +330,6 @@ So the numbers above are read with the right scope:
 relies on the AC-Stark condition Ω_c²/4Δ = ν_z holding, so the bright peak stays on the cooling sideband; a
 few-% drift in Ω_c or Δ is tolerable, and a full Δ/Ω_c sensitivity sweep is a natural next check (not yet done).
 
-## What's beyond this repo
-
-- **The master upgrade** ([`upgrades/`](upgrades/README.md)): add the 780 master as a dedicated F′1 repumper on
-  the existing single-end chain — **design target ~0.0072** (not computed in this repo). §6 shows *why* you want
-  it: off-resonant comb-tone repumping is the bottleneck. Heavier alternatives (dual-end, ~0.0048) are kept there
-  as curiosities, not the realistic path.
-- **The atom cloud:** atoms off-axis see a spread of ν_z and light shifts; the floor is then set by the radial
-  temperature, removable with a flat-top trap. Deliberately out of this single-atom repo.
-
-The §1–5 core is the supervisable heart: the EIT mechanism and the (Γ/4Δ)² floor. §6 is the honest price of the
-real delivery. If any line of physics here doesn't follow, that's a writing bug — flag it.
+The §1–§5 core is the supervisable heart: the EIT mechanism and the (Γ/4Δ)² floor. §6–§7 are the honest price of
+the real delivery and the master repumper; the chapter map above (04–08) is what is *not* modelled yet. If any
+line of physics here doesn't follow, that's a writing bug — flag it.

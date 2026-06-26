@@ -1,5 +1,5 @@
 """
-upgrade_figures.py -- figures for the upgrades note.
+upgrade_figures.py -- figures for chapter 03 (the master laser).
 
   floor_ladder.png            the floor across configs (the upgrade path), honestly sourced
   bench_single_end.png        the MASTER upgrade bench: single-end tagged retro + the master repumper
