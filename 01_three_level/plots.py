@@ -110,27 +110,29 @@ def cooling_curve(n_init=3.0, N=16):
 
 # ---------------------------------------------------------------- 3. Stark manifold
 def stark_manifold():
+    th = 90.0                                      # the REAL trap: transverse lattice (theta=90 deg)
     U0 = -stark.shift(c.alpha0_5S)                 # ground trap depth (down)
-    sca = stark.shift(c.alpha0_5P32)               # 5P scalar (up)
-    lo = stark.shift(c.alpha0_5P32 + c.alpha2_5P32)   # F'=3 stretched
-    hi = stark.shift(c.alpha0_5P32 - c.alpha2_5P32)   # most anti-trapped
+    sca = stark.stark_level(2, 0, th)              # F'2: pure scalar (tensor-null), any geometry
+    f3hi = stark.stark_level(3, 3, th)             # F'3 stretched |3,+-3> -> HIGHEST at theta=90
+    f3lo = stark.stark_level(3, 0, th)             # F'3 |3,0>            -> lowest at theta=90
 
-    fig, ax = plt.subplots(figsize=(6.4, 5.0))
+    fig, ax = plt.subplots(figsize=(6.6, 5.0))
     ax.axhline(0, color="k", lw=0.8, alpha=0.4)
     ax.text(0.5, 2, "free-atom levels (no light)", fontsize=8, color="k", alpha=0.5, ha="center")
     # ground
     ax.hlines(-U0, 0.1, 0.9, color=BLUE, lw=3)
     ax.text(0.5, -U0 - 3, f"5S$_{{1/2}}$ ground: trapped, $U_0$ = {U0:.0f} MHz", color=BLUE, ha="center", fontsize=9)
-    # excited manifold
-    ax.fill_between([1.1, 1.9], lo, hi, color=RED, alpha=0.12)
+    # excited manifold (F'3 band at the real theta=90 trap: stretched on top, |3,0> at the bottom)
+    ax.fill_between([1.1, 1.9], f3lo, f3hi, color=RED, alpha=0.12)
     ax.hlines(sca, 1.1, 1.9, color=RED, lw=3)
     ax.text(2.0, sca, f"|F'2,0⟩  pure scalar  +{sca:.0f} MHz  (EIT target)", color=RED, va="center", fontsize=9)
-    ax.hlines(lo, 1.1, 1.9, color=GREY, lw=1.5, ls="--")
-    ax.text(2.0, lo, f"F'=3 stretched  +{lo:.0f}", color=GREY, va="center", fontsize=8)
-    ax.hlines(hi, 1.1, 1.9, color=GREY, lw=1.5, ls="--")
-    ax.text(2.0, hi, f"most anti-trapped  +{hi:.0f}", color=GREY, va="center", fontsize=8)
-    ax.text(1.5, hi + 6, "5P$_{3/2}$: anti-trapped\n(tensor splits F'=3;\nF'=2 tensor = 0)", color=RED, ha="center", fontsize=8)
-    ax.set_xlim(0, 4.2); ax.set_ylim(-U0 - 10, hi + 16)
+    ax.hlines(f3hi, 1.1, 1.9, color=GREY, lw=1.5, ls="--")
+    ax.text(2.0, f3hi, f"F'=3 stretched |3,±3⟩  +{f3hi:.0f}  (highest)", color=GREY, va="center", fontsize=8)
+    ax.hlines(f3lo, 1.1, 1.9, color=GREY, lw=1.5, ls="--")
+    ax.text(2.0, f3lo, f"F'=3 |3,0⟩  +{f3lo:.0f}  (lowest)", color=GREY, va="center", fontsize=8)
+    ax.text(1.5, f3hi + 5, "5P$_{3/2}$: anti-trapped\n(tensor splits F'=3 — stretched UP\nat $\\theta{=}90°$; F'=2 tensor = 0)",
+            color=RED, ha="center", fontsize=8)
+    ax.set_xlim(0, 4.6); ax.set_ylim(-U0 - 10, f3hi + 18)
     ax.set_ylabel("light shift (2$\\pi$·MHz)")
     ax.set_title("1064 nm lattice (1 W + 1 W): ground trapped, 5P$_{3/2}$ expelled")
     ax.set_xticks([])

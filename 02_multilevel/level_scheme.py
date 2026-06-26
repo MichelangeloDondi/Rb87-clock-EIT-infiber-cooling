@@ -1,107 +1,206 @@
 """
-level_scheme.py -- the 24-level 87Rb D2 scheme with the four tones the multilevel solve uses:
-control + probe (the Lambda to |F'2,0>) and the two off-resonant sigma repumpers (the leftover
-comb tones).  Run:  python level_scheme.py     (writes level_scheme.png next to this file)
+level_scheme.py -- the four delivered tones of the single-EOM chain, drawn on the 1064-shifted
+87Rb 5P3/2 manifold.  Run:  python level_scheme.py     (writes level_scheme.png next to this file)
 
-The hyperfine spacings are atomic data (Steck); the figure is a schematic of the tone placement,
-not a Stark calculation (for the 1064 shifts see 01_three_level/stark.py and the README).
+Wired to stark.py / config.py: NO hand-typed light shifts.  The figure's point is that |F'2,0> is a
+PURE-SCALAR target -- F'=2 is tensor-NULL (the Wigner 6j {2 2 2; 3/2 3/2 3/2} = 0), so every F'=2 m'
+sits at the same +38, while F'=1 and F'=3 FAN OUT under the tensor shift at the real theta=90 trap.
+
+Drawing conventions, made literal so they can be checked by eye:
+  * sigma+ arrows step m -> m+1 ;  sigma- arrows step m -> m-1   (Delta m = +-1 in the drawing).
+  * Detunings are COMPUTED (printed below) and labelled against the nearest dipole-ALLOWED line;
+    dF=+-2 lines (F1->F'3, F2->F'0) are excluded -- closer, but forbidden.
+  * Every tone is drawn at its true level-frame height (to scale); only the 6.835 GHz ground gap is
+    compressed (broken axis).  All frequencies are 2*pi*MHz.
 """
 import os
 import numpy as np
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
+from matplotlib.patches import FancyArrowPatch
+from matplotlib.lines import Line2D
+import stark
+import config as c
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-BLUE, RED, GREY, GREEN, ORANGE = "#1565c0", "#c0392b", "#7f8c8d", "#2e7d32", "#e67e22"
+plt.rcParams.update({"font.size": 11, "font.family": "DejaVu Sans"})
+
+# --- 1064 light shifts straight from stark.py (theta = the real transverse-lattice angle) ---
+TH     = c.theta_trap
+SCALAR = stark.shift(c.alpha0_5P32)        # +38.0 common 5P3/2 scalar (every F',m')
+U0     = -stark.shift(c.alpha0_5S)         # +22.7 ground down-shift (F-independent)
+# bare 87Rb 5P3/2 hyperfine vs F'=2 (Steck) -- atomic data, not a light shift
+BARE   = {0: -229.17, 1: -156.95, 2: 0.0, 3: 266.65}
+def yE(Fp, mp): return BARE[Fp] + SCALAR + stark.stark_tensor(Fp, mp, TH)   # in-trap level
+em = {0: [0], 1: [-1, 0, 1], 2: [-2, -1, 0, 1, 2], 3: [-3, -2, -1, 0, 1, 2, 3]}
+gm = {1: [-1, 0, 1], 2: [-2, -1, 0, 1, 2]}
+
+DELTA = c.Delta                            # +45, single-photon detuning blue of |F'2,0>
+twofA = c.twofA                            # 400, tag-AOM double pass
+yG2, yG1 = -470.0, -550.0                   # ground rows (schematic; 6.835 GHz is compressed)
+
+# --- tone positions in the level frame (a tone "at P" is resonant with a level at height P) ---
+# probe & control sit DELTA above |F'2,0>; the comb repumpers are +-2fA from them.
+# The tag DOWN-shifts the retro (retro = forward - 2f_A), so rep1 is UP from probe and rep2 is DOWN.
+P_LAMBDA = yE(2, 0) + DELTA
+P_rep1   = P_LAMBDA + twofA                 # forward +1 EOM sideband (probe + 2fA)
+P_rep2   = P_LAMBDA - twofA                 # retro carrier          (control - 2fA)
+
+# --- nearest dipole-ALLOWED line to a tone, for honest detuning labels ----------------------
+ALLOWED = {1: (0, 1, 2), 2: (1, 2, 3)}      # F -> F' ; dF=+-2 (F1->F'3, F2->F'0) forbidden
+def ctr(Fp): return float(np.mean([yE(Fp, mp) for mp in em[Fp]]))   # manifold centre
+def nearest_allowed(P, Fg):
+    Fp = min(ALLOWED[Fg], key=lambda f: abs(P - ctr(f)))
+    return Fp, P - ctr(Fp)                  # (F', signed detuning to its centre)
+
+C = dict(control="#1565c0", probe="#2e8b3d", rep1="#e8730c", rep2="#d32f2f")
+GB, GS = "#c4c4c4", "#9a9a9a"               # ghost colours: bare (dotted), scalar-only (dashed)
 
 
 def level_scheme():
-    """control + probe (the Lambda to |F'2,0>) and the two sigma repumpers on F->F'1/F'2."""
-    DF = {0: -229.16, 1: -156.94, 2: 0.0, 3: 266.65}       # 5P3/2 hyperfine, from |F'2> (MHz)
-    MP = {0: [0], 1: [-1, 0, 1], 2: [-2, -1, 0, 1, 2], 3: [-3, -2, -1, 0, 1, 2, 3]}
-    DIV, YC = 235.0, 5.6
-    yE = lambda Fp: YC + DF[Fp] / DIV
-    YF2, YF1, LW = 1.15, 0.0, 0.30
+    fig, ax = plt.subplots(figsize=(16.6, 12.0))
+    HW = 0.30
+    def lvl(m, y, col, lw, z=2):
+        ax.plot([m - HW, m + HW], [y, y], color=col, lw=lw, solid_capstyle="round", zorder=z)
+    def beam(p0, p1, col, lw=2.8, dashed=False, msc=16):
+        ax.add_patch(FancyArrowPatch(p0, p1, arrowstyle="-|>", mutation_scale=msc, color=col,
+                     lw=lw, zorder=5, shrinkA=6, shrinkB=5, linestyle="--" if dashed else "-"))
+    def tone(m, y, col, w=0.40):            # an off-resonant delivered tone (dashed marker)
+        ax.plot([m - w, m + w], [y, y], ls=(0, (4, 2)), color=col, lw=2.1, zorder=4)
 
-    fig, ax = plt.subplots(figsize=(11.2, 8.4))
-    # excited manifold (|F'2,0>, the EIT target, emphasized; the rest are off-resonant)
-    for Fp, ms in MP.items():
+    # ghost reference lines: bare (dotted) + scalar-only (dashed). For F'=0,2 scalar-only == full.
+    for Fp, ms in em.items():
+        x0, x1 = min(ms) - 0.42, max(ms) + 0.42
+        ax.plot([x0, x1], [BARE[Fp]] * 2, ls=(0, (1, 3)), color=GB, lw=1.0, zorder=1)
+        if Fp not in (0, 2):
+            ax.plot([x0, x1], [BARE[Fp] + SCALAR] * 2, ls=(0, (6, 3)), color=GS, lw=0.9, zorder=1)
+    for F, ms in gm.items():
+        x0, x1 = min(ms) - 0.42, max(ms) + 0.42
+        ax.plot([x0, x1], [(yG2 if F == 2 else yG1) + U0] * 2, ls=(0, (1, 3)), color=GB, lw=1.0, zorder=1)
+
+    # solid in-trap levels (|F'2,0> highlighted) ----
+    for Fp, ms in em.items():
+        for mp in ms:
+            hot = (Fp == 2 and mp == 0)
+            lvl(mp, yE(Fp, mp), "#c62828" if hot else "#9aa0aa", 4.4 if hot else 2.2, 4 if hot else 2)
+    for F, ms in gm.items():
+        yg = yG2 if F == 2 else yG1
         for m in ms:
-            eit = (Fp == 2 and m == 0)
-            ax.plot([m - LW, m + LW], [yE(Fp), yE(Fp)], color=(RED if eit else "#9aa7b4"),
-                    lw=3.0 if eit else 1.5, solid_capstyle="round", zorder=3)
-        ax.text(3.6, yE(Fp), r"$F'=%d$" % Fp, va="center", ha="left", fontsize=12, color="#444")
-    ax.annotate(r"$|F'2,0\rangle$  pure scalar  +38 MHz  (EIT target)",
-                xy=(0, yE(2)), xytext=(1.15, yE(2) + 0.42), fontsize=10.5, color=RED,
+            lvl(m, yg, "#2b2b2b", 2.6)
+    ax.plot(-1, yG1, "o", color=C["probe"], ms=11, zorder=6, mec="white", mew=1.1)
+    ax.plot(+1, yG2, "o", color=C["control"], ms=11, zorder=6, mec="white", mew=1.1)
+
+    # the EIT Lambda (resonant, solid; both legs land on the virtual level DELTA above |F'2,0>) ----
+    ax.plot([-0.45, 0.45], [P_LAMBDA] * 2, ls=(0, (4, 3)), color="#777", lw=1.3, zorder=3)
+    beam((-1, yG1), (-0.05, P_LAMBDA), C["probe"], 3.0)    # probe   sigma+  |1,-1> -> |F'2,0>
+    beam((+1, yG2), (0.05, P_LAMBDA), C["control"], 3.0)   # control sigma-  |2,+1> -> |F'2,0>
+
+    # the two off-resonant comb repumpers (dashed) ----
+    tone(0, P_rep1, C["rep1"]); beam((+1, yG1), (0, P_rep1 - 9), C["rep1"], 2.3, dashed=True)   # rep1 s- |1,+1>->F'2
+    tone(0, P_rep2, C["rep2"]); beam((-1, yG2), (0, P_rep2 + 9), C["rep2"], 2.3, dashed=True)   # rep2 s+ |2,-1>->F'1
+    F1, d1 = nearest_allowed(P_rep1, 1)
+    F2, d2 = nearest_allowed(P_rep2, 2)
+    ax.text(0, P_rep1 + 14, "rep1 $\\sigma^-$  %+.0f from F'%d  (fwd EOM sideband)" % (d1, F1),
+            color=C["rep1"], fontsize=8.8, ha="center", va="bottom", fontweight="bold")
+    ax.text(0.55, P_rep2, "rep2 $\\sigma^+$  %+.0f from F'%d  (retro carrier)" % (d2, F2),
+            color=C["rep2"], fontsize=8.8, ha="left", va="center", fontweight="bold")
+
+    # detuning + shift brackets ----
+    ax.annotate("", xy=(0.62, yE(2, 0)), xytext=(0.62, P_LAMBDA), arrowprops=dict(arrowstyle="<->", color="#333", lw=1.4))
+    ax.text(0.72, (yE(2, 0) + P_LAMBDA) / 2, r"$\Delta=+%.0f$" % DELTA, color="#111", fontsize=10.5,
+            va="center", ha="left", fontweight="bold")
+    ax.annotate("", xy=(-1.95, 0.0), xytext=(-1.95, SCALAR), arrowprops=dict(arrowstyle="<->", color="#555", lw=1.2))
+    ax.text(-2.05, SCALAR / 2, "+%.0f\nscalar" % SCALAR, color="#444", fontsize=8.2, va="center", ha="right", linespacing=1.15)
+    # the F'=2 tensor-null statement -- the message of the figure
+    ax.annotate("$|F'2,0\\rangle$ at $+%.0f$ (pure scalar)\nF'=2 tensor-NULL: every m' degenerate"
+                % SCALAR, xy=(2.05, yE(2, 2)), xytext=(3.7, yE(2, 0) + 86), color="#c62828",
+                fontsize=9.6, ha="left", va="center", arrowprops=dict(arrowstyle="-", color="#c62828", lw=1.0))
+    # F'1 splits: |1,0> UP (+48), |1,+-1> DOWN (+33) at theta=90
+    ax.annotate("", xy=(-1.62, yE(1, -1)), xytext=(-1.62, yE(1, 0)), arrowprops=dict(arrowstyle="<->", color="#666", lw=1.1))
+    ax.text(-1.72, (yE(1, -1) + yE(1, 0)) / 2, "%.0f MHz\nF'1 tensor\nsplit" % (yE(1, 0) - yE(1, -1)),
+            color="#555", fontsize=7.6, va="center", ha="right", linespacing=1.15)
+    # F'3 splits: stretched |3,+-3> UP (+47, highest), |3,0> DOWN (+30, lowest) at theta=90
+    sl3hi, sl3lo = stark.stark_level(3, 3, TH), stark.stark_level(3, 0, TH)
+    ax.annotate("F'3 fans %.0f MHz: stretched\n$|3,\\pm3\\rangle$ highest ($+%.0f$), $|3,0\\rangle$\n"
+                "lowest ($+%.0f$) — tensor pushes\nstretched UP at the $\\theta{=}90°$ trap"
+                % (sl3hi - sl3lo, sl3hi, sl3lo), xy=(3.05, yE(3, 3)), xytext=(4.35, ctr(3) - 28),
+                color="#666", fontsize=8.2, ha="left", va="center",
                 arrowprops=dict(arrowstyle="-", color="#999", lw=0.8))
 
-    # ground manifold
-    for (F, y, ms) in [(2, YF2, range(-2, 3)), (1, YF1, range(-1, 2))]:
-        for m in ms:
-            ax.plot([m - LW, m + LW], [y, y], color="#111", lw=1.6, solid_capstyle="round", zorder=3)
-        ax.text(3.6, y, r"$F=%d$" % F, va="center", ha="left", fontsize=12, color="#444")
-    ax.plot(-1, YF1, "o", ms=12, color=GREEN, zorder=5)
-    ax.plot(+1, YF2, "o", ms=12, color=BLUE, zorder=5)
-    ax.text(-1, YF1 - 0.26, r"$|1,-1\rangle$", ha="center", va="top", fontsize=10, color=GREEN)
-    ax.text(+1, YF2 - 0.26, r"$|2,+1\rangle$", ha="center", va="top", fontsize=10, color=BLUE)
-    ax.annotate("", xy=(-3.15, YF2), xytext=(-3.15, YF1), arrowprops=dict(arrowstyle="<->", color="#aaa"))
-    ax.text(-3.3, (YF1 + YF2) / 2, "6.835 GHz", rotation=90, va="center", ha="right", fontsize=9, color="#888")
-    ax.text(-3.0, YF2 + 0.5, "(gaps not to scale)", rotation=90, va="bottom", ha="right", fontsize=7, color="#bbb")
+    # row labels, ground splitting, scale bar ----
+    for Fp in em:
+        ax.text(3.55, ctr(Fp), fr"$F'={Fp}$", va="center", ha="left", color="#666", fontsize=11)
+    ax.text(3.55, yG2, r"$F=2$", va="center", ha="left", color="#222", fontsize=12)
+    ax.text(3.55, yG1, r"$F=1$", va="center", ha="left", color="#222", fontsize=12)
+    ax.text(-1, yG1 - 26, r"$|1,-1\rangle$", color=C["probe"], ha="center", va="top", fontsize=10.5)
+    ax.text(1.12, yG2 - 26, r"$|2,+1\rangle$", color=C["control"], ha="center", va="top", fontsize=10.5)
+    ax.annotate("", xy=(-3.45, yG2), xytext=(-3.45, yG1), arrowprops=dict(arrowstyle="<->", color="#999", lw=1.3))
+    ax.text(-3.57, (yG1 + yG2) / 2, "6.835 GHz", rotation=90, va="center", ha="right", color="#777", fontsize=9)
+    ax.plot([-3.95, -3.95], [110, 160], color="#444", lw=2.4)
+    ax.text(-4.04, 135, "50 MHz", rotation=90, va="center", ha="right", color="#444", fontsize=8.4)
+    # broken-axis marks (the 6.835 GHz ground gap is the only compressed span) ----
+    ybrk = (P_rep2 + yG2) / 2
+    ax.text(-2.55, ybrk, "6.835 GHz  —  not to scale", color="#aaa", fontsize=8.4, ha="center", va="center", style="italic")
+    for dy in (-12, 12):
+        ax.plot([-4.18, -4.00], [ybrk + dy - 6, ybrk + dy + 6], color="#999", lw=1.4, clip_on=False)
 
-    # control + probe = the Lambda (solid); repumpers = off-resonant comb tones (dashed -> virtual level)
-    def beam(x0, y0, x1, y1, col, lab, lx, ly, ha="center", dashed=False, term=False):
-        ax.add_patch(FancyArrowPatch((x0, y0), (x1, y1), arrowstyle="-|>", mutation_scale=15,
-                     lw=2.2, color=col, zorder=4, shrinkA=8, shrinkB=6,
-                     linestyle="--" if dashed else "-"))
-        if term:
-            ax.plot([x1 - 0.33, x1 + 0.33], [y1, y1], color=col, lw=1.5, ls=(0, (3, 2)), zorder=4)
-        if lab:
-            ax.text(lx, ly, lab, color=col, fontsize=10.0, ha=ha, va="center", fontweight="bold")
-    beam(+1, YF2, 0, yE(2), BLUE, r"CONTROL $\sigma^-$" + "\nF2$\\to$F'2 (fwd)", 1.75, 3.3, "left")
-    beam(-1, YF1, 0, yE(2), GREEN, r"PROBE $\sigma^+$" + "\nF1$\\to$F'2 (retro)", -1.8, 3.3, "right")
-    # repump1 tone sits 178 MHz past F'3, but F=1->F'3 is dF=2 FORBIDDEN -> it drives F=1->F'2, 445 off
-    yr1 = yE(3) + 178.0 / DIV
-    beam(+1, YF1, 0.0, yr1, ORANGE, "", 0, 0, dashed=True, term=True)
-    ax.text(1.45, yr1, "repump1 = fwd EOM sideband\n$\\sigma^-$, probe$+$400; drives F1$\\to$F'2 (445 off)\n"
-            "(F1$\\not\\to$F'3: $\\Delta F{=}2$ forbidden)",
-            color=ORANGE, fontsize=8.2, ha="left", va="center", fontweight="bold")
-    # repump2 tone sits 126 MHz past F'0, but F=2->F'0 is dF=2 FORBIDDEN -> it drives F=2->F'1, 198 off
-    yr2 = yE(1) - 198.0 / DIV
-    beam(-2, YF2, -1.0, yr2, ORANGE, "", 0, 0, dashed=True, term=True)
-    ax.text(-2.78, yr2, "repump2 = retro carrier\n$\\sigma^+$, control$-$400\ndrives F2$\\to$F'1 (198 off)\n"
-            "(F2$\\not\\to$F'0: forbidden)",
-            color=ORANGE, fontsize=8.2, ha="center", va="center", fontweight="bold")
+    # beam legend ----
+    leg = [
+        Line2D([0], [0], color=C["control"], lw=3.0, label=r"control $\sigma^-$ · F2$\to$F'2 · $\Delta=+45$ above $|F'2,0\rangle$ · $\Omega/2\pi=8.8$"),
+        Line2D([0], [0], color=C["probe"], lw=3.0, label=r"probe $\sigma^+$ · F1$\to$F'2 · $\Delta=+45$ · $\Omega/2\pi=1.1$ ($\Omega_p/\Omega_c{=}0.12$)"),
+        Line2D([0], [0], color=C["rep1"], lw=2.3, ls="--", label=r"repump1 $\sigma^-$ · F1$\to$F'2 · fwd EOM sideband (probe$+2f_A$)"),
+        Line2D([0], [0], color=C["rep2"], lw=2.3, ls="--", label=r"repump2 $\sigma^+$ · F2$\to$F'1 · retro carrier (control$-2f_A$)"),
+    ]
+    bl = ax.legend(handles=leg, loc="upper left", bbox_to_anchor=(0.605, 0.998), frameon=True,
+                   fontsize=9.2, handlelength=2.4, borderpad=0.8, labelspacing=0.6,
+                   title="delivered tones — single seed + one EOM", title_fontsize=9.8)
+    ax.add_artist(bl)
 
-    # the Delta marker
-    ax.annotate("", xy=(0.4, yE(2)), xytext=(0.4, yE(2) + 0.45), arrowprops=dict(arrowstyle="<->", color="#444"))
-    ax.text(0.5, yE(2) + 0.24, r"$\Delta\approx45$ (blue)", fontsize=9.5, va="center", ha="left", color="#444")
+    # ghost-line key (the grey lines that make the Stark shift visible) ----
+    ghost = [Line2D([0], [0], ls=(0, (1, 3)), color=GB, lw=1.5, label="bare — no 1064 shift"),
+             Line2D([0], [0], ls=(0, (6, 3)), color=GS, lw=1.4, label="scalar only (+38, no tensor)"),
+             Line2D([0], [0], ls="-", color="#9aa0aa", lw=2.2, label="full = scalar + tensor (solid)")]
+    ax.legend(handles=ghost, loc="upper left", bbox_to_anchor=(0.002, 0.80), frameon=True,
+              fontsize=8.4, handlelength=2.6, borderpad=0.5, labelspacing=0.45,
+              title="grey reference lines", title_fontsize=8.7)
 
-    # bottom annotation boxes
-    b1 = ("Clock pair: both legs $g_F m_F=+\\frac{1}{2}$  $\\Rightarrow$  the dark state is\n"
-          "first-order $B$-insensitive at any field.")
-    ax.add_patch(FancyBboxPatch((-3.7, -1.85), 3.5, 0.95, boxstyle="round,pad=0.1",
-                 lw=1.1, edgecolor=GREEN, facecolor="#eafaf0", zorder=6))
-    ax.text(-1.95, -1.37, b1, fontsize=9, va="center", ha="center", color="#1b5e20", zorder=7)
-    b2 = ("ONE EOM ($f_{\\rm mod}{=}6.83{+}0.40{=}7.23$ GHz) $+$ one 200 MHz tag AOM ($2f_A{=}400$).\n"
-          "The repumpers are the leftover comb tones, deliberately OFF-resonant (slower;\n"
-          "raise their power to speed up): probe$-$control$=$6.83 GHz, repump1$=$probe$+$400,\n"
-          "repump2$=$probe$-$7.23 GHz.")
-    ax.add_patch(FancyBboxPatch((0.05, -2.15), 4.9, 1.25, boxstyle="round,pad=0.1",
-                 lw=1.1, edgecolor=ORANGE, facecolor="#fdf2e7", zorder=6))
-    ax.text(2.5, -1.52, b2, fontsize=8.3, va="center", ha="center", color="#9c4d0a", zorder=7)
+    # physics / delivery box ----
+    txt = ("$\\bf{single\\ EOM}$:  $f_{mod}=A_{HFS}+2f_A=6.835+0.400=7.235$ GHz;  $2f_A=400$ (tag $\\times2$).\n"
+           "Tag DOWN-shifts: retro $=$ forward $-$ 2f_A (the probe is the retro of the fwd $+1$).\n"
+           "The repumpers are leftover comb tones, deliberately OFF-resonant:\n"
+           "   rep1 = fwd $+1$ sideband (probe$+2f_A$) $\\to$ F1$\\to$F'2.\n"
+           "   rep2 = retro carrier (control$-2f_A$) $\\to$ F2$\\to$F'1.\n"
+           "Closer lines F'3 / F'0 are $\\Delta F=\\pm2$ dipole-FORBIDDEN $\\Rightarrow$ no coupling.\n"
+           "$\\bf{1064\\ light\\ shifts}$ ($\\theta=90°$, from stark.py): ground $-%.1f$ (both F);\n"
+           "   $|F'2,0\\rangle=+%.1f$ (6j-null, geometry-free); F'1 split $+%.0f$ ($|1,\\pm1\\rangle$) / $+%.0f$ ($|1,0\\rangle$);\n"
+           "   F'3 spread $+%.0f$ (stretched $|3,\\pm3\\rangle$, highest) $\\to+%.0f$ ($|3,0\\rangle$).  [all $2\\pi\\cdot$MHz]"
+           % (U0, SCALAR, stark.stark_level(1, -1, TH), stark.stark_level(1, 0, TH),
+              stark.stark_level(3, 3, TH), stark.stark_level(3, 0, TH)))
+    ax.text(4.30, -150, txt, fontsize=8.5, va="top", ha="left", linespacing=1.5,
+            bbox=dict(boxstyle="round,pad=0.7", fc="#f6f6f8", ec="#888", lw=1.0))
 
-    ax.set_xlim(-4.0, 5.3); ax.set_ylim(-2.25, 8.4)
-    ax.set_xlabel(r"$m_F$", fontsize=13); ax.set_xticks(range(-3, 4)); ax.set_yticks([])
-    for s in ("top", "right", "left"):
-        ax.spines[s].set_visible(False)
-    ax.set_title(r"$^{87}$Rb D2 clock-EIT scheme (24 levels): control, probe, and the two $\sigma$ repumpers",
-                 fontsize=13, pad=10)
+    ax.set_title(r"$^{87}$Rb D2 clock-EIT — the four delivered tones on the 1064-shifted 5P$_{3/2}$ manifold",
+                 fontsize=13.2, pad=12)
+    ax.set_xlabel("$m_F$", fontsize=12.5)
+    ax.set_xticks(range(-3, 4)); ax.set_xticklabels(range(-3, 4))
+    ax.set_xlim(-4.3, 10.0); ax.set_ylim(yG1 - 55, P_rep1 + 55)
+    ax.set_yticks([]); ax.tick_params(length=0)
+    for s in ax.spines.values():
+        s.set_visible(False)
     fig.tight_layout()
     fig.savefig(os.path.join(HERE, "level_scheme.png"), dpi=150, bbox_inches="tight")
     print("wrote level_scheme.png")
 
 
 if __name__ == "__main__":
+    # echo the computed tone positions + nearest allowed lines (the detuning check) ----
+    print("1064 (stark.py, theta=%.0f):  scalar %+.2f,  ground -%.2f" % (TH, SCALAR, U0))
+    print("|F'2,0> = %+.2f (tensor %.3f -> tensor-NULL, all F'=2 m' degenerate)"
+          % (yE(2, 0), stark.stark_tensor(2, 0, TH)))
+    print("F'3 (theta=90): stretched |3,+-3> = %+.1f (highest); |3,0> = %+.1f (lowest)"
+          % (yE(3, 3), yE(3, 0)))
+    for nm, P, Fg in [("probe/control", P_LAMBDA, 2), ("rep1 (comb)", P_rep1, 1), ("rep2 (comb)", P_rep2, 2)]:
+        Fp, d = nearest_allowed(P, Fg)
+        print("  %-14s P=%+7.1f   nearest allowed F'%d  (%+.0f from its centre)" % (nm, P, Fp, d))
     level_scheme()

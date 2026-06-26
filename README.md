@@ -47,8 +47,10 @@ whole scheme leans on:
 
 > The cooling transition's upper state **|F′=2, m′=0⟩ is pure scalar**: the Wigner 6j {2 2 2; 3/2 3/2 3/2} = 0
 > kills the entire F′=2 hyperfine tensor. So |F′2,0⟩ sits at **+38 MHz independent of polarization geometry** —
-> a fixed, calculable shift, not a sublevel that wanders with the trap. (The F′=3 levels *do* split: +19 MHz
-> for the stretched |3,±3⟩ up to +57 MHz.)
+> a fixed, calculable shift, not a sublevel that wanders with the trap. (The F′=3 levels *do* split: at the
+> real **θ=90° transverse-lattice** trap the tensor pushes the **stretched |3,±3⟩ highest, to +47 MHz**, with
+> |3,0⟩ lowest at +30 MHz. The sign is geometry-dependent: at θ=0, pol ∥ B — the `stark_validate.py` check
+> case — the ordering inverts, stretched lowest at +19 MHz.)
 
 ![1064 nm light shifts: ground trapped, the 5P₃/₂ manifold expelled](01_three_level/stark_manifold.png)
 
@@ -153,13 +155,16 @@ EBLANA (1560) → EOM → EDFA → PPLN (SHG 780) → HCPCF (trap + delivery) �
 a **single seed and one EOM**: f_mod = A_HFS + 2f_A = 6.83 + 0.40 = 7.23 GHz, with a 200 MHz tag AOM
 double-passed to 2f_A = 400 MHz. The tag **down-shifts** the retro (retro = forward − 2f_A).
 
-![the 24-level scheme: control, probe, and the two off-resonant repumpers](02_multilevel/level_scheme.png)
+![the 24-level scheme on the 1064-shifted 5P₃/₂ manifold](02_multilevel/level_scheme.png)
 
-*The full D2 manifold and the four tones. control σ⁻ and probe σ⁺ form the Λ to the pure-scalar |F′2,0⟩. The
-two repumpers are not separate lasers — they are the **leftover comb tones**: the forward +1 EOM sideband
-(σ⁻, F=1, at **probe + 400 MHz**) and the retro carrier (σ⁺, F=2, at **control − 400 MHz**), both deliberately
-off-resonant. Their nearest **allowed** lines are F′2 (445 MHz, repump1) and F′1 (198 MHz, repump2); the closer
-F′3 / F′0 are ΔF=±2 dipole-forbidden, so they don't couple. From [`level_scheme.py`](02_multilevel/level_scheme.py).*
+*The four tones on the **1064-shifted** manifold (every level from [`stark.py`](02_multilevel/stark.py) at the
+real θ=90° trap; the grey dotted/dashed lines mark the bare and scalar-only positions, so the tensor shift is
+visible). **|F′2,0⟩ is flat at +38 (tensor-null)** — the clean target — while **F′1 fans to +33/+48** and
+**F′3 fans with the stretched |3,±3⟩ highest (+47) and |3,0⟩ lowest (+30)**. control σ⁻ and probe σ⁺ form the Λ,
+blue-detuned by Δ. The two repumpers are not separate lasers — they are the **leftover comb tones**: the forward
++1 EOM sideband (σ⁻, F=1, at **probe + 400 MHz**) and the retro carrier (σ⁺, F=2, at **control − 400 MHz**; the
+tag down-shifts), both off-resonant. Their nearest **allowed** lines are F′2 (445 MHz, repump1) and F′1
+(198 MHz, repump2); the closer F′3 / F′0 are ΔF=±2 dipole-forbidden. From [`level_scheme.py`](02_multilevel/level_scheme.py).*
 
 **(i) Manifold + recoil.** With every m-sublevel, the full recoil, and the per-(F′,m′) 1064 Stark, the clean-Λ
 floor is **0.0032** — just above the recoil-light 0.0013 of §5 (the difference *is* the recoil the 3-level
