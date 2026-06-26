@@ -1,10 +1,17 @@
 """
 master_optimized.py -- run the OPTIMIZED master configuration.
 
-The coherent-solver optimization (documented in ../upgrades/) found the master should be a WEAK, FAR-DETUNED
-F2->F'1 'tickle' with the EOM comb byproducts SUPPRESSED. The optimum master is detuned (low saturation), so
-it is modeled here as an incoherent F2->F'1 repumper in the same engine as the baseline (valid where the
-coherent on-resonance master was not). Operating point + master knobs live in config.py (master_*).
+The coherent-solver optimization (documented in ../upgrades/) PROPOSED the master as a WEAK, FAR-DETUNED
+F2->F'1 'tickle' with the EOM comb byproducts SUPPRESSED, claiming a floor ~0.023. This driver runs that same
+operating point in THIS repo's engine (the detuned master is modeled as an incoherent F2->F'1 repumper, valid
+at its low saturation) as an independent check.
+
+  *** RESULT: this engine does NOT reproduce 0.023 -- it gives ~0.41 (comb off) / ~1.0 (comb on). ***
+
+The ~18x gap is the F=1-recycling treatment: this engine uses the real off-resonant probe (F=1 dark ~0.36),
+the coherent solver used a phenomenological F=1 repump (F=1 dark ~0.02). What both agree on: the master clears
+|2,-2>, F=1 is the dominant residual, and the comb byproducts hurt. See ../upgrades/README.md ("Optimized
+master configuration") for the full triage. Operating point + master knobs are in config.py (master_*).
 
 Run:  python master_optimized.py     (a few minutes; needs numpy, qutip, sympy)
 """
