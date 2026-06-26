@@ -19,15 +19,12 @@ so (matching the hardware): probe is 6.83 GHz (A_HFS) from control, +400 MHz (2f
 and 7.23 GHz from repump2. The repumpers are deliberately OFF-RESONANT: repump1 drives F=1->F'2
 at 445 MHz off (F'3 sits 178 MHz away but F=1->F'3 is dF=2 FORBIDDEN -- CG=0); repump2 drives
 F=2->F'1 at 198 MHz off (F'0 sits 126 MHz away but F=2->F'0 is dF=2 FORBIDDEN). So they repump
-SLOWLY; raise config.rep_scale (more EOM/launch power) to repump faster. These are the engine's
-`fwd_sideband_rejected` / `retro_carrier_rejected` (it labels them parasitic because IT carries
-dedicated repumpers; the minimal chain re-uses them AS the repumpers).
+SLOWLY; raise config.rep_scale (more EOM/launch power) to repump faster.
 
-The atomic core (Clebsch-Gordan dipole ladders, multi-rotating frame, m-resolved decay branching,
-3-point recoil) is ported from the validated engine src/engines/eit_cooling_tool.py (Section 6).
-The ONE physics addition is the per-(F',m') 1064 tensor Stark from stark.py fed into Ee() -- the
-engine's flagged v0.3.0 limitation -- so the off-resonant repumper detunings are referenced to the
-real Stark-shifted F'1/F'3 lines.
+The atomic core is a standard multilevel Lindblad treatment of the 87Rb D2 manifold: Clebsch-Gordan
+dipole ladders, a multi-rotating frame, m-resolved decay branching, and the 3-point photon recoil.
+The per-(F',m') 1064 tensor Stark from stark.py is fed into Ee(), so the off-resonant repumper
+detunings are referenced to the real Stark-shifted F'1/F'3 lines.
 
 METHOD: the off-resonant repumpers are modeled as INCOHERENT scattering rates -- the virtual F'1/F'2
 excited are adiabatically eliminated (R = Gamma (O/2)^2 / (d^2 + (Gamma/2)^2), with m-resolved decay and
@@ -48,7 +45,7 @@ from sympy.physics.wigner import clebsch_gordan, wigner_6j
 import config as c
 import stark
 
-# ---- 87Rb D2 constants (mirror src/engines/eit_cooling_tool.py Section 1) -------------------
+# ---- 87Rb D2 constants ----------------------------------------------------------------------
 A_HFS = 6834.682610                                  # ground hyperfine splitting (2pi MHz)
 GAMMA = c.Gamma                                      # 5P3/2 natural linewidth
 EHF = {0: -302.07, 1: -229.85, 2: -72.91, 3: 193.74}  # 5P3/2 hyperfine centroids (2pi MHz)
@@ -173,8 +170,7 @@ def repump_cops(bm_rep, gE, idx, P, If, Dsp, Gset, B, theta):
 
 
 def build_frame(bm, gE, eE):
-    """Breadth-first multi-rotating frame: a level energy h[node] consistent with every tone.
-       (Ported from eit_cooling_tool.py Section 6.)"""
+    """Breadth-first multi-rotating frame: a level energy h[node] consistent with every tone."""
     realE = {}
     for g in gE:
         realE[('g', g)] = gE[g]
@@ -333,9 +329,9 @@ if __name__ == "__main__":
         f"theta={c.theta_trap:g}deg  2f_A={c.twofA:g}  eta_dp={c.eta_dp:g}  Nf={c.Nf_multi}")
     out("  repumpers = forward EOM sideband + retro carrier, OFF-RESONANT, as INCOHERENT rates (frame-free)")
 
-    # 1) validation: the bare 3-level clean Lambda (matches cooling.py / the project realized floor)
+    # 1) validation: the bare 3-level clean Lambda (the 3-level floor, now with photon recoil)
     nclean = solve(clean=True)
-    out(f"\n  [validate] clean 3-level Lambda    <n_z> = {nclean:.4f}    (project realized ~0.003)")
+    out(f"\n  [validate] clean 3-level Lambda    <n_z> = {nclean:.4f}    (recoil floor ~0.003)")
 
     # 2) repumpers OFF: the atom optically pumps into the dark sublevels and stops cooling
     Roff = solve(d2=-0.10, with_repump=False, want=True)

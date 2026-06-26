@@ -24,10 +24,10 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 def floor_ladder():
     # (label, floor, color, source)   source: where the number comes from -- be honest
     rows = [
-        ("Minimal single-EOM chain\n(leftover-comb repumpers)",       0.103,  RED,    "this repo"),
-        ("Upgrade A: single-end retro\n+ dedicated F'1 repumpers",     0.0072, ORANGE, "parent [V]"),
-        ("Upgrade B: dual-end (double injection)\n+ dedicated F'1 repumpers", 0.0048, GREEN, "parent [V]"),
-        ("Realistic total\n(Upgrade B + anti-trap squeezer)",          0.009,  BLUE,   "parent [V/I]"),
+        ("Minimal single-EOM chain\n(leftover-comb repumpers)",       0.103,  RED,    "computed here"),
+        ("Upgrade A: single-end retro\n+ dedicated F'1 repumpers",     0.0072, ORANGE, "design target"),
+        ("Upgrade B: dual-end (double injection)\n+ dedicated F'1 repumpers", 0.0048, GREEN, "design target"),
+        ("Realistic total\n(Upgrade B + anti-trap squeezer)",          0.009,  BLUE,   "design target"),
     ]
     fig, ax = plt.subplots(figsize=(9.8, 5.0))
     y = np.arange(len(rows))[::-1]
