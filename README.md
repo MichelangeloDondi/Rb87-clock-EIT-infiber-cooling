@@ -298,6 +298,10 @@ before, and is self-contained (its own `config.py`, runnable on its own). Read t
 
 Chapters 05–08 are the roadmap, not yet built.
 
+**Beyond the chapters.** [`appendix/`](appendix/README.md) is a deep-dive on the chapter-04 F′1 leak — *can it be
+cancelled?* (No: a co-propagating tone can't, proven by a Floquet test; the D2 floor bottoms at ≈ 0.055.) It also
+names the **D1 line** as the most promising lever to beat the leak — a future from-scratch calculation.
+
 ## How to run
 
 ```bash
@@ -320,6 +324,10 @@ python upgrade_figures.py     # the chapter-03 figures: floor ladder + benches (
 cd ../04_dark_vertex
 python cooling_dark_vertex.py # the master floor with the F′1 leak folded in  (~minutes; qutip)
 python make_figure.py         # the chapter-04 figure (no solve)
+
+cd ../appendix
+python cancellation_floquet.py # the leak-cancellation Floquet test  (~minutes; qutip)
+python make_figure.py          # the appendix figure (no solve)
 ```
 
 There is no separate test runner: each script prints its own self-check, and the headline floor in §4–§5 is a
