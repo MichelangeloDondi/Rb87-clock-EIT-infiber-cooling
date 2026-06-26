@@ -1,11 +1,12 @@
 """
-upgrade_figures.py -- figures for the "possible upgrades" note.
+upgrade_figures.py -- figures for the upgrades note.
 
-  floor_ladder.png            the floor across delivery configs (the upgrade path), honestly sourced
-  level_scheme_dedicated.png  the 24-level D2 scheme with dedicated sigma repumpers ON F'1 -- all
-                              detunings + polarisations; the atomic scheme is the SAME for both upgrades
-  bench_single_end.png        Upgrade A optical bench: single-end tagged retro + dedicated repumpers
-  bench_dual_end.png          Upgrade B optical bench: dual-end double injection + dedicated repumpers
+  floor_ladder.png            the floor across configs (the upgrade path), honestly sourced
+  level_scheme_dedicated.png  the 24-level D2 scheme with dedicated sigma repumpers ON F'1 (all
+                              detunings + polarisations) -- the MASTER upgrade's atomic scheme
+  bench_single_end.png        the MASTER upgrade bench: single-end tagged retro + the master repumper
+  bench_dual_end.png          the dual-end double-injection bench -- a more hardware-demanding
+                              alternative; written into the "more hardware demanding schemes/" subfolder
 
 Pure matplotlib (no solves). Run:  python upgrade_figures.py
 """
@@ -18,16 +19,17 @@ from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
 
 BLUE, GREEN, RED, ORANGE, GREY = "#1565c0", "#2e7d32", "#c0392b", "#e67e22", "#7f8c8d"
 HERE = os.path.dirname(os.path.abspath(__file__))
+MORE = os.path.join(HERE, "more hardware demanding schemes")   # the curiosities subfolder
 
 
 # ---------------------------------------------------------------- 1. the floor ladder
 def floor_ladder():
     # (label, floor, color, source)   source: where the number comes from -- be honest
     rows = [
-        ("Minimal single-EOM chain\n(leftover-comb repumpers)",       0.103,  RED,    "computed here"),
-        ("Upgrade A: single-end retro\n+ dedicated F'1 repumpers",     0.0072, ORANGE, "design target"),
-        ("Upgrade B: dual-end (double injection)\n+ dedicated F'1 repumpers", 0.0048, GREEN, "design target"),
-        ("Realistic total\n(Upgrade B + anti-trap squeezer)",          0.009,  BLUE,   "design target"),
+        ("Minimal single-EOM chain\n(leftover-comb repumpers)",                 0.103,  RED,    "computed here"),
+        ("MASTER UPGRADE (realistic path):\ndedicated F'1 repumper, single-end", 0.0072, ORANGE, "design target"),
+        ("Dual-end double injection\n(more hardware demanding)",                 0.0048, GREEN,  "design target"),
+        ("+ anti-trap squeezer (all-in)",                                       0.009,  BLUE,   "design target"),
     ]
     fig, ax = plt.subplots(figsize=(9.8, 5.0))
     y = np.arange(len(rows))[::-1]
@@ -44,7 +46,7 @@ def floor_ladder():
     ax.set_yticks(y); ax.set_yticklabels([r[0] for r in rows], fontsize=9)
     ax.set_xscale("log"); ax.set_xlim(x0, 0.55); ax.set_ylim(-0.6, 3.7)
     ax.set_xlabel(r"axial cooling floor  $\bar n_z$  (lower = colder)")
-    ax.set_title("Delivery upgrades — recovering the floor with dedicated F'1 repumpers", pad=12)
+    ax.set_title("Recovering the floor — the master upgrade (dedicated F'1 repumper)", pad=12)
     for s in ("top", "right"):
         ax.spines[s].set_visible(False)
     fig.tight_layout()
@@ -118,7 +120,7 @@ def bench_single_end():
     ax.text(7.0, 0.28, "ONE fibre end + retro mirror. The double-passed tag AOM (2$\\times$200 = 400 MHz) tags the retro as the $\\sigma^+$ probe;\n"
             "the rejected comb tones still sit near F'2 (small residual dark-state scatter)  $\\Rightarrow$  floor $\\approx$ 0.0072.",
             ha="center", va="bottom", fontsize=8.6, color="#333")
-    ax.set_title("Upgrade A — single-end tagged retro  +  dedicated F'1 repumpers   ($\\bar n_z\\approx$ 0.0072)", fontsize=12.5, pad=10)
+    ax.set_title("The master upgrade — single-end tagged retro  +  the dedicated F'1 repumper   ($\\bar n_z\\approx$ 0.0072)", fontsize=12.5, pad=10)
     fig.tight_layout()
     fig.savefig(os.path.join(HERE, "bench_single_end.png"), dpi=150, bbox_inches="tight")
     print("wrote bench_single_end.png")
@@ -145,12 +147,12 @@ def bench_dual_end():
     _box(ax, 4.3, 0.95, 3.4, 0.85, "780 master  +  157 MHz AOM\n(dedicated F'1 repumpers)", ec=ORANGE, fc="#fdf2e7", fs=8.0)
     _arrow(ax, 6.0, 1.8, 6.0, 2.82, ORANGE, "repump1 $\\sigma^-$,  repump2 $\\sigma^+$", 6.2, 2.28, ha="left")
     ax.text(7.0, 0.28, "BOTH fibre ends injected (double injection): control $\\sigma^-$ one end, the carrier-suppressed comb $\\sigma^+$ the other.\n"
-            "NO retro mirror, NO tag AOM  $\\Rightarrow$  no rejected tones, full power each way  $\\Rightarrow$  floor $\\approx$ 0.0048 (preferred).",
+            "NO retro mirror, NO tag AOM  $\\Rightarrow$  floor $\\approx$ 0.0048 — but it needs optical access to BOTH HCPCF ends (much harder hardware).",
             ha="center", va="bottom", fontsize=8.6, color="#333")
-    ax.set_title("Upgrade B — dual-end double injection  +  dedicated F'1 repumpers   ($\\bar n_z\\approx$ 0.0048)", fontsize=12.5, pad=10)
+    ax.set_title("Dual-end double injection (more hardware demanding)   ($\\bar n_z\\approx$ 0.0048)", fontsize=12.5, pad=10)
     fig.tight_layout()
-    fig.savefig(os.path.join(HERE, "bench_dual_end.png"), dpi=150, bbox_inches="tight")
-    print("wrote bench_dual_end.png")
+    fig.savefig(os.path.join(MORE, "bench_dual_end.png"), dpi=150, bbox_inches="tight")
+    print("wrote more hardware demanding schemes/bench_dual_end.png")
 
 
 # ---------------------------------------------------------------- 3. the dedicated-repumper level scheme
@@ -231,7 +233,7 @@ def level_scheme_dedicated():
     ax.set_xlabel(r"$m_F$", fontsize=13); ax.set_xticks(range(-3, 4)); ax.set_yticks([])
     for s in ("top", "right", "left"):
         ax.spines[s].set_visible(False)
-    ax.set_title(r"Upgrade level scheme (both configs): the cooling $\Lambda$ + dedicated $\sigma$ repumpers ON F'1",
+    ax.set_title(r"The master upgrade — cooling $\Lambda$ + dedicated $\sigma$ repumpers ON F'1",
                  fontsize=12.5, pad=10)
     fig.tight_layout()
     fig.savefig(os.path.join(HERE, "level_scheme_dedicated.png"), dpi=150, bbox_inches="tight")

@@ -1,102 +1,73 @@
-# Upgrades — recovering the floor with dedicated F′1 repumpers
+# The master upgrade — a dedicated F′1 repumper
 
-This folder is **forward-looking**: it documents the hardware upgrades that take the on-axis floor from the
-minimal single-EOM chain's repump-limited **~0.10** (what `02_multilevel/cooling_multilevel.py` computes — see
-the main README) down toward the EIT mechanism floor. Both upgrades work the same way: they add **dedicated
-F′1 repumpers**.
+This folder is **forward-looking**. The baseline single-EOM chain is **repump-limited at ~0.10** (what
+`02_multilevel/cooling_multilevel.py` computes — see the main README): its repumpers are leftover comb tones
+stuck near the cooling F′2 manifold, and that placement caps the floor. **There is one upgrade worth building,
+and it is simple:**
 
-> **What is computed where.** The minimal-chain **~0.10** and the mechanism floors **0.0032 / 0.0013** are
-> computed in this repository. The two upgrade floors below (**~0.0072** and **~0.0048**) are **design targets**
-> of the fuller scheme — reproducing them would need a dedicated-repumper (coherent F→F′1) solve, which is not
-> included here. They are shown so the gain from the upgrade is visible, labelled as targets, not as results.
+> **Add the 780 master laser as a dedicated F′1 repumper, and keep the existing single-end delivery.**
+> Nothing else changes — same fibre, same retro, same tag. This recovers the floor from ~0.10 toward the
+> mechanism limit, to a **design target ≈ 0.0072**.
+
+Everything heavier than this (dual-end re-plumbing of the fibre, etc.) buys little and costs a lot — those are
+parked in [`more hardware demanding schemes/`](more%20hardware%20demanding%20schemes/README.md) as curiosities,
+not as the realistic path.
 
 ![floor ladder](floor_ladder.png)
 
+> **What is computed where.** The minimal-chain **~0.10** and the mechanism floors **0.0032 / 0.0013** are
+> computed in this repository. The upgrade floor **~0.0072** is a **design target** — reproducing it needs a
+> dedicated-repumper (coherent F→F′1) solve, not included here. It is shown so the gain is visible, labelled as
+> a target, not a result.
+
 ---
 
-## Why a *dedicated* repumper helps (the one idea behind both upgrades)
+## Why a *dedicated* repumper helps (the one idea)
 
-In the minimal chain the repumpers are leftover comb tones stuck near the cooling **F′2** manifold: too close
-to F′2 and they scatter the EIT dark state (killing the cooling); too far and they barely repump. That tension
-caps the floor at ~0.10 (≈40 % of the population stranded in dark sublevels). See the main README for the full
-argument.
+In the minimal chain the repumpers are leftover comb tones stuck near the cooling **F′2** manifold: too close to
+F′2 and they scatter the EIT dark state (killing the cooling); too far and they barely repump. That tension caps
+the floor at ~0.10 (≈40 % of the population stranded in dark sublevels).
 
 A **dedicated repumper on F′1** breaks the tension. F′=1 is a *separate* hyperfine level of 5P₃/₂, **157 MHz
-below F′2**. A tone resonant on F′1:
+below F′2**. A tone resonant on F′1 repumps **resonantly** (strong) yet sits 157 MHz off the cooling F′2, so it
+scatters the dark state only weakly (useful-to-harmful ratio ≈ `(157/(Γ/2))² ≈ 2700`). F′1 is also the only
+excited level reachable from **both** ground hyperfines that **decays to both** (5/6 → F=1, 1/6 → F=2), so it
+clears the dark sublevels and balances F=1↔F=2.
 
-- repumps **resonantly** — strong and efficient;
-- sits **157 MHz off the cooling F′2** — so it scatters the dark state only weakly. The ratio of useful repump
-  to harmful F′2 scatter is ≈ `(157/(Γ/2))² ≈ 2700`.
+![the master upgrade level scheme: cooling Λ + dedicated σ repumpers on F′1](level_scheme_dedicated.png)
 
-F′1 is also the *only* excited level reachable from **both** ground hyperfines (F=1 and F=2) that **decays to
-both** (5/6 → F=1, 1/6 → F=2) — so it clears the dark sublevels and balances F=1↔F=2. The two tones are
-**repump1: F=1→F′1 (σ⁻)** and **repump2: F=2→F′1 (σ⁺)**.
+*The cooling Λ (control σ⁻ / probe σ⁺ → |F′2,0⟩, blue-detuned Δ≈+45) plus the two dedicated repumpers resonant
+**on F′1**, 157 MHz below the cooling F′2.*
 
-![24-level scheme with dedicated F′1 repumpers](level_scheme_dedicated.png)
+## The build — single-end, plus the master
 
-*The **atomic** scheme is identical for both upgrades: the cooling Λ (control σ⁻ / probe σ⁺ → |F′2,0⟩,
-blue-detuned Δ≈+45 MHz) plus the two dedicated repumpers resonant **on F′1**, 157 MHz below the cooling F′2.
-Only the **delivery** — how those tones are generated and injected — differs between the two configs (the
-optical benches below).*
+![the master upgrade optical bench](bench_single_end.png)
 
-### Sourcing the F=2 repumper, without a new lock
+Keep the single-ended delivery (one fibre end + retro mirror + the double-passed tag AOM) and **add the master**
+as the dedicated F′1 repumper source:
 
-The F=2 leg (**repump2: F=2→F′1, σ⁺**) is the one that clears the populous F=2 dark sublevels, and it is easy to
-make robustly. Take a CW slave locked to the ⁸⁷Rb **cooler** (F=2→F′3) and shift it down by **≈363 MHz** — a
-standard **double-pass ~181 MHz AOM**. That offset is the F′3→F′1 hyperfine spacing (−424 MHz) plus the
-in-trap 1064 light shift (+61 MHz); it is **pure ⁸⁷Rb atomic physics**, so it does not depend on where any
-reference laser happens to be locked. (It must be F′1, not the closer F′2: a σ⁺ tone resonant on F′2 would
-drive the bright leg |2,+1⟩→|F′2,+2⟩ and spoil the cooling. F′1 has no m′=+2, so the bright leg is spared.)
+- **The critical leg, repump2 (F=2→F′1, σ⁺), is easy and lock-robust.** Take a CW slave locked to the ⁸⁷Rb
+  **cooler** (F=2→F′3) and shift it down by ≈363 MHz — a standard **double-pass ~181 MHz AOM**. That offset is
+  the F′3→F′1 hyperfine spacing (−424 MHz) plus the in-trap 1064 push (+61 MHz): **pure ⁸⁷Rb atomic physics**,
+  so it does not depend on where the master is locked.
+- It must be **F′1, not the closer F′2**: a σ⁺ tone on F′2 would drive the bright leg |2,+1⟩→|F′2,+2⟩ and spoil
+  the cooling. F′1 has no m′=+2, so the bright leg is spared.
+- The F=1 leg can be your **MOT repumper** (F1→F′2), routed into the fibre as-is.
 
 **One residual.** A σ⁺ repumper on F′1 cannot reach **|2,+2⟩** (that would need |F′1,+3⟩, which does not exist).
-|2,+2⟩ fills slowly from the repumper's own decay and is emptied only slowly by the control beam. It is a small
-effect, but if the measured floor sits above target it is the next lever — a weak π or σ⁻ clean-up tone on
-|2,+2⟩, not a change to the repumper AOM.
+|2,+2⟩ fills slowly from the repumper's own decay and is emptied only slowly by the control. It is small, but if
+the measured floor sits above target it is the next lever — a weak π or σ⁻ clean-up tone on |2,+2⟩, not a change
+to the repumper AOM.
 
 ---
 
-## The two upgrades
+## More hardware-demanding alternatives (curiosities)
 
-The two configs share the atomic scheme above; they differ only in the **optical bench** — shown for each below.
+For completeness, [`more hardware demanding schemes/`](more%20hardware%20demanding%20schemes/README.md) records
+the lower-floor-but-much-harder options (notably **dual-end double injection**, ~0.0048). They shave the floor a
+little further but require re-plumbing the fibre delivery — not worth it over the master upgrade for a single
+atom. They are reference curiosities, not the recommended path.
 
-### Upgrade A — single-end tagged retro + dedicated repumpers → **~0.0072** (design target)
-
-![Upgrade A optical bench](bench_single_end.png)
-
-Keep the *single-ended* delivery (one fibre end + a retro mirror + the double-passed **tag AOM** `2f_A`), and
-**add** the dedicated repumpers. The retro tag still leaves the rejected comb tones near F′2 (a small residual
-dark-state scatter), so the floor lands at **~0.0072** rather than the cleaner dual-end value.
-
-*Hardware added vs the minimal chain:* the dedicated-repumper sources (above) injected into the fibre.
-
-### Upgrade B — dual-end (double injection) + dedicated repumpers → **~0.0048** (design target)
-
-![Upgrade B optical bench](bench_dual_end.png)
-
-Inject from **both** fibre ends (the "double injection"): control σ⁻ from one end, the EOM comb σ⁺
-(carrier-suppressed) from the other — **dropping the retro mirror and the tag AOM entirely**. With the dedicated
-repumpers as in A, this is the cleanest single-atom configuration:
-
-- **no tag AOM → no rejected tones near F′2** (the residual scatter of A is gone);
-- **full power each way** (no ~30 % retro-efficiency penalty);
-- carrier-suppressed comb → a clean Λ.
-
-Floor **~0.0048** — the lowest of the delivery options. The single-ended retro line (A) is the fallback for when
-both-end fibre access is impractical.
-
-*Hardware added:* optical access to **both** ends of the HCPCF, plus the dedicated repumpers.
-
----
-
-## Summary
-
-| config | repumpers | floor | provenance |
-|---|---|---|---|
-| minimal single-EOM (baseline) | leftover comb tones | ~0.10 | computed here |
-| **Upgrade A** single-end retro | dedicated F′1 | **~0.0072** | design target |
-| **Upgrade B** dual-end double injection | dedicated F′1 | **~0.0048** | design target |
-| Upgrade B + anti-trap squeezer (all-in) | — | ~0.008–0.010 | design target |
-
-The mechanism floor these chase is **0.0032** (with recoil) / 0.0013 (recoil-free), both computed in this repo.
-
-Regenerate the figures: `python upgrade_figures.py` (matplotlib only, no solves).
+The mechanism floor all of these chase is **0.0032** (with recoil) / 0.0013 (recoil-free), both computed in this
+repo. Regenerate every figure here (and the subfolder's) with `python upgrade_figures.py` (matplotlib only, no
+solves).

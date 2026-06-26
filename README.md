@@ -228,9 +228,10 @@ formula you can check by hand.
 
 ## What's beyond this repo
 
-- **Dedicated repumpers / other delivery** ([`upgrades/`](upgrades/README.md)): on-resonant F′1 repumpers and
-  dual-end delivery, with **design targets ~0.0048–0.0072** (these are *not* computed in this repo). §6 shows
-  *why* you want them: off-resonant comb-tone repumping is the bottleneck.
+- **The master upgrade** ([`upgrades/`](upgrades/README.md)): add the 780 master as a dedicated F′1 repumper on
+  the existing single-end chain — **design target ~0.0072** (not computed in this repo). §6 shows *why* you want
+  it: off-resonant comb-tone repumping is the bottleneck. Heavier alternatives (dual-end, ~0.0048) are kept there
+  as curiosities, not the realistic path.
 - **The atom cloud:** atoms off-axis see a spread of ν_z and light shifts; the floor is then set by the radial
   temperature, removable with a flat-top trap. Deliberately out of this single-atom repo.
 
