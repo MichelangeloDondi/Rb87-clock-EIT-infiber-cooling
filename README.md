@@ -252,8 +252,31 @@ two-photon resonant on **|F′1,0⟩** as well as |F′2,0⟩ (157 MHz below it)
 coupling onto |F′1,0⟩, which scatters and decays 5/6 → F=1. This **F′1 leak** is the dominant floor term — it is
 fixed by atomic ratios (no choice of Rabi frequencies removes it), and the master, a *different* transition, does
 not touch it. So the master is **leak-limited at a few ×10⁻² (≈ 0.06)** — a real gain over the minimal chain, but
-well above the limit. Folding the leak into the solve, and the cancellation that could beat it, are **chapter 04**
-(the |F′1,0⟩ dark-state vertex). Chapter [`03_master/`](03_master/README.md) has the build and the alternatives.
+well above the limit. **Chapter 04 (§8) folds the leak into the solve and computes it.** Chapter
+[`03_master/`](03_master/README.md) has the build and the alternatives.
+
+---
+
+## 8. The second dark vertex — computing the master floor ([`04_dark_vertex/`](04_dark_vertex/README.md))
+
+§7 left the master floor as "leak-limited, ≈ 0.06." This chapter computes it. The chapter-02 solver already
+carries the F′1/F′3 spoiler edges coherently (that is *why* its headline is ~0.10, not 0.0032); adding a
+*detuned* dedicated master on top — possible now that the master is far enough off resonance for the
+incoherent-rate model to hold — gives the honest number:
+
+![the master floor with the F′1 leak folded in, and the leak-cancellation curve](04_dark_vertex/dark_vertex_floor.png)
+
+*Left: the floor ladder. The minimal chain (≈ 0.088) and the master config (≈ 0.06) both sit above the 0.0032
+limit by the **F′1 leak** — turn the leak off and the master drops to ≈ 0.029, so the ≈ 0.03 gap is the leak,
+and no repumper reaches it. Right: the leak is a coherent coupling, so scaling the probe's |1,−1⟩→|F′1,0⟩ edge
+down recovers the floor toward the no-leak ideal — but the scale is not a knob you have (R_c, R_p are atomic
+constants). From [`04_dark_vertex/make_figure.py`](04_dark_vertex/make_figure.py).*
+
+So the master lands at **n̄_z ≈ 0.06**, leak-limited. Two consequences: the leak's scatter ∝ Δ/(Δ+157)² *grows*
+with Δ in the operating range, so the cold operating point is at **smaller Δ (≈ 30)** once the leak dominates —
+the opposite of the detune-harder instinct; and the only way below ≈ 0.06 is to **cancel the leak** (engineer the
+dark state dark on F′1 too), which needs a time-dependent (Floquet) tone — the frontier past this repo. Full
+treatment in [`04_dark_vertex/`](04_dark_vertex/README.md).
 
 ---
 
@@ -267,13 +290,13 @@ before, and is self-contained (its own `config.py`, runnable on its own). Read t
 | **01** | [`01_three_level/`](01_three_level/) | the idealized 3-level Λ: trap, Stark shifts, the EIT mechanism, the (Γ/4Δ)² floor | §1–§5 | **built** · n̄_z = 0.0013 |
 | **02** | [`02_multilevel/`](02_multilevel/) | the real ⁸⁷Rb D2 manifold + photon recoil + the single-EOM comb delivery (probe, control, retro-reflection) | §6 | **built** · 0.0032 clean / ≈ 0.10 real |
 | **03** | [`03_master/`](03_master/README.md) | the 780 master laser as a dedicated F′1 repumper | §7 | **built** · clears the dark sublevel + comb scatter (~0.10 → ≈ 0.06, leak-limited) |
-| 04 | *(planned)* | the second dark vertex: the cooling pair is two-photon resonant on the F′1 m′=0 state too, so the EIT dark state is not perfectly dark — fold that leak in (it pins the chapter-03 master floor) | — | planned |
+| **04** | [`04_dark_vertex/`](04_dark_vertex/README.md) | the second dark vertex: the cooling pair is two-photon resonant on the F′1 m′=0 state too, so the dark state isn't perfectly dark — folds that leak in and computes the master floor | §8 | **built** · ≈ 0.06 (leak-limited) |
 | 05 | *(planned)* | the anti-trapping heating from the expelled (anti-trapped) 5P₃/₂ excited state | — | planned |
 | 06 | *(planned)* | the atom cloud (frozen atoms): a spread of ν_z and light shifts off-axis | — | planned |
 | 07 | *(planned)* | the full semiclassical Monte-Carlo simulation | — | planned |
 | 08 | *(planned)* | beam depletion along the fibre (scattering, absorption, …) | — | planned |
 
-Chapters 04–08 are the roadmap, not yet built.
+Chapters 05–08 are the roadmap, not yet built.
 
 ## How to run
 
@@ -293,6 +316,10 @@ python explore_configs.py     # the single-EOM configuration sweep
 
 cd ../03_master
 python upgrade_figures.py     # the chapter-03 figures: floor ladder + benches (no solve)
+
+cd ../04_dark_vertex
+python cooling_dark_vertex.py # the master floor with the F′1 leak folded in  (~minutes; qutip)
+python make_figure.py         # the chapter-04 figure (no solve)
 ```
 
 There is no separate test runner: each script prints its own self-check, and the headline floor in §4–§5 is a
