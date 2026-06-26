@@ -18,7 +18,7 @@ axial motion cool?**
 | multilevel, clean Λ | **0.0032** | full ⁸⁷Rb manifold **+ photon recoil** — the realistic mechanism floor | [`02_multilevel/`](02_multilevel/) |
 | multilevel, real delivery | **≈ 0.10** | **+ the real off-resonant repumping** (≈ 40 % stuck in dark sublevels) | [`02_multilevel/`](02_multilevel/) |
 
-Quote **0.0032** as the mechanism floor and **≈ 0.10** as what the minimal single-EOM chain delivers. For this
+Quote **0.0032** as the intrinsic cooling limit and **≈ 0.10** as what the minimal single-EOM chain delivers. For this
 chain the **repumping**, not the EIT mechanism, sets the floor — [`upgrades/`](upgrades/README.md) shows how
 dedicated repumpers recover it. The 0.0013 is the idealized 3-level number: a lower bound, not a result.
 
