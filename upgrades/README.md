@@ -19,6 +19,12 @@ not as the realistic path.
 > computed in this repository. The upgrade floor **~0.0072** is a **design target** — reproducing it needs a
 > dedicated-repumper (coherent F→F′1) solve, not included here. It is shown so the gain is visible, labelled as
 > a target, not a result.
+>
+> **Open question (the key one).** A coherent-solver check finds the floor is **F=1-limited at ~0.1–0.15** even
+> with the master forward in: the σ⁺ master clears the F=2 dark sublevels, but |1,0⟩,|1,+1⟩ are recycled only
+> weakly by the probe, and a *broadband* F=1 repumper spoils the EIT (it scatters the cooling leg |1,−1⟩). The
+> sub-0.1 design targets above therefore hinge on a **dedicated F1→F′1 repumper clearing F=1 without spoiling
+> the EIT** — that specific claim is **not yet verified here** and is the next thing to settle.
 
 ---
 
