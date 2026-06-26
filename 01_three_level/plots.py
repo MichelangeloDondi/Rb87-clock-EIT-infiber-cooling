@@ -141,7 +141,63 @@ def stark_manifold():
     print("wrote stark_manifold.png")
 
 
+# ---------------------------------------------------------------- 4. the Lambda scheme
+def lambda_scheme():
+    """The clock-EIT Lambda: both legs to |F'2,0>, blue-detuned by Delta; the field-insensitive pair."""
+    from matplotlib.patches import FancyArrowPatch
+    ye, yv, yg = 3.0, 3.55, 0.0                       # excited, virtual (blue-detuned), ground heights
+    fig, ax = plt.subplots(figsize=(7.8, 5.6))
+
+    # excited |e> (solid) and the virtual level the blue-detuned beams point to (dashed)
+    ax.plot([-0.6, 0.6], [ye, ye], color=RED, lw=3.4, solid_capstyle="round", zorder=4)
+    ax.plot([-0.75, 0.75], [yv, yv], color="#9aa0aa", lw=1.3, ls=(0, (5, 3)), zorder=2)
+
+    # ground states
+    for xc, col in [(-2.0, GREEN), (2.0, BLUE)]:
+        ax.plot([xc - 0.4, xc + 0.4], [yg, yg], color="#111", lw=3.0, solid_capstyle="round", zorder=3)
+        ax.plot(xc, yg, "o", ms=11, color=col, mec="white", mew=1.2, zorder=5)
+
+    # the two legs (to the virtual level, so the blue detuning is visible); probe weak (thin), control strong (thick)
+    ax.add_patch(FancyArrowPatch((-2.0, yg), (-0.13, yv), arrowstyle="-|>", mutation_scale=18,
+                 color=GREEN, lw=2.2, shrinkA=9, shrinkB=4, zorder=4))
+    ax.add_patch(FancyArrowPatch((2.0, yg), (0.13, yv), arrowstyle="-|>", mutation_scale=18,
+                 color=BLUE, lw=3.8, shrinkA=9, shrinkB=4, zorder=4))
+
+    # detuning marker
+    ax.annotate("", xy=(0.92, ye), xytext=(0.92, yv), arrowprops=dict(arrowstyle="<->", color="#444", lw=1.3))
+    ax.text(1.02, (ye + yv) / 2, r"$\Delta=+45$" + "\n(both blue)", fontsize=9.3, va="center", ha="left", color="#444")
+
+    # labels (excited-state text sits ABOVE the virtual level, clear of the converging beams)
+    ax.text(0, yv + 0.34, r"$|e\rangle = |F'{=}2,\, m'{=}0\rangle$", ha="center", va="bottom", fontsize=12.5, color=RED)
+    ax.text(0, yv + 0.12, "anti-trapped $+38$ MHz · pure scalar (tensor-null)", ha="center", va="bottom",
+            fontsize=8.4, color=RED, alpha=0.85)
+    ax.text(-1.62, 1.95, r"probe $\sigma^+$" + "\n(weak, $\Omega_p$)", color=GREEN, ha="center", va="center", fontsize=10.5)
+    ax.text(1.64, 1.95, r"control $\sigma^-$" + "\n(strong, $\Omega_c$)", color=BLUE, ha="center", va="center", fontsize=10.5)
+    ax.text(-2.0, yg - 0.26, r"$|g_1\rangle=|F{=}1,m{=}{-}1\rangle$", ha="center", va="top", fontsize=11, color="#111")
+    ax.text(2.0, yg - 0.26, r"$|g_2\rangle=|F{=}2,m{=}{+}1\rangle$", ha="center", va="top", fontsize=11, color="#111")
+    ax.text(-2.0, yg - 0.64, r"$g_F m_F=+\frac{1}{2}$", ha="center", va="top", fontsize=9.5, color=GREEN)
+    ax.text(2.0, yg - 0.64, r"$g_F m_F=+\frac{1}{2}$", ha="center", va="top", fontsize=9.5, color=BLUE)
+
+    # ground hyperfine spacing + the dark state / clock note
+    ax.annotate("", xy=(-1.55, yg), xytext=(1.55, yg), arrowprops=dict(arrowstyle="<->", color="#bbb", lw=1.0))
+    ax.text(0, yg + 0.12, "6.835 GHz (clock splitting)", ha="center", va="bottom", fontsize=8.2, color="#999")
+    ax.text(0, -1.18, r"dark state  $|D\rangle \propto \Omega_c|g_1\rangle - \Omega_p|g_2\rangle$"
+            "\nboth legs $g_F m_F=+\\frac{1}{2}$  $\\Rightarrow$  first-order $B$-insensitive  ($\\delta_2$ servoed to 0)",
+            ha="center", va="top", fontsize=9.2, color="#333",
+            bbox=dict(boxstyle="round,pad=0.5", fc="#f6f6f8", ec="#bbb", lw=1.0))
+
+    ax.set_xlim(-3.4, 3.4); ax.set_ylim(-2.05, 4.6)
+    ax.set_title("The clock-EIT $\\Lambda$: both legs to $|F'2,0\\rangle$, blue-detuned by $\\Delta$", fontsize=12.5, pad=8)
+    ax.set_xticks([]); ax.set_yticks([])
+    for s in ax.spines.values():
+        s.set_visible(False)
+    fig.tight_layout()
+    fig.savefig(os.path.join(HERE, "lambda_scheme.png"), dpi=150, bbox_inches="tight")
+    print("wrote lambda_scheme.png")
+
+
 if __name__ == "__main__":
     eit_spectrum()
     cooling_curve()
     stark_manifold()
+    lambda_scheme()

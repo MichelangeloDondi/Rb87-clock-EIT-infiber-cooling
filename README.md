@@ -66,18 +66,11 @@ re-derives the Wigner-6j factors from scratch and checks them. "Δ = +45 MHz" is
 
 A Λ on the D2 line, both legs to **one** excited state:
 
-```
-                         |e> = |F'=2, m'=0>          (anti-trapped, +38 MHz; pure scalar)
-                          /\
-            probe σ⁺    /    \    control σ⁻
-           (weak, Ω_p)/      \(strong, Ω_c)
-                      /        \
-   |g1> = |F=1, m=-1>          |g2> = |F=2, m=+1>
-```
+![the clock-EIT Λ scheme](01_three_level/lambda_scheme.png)
 
-Both legs are blue-detuned by Δ = +45 MHz; the two-photon detuning δ₂ = (probe − control) is servoed to zero.
-Both ground states have g_F·m_F = +½, so the dark state is **first-order field-insensitive** — the "clock"
-property, and the reason for this exact pair.
+*Both legs are blue-detuned by Δ = +45 MHz; the two-photon detuning δ₂ = (probe − control) is servoed to zero.
+Both ground states have g_F·m_F = +½, so the dark state Ω_c|g₁⟩ − Ω_p|g₂⟩ is **first-order field-insensitive**
+— the "clock" property, and the reason for this exact pair. From [`plots.py`](01_three_level/plots.py).*
 
 ---
 
