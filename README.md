@@ -246,12 +246,12 @@ byproduct). Same encoding as §6: colour = comb line (master = purple), solid = 
 [`02_multilevel/level_scheme.py`](02_multilevel/level_scheme.py).*
 
 **How low does it go — honestly.** The design target is **n̄_z ≈ 0.0072**, but that number is **not computed in this
-repo**: the master sits near resonance, where §6's incoherent-rate repumper model does not apply, so pinning it
-needs a coherent dedicated-repumper solve. An optimization that *claimed* ≈ 0.023 (a weak, far-detuned master) is
-**not reproduced by this repo's engine** — at the same knobs it gives ≈ 0.4, the gap being entirely how F=1
-recycling is modelled. So **trust the recipe direction** — a dedicated F′1 repumper; the master clears |2,−2⟩; F=1
-sets the limit — and read **0.0072 as a target, not a result**. Chapter [`03_master/`](03_master/README.md) has the
-build (how to source the F′1 tone), the full optimization triage, and the heavier delivery alternatives.
+repo**. The master sits *on* the F′1 resonance, where §6's incoherent-rate repumper model (valid only for tones
+100s of MHz off resonance) breaks down — so this repo, by construction, cannot pin the master floor. Doing so needs
+the master and the F′1 vertex treated **coherently**, which is exactly **chapter 04** (the |F′1,0⟩ dark-state vertex
+in the computation). So read **0.0072 as a design target, not a result**: what *is* solid here is the structure — a
+dedicated F′1 repumper clears |2,−2⟩, and **F=1 then sets the floor**. Chapter [`03_master/`](03_master/README.md)
+has the build (how to source the F′1 tone) and the heavier delivery alternatives.
 
 ---
 
@@ -291,7 +291,6 @@ python explore_configs.py     # the single-EOM configuration sweep
 
 cd ../03_master
 python upgrade_figures.py     # the chapter-03 figures: floor ladder + benches (no solve)
-python master_optimized.py    # the optimized-master double-check (a few minutes; qutip)
 ```
 
 There is no separate test runner: each script prints its own self-check, and the headline floor in §4–§5 is a

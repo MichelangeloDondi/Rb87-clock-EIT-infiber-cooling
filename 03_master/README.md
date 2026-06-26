@@ -16,17 +16,11 @@ not as the realistic path.
 ![floor ladder](floor_ladder.png)
 
 > **What is computed where.** The minimal-chain **~0.10** and the intrinsic cooling limits **0.0032 / 0.0013** are
-> computed in this repository. The upgrade floor **~0.0072** is a **design target** — reproducing it needs a
-> dedicated-repumper (coherent F→F′1) solve, not included here. It is shown so the gain is visible, labelled as
-> a target, not a result.
->
-> **Where the floor lands — unresolved (two models disagree).** A coherent-solver optimization *proposes* a
-> master-upgrade floor of **n̄_z ≈ 0.023**, but this repo's own engine does **not** reproduce it: at the same
-> knobs it gives **~0.41** (see "Optimized master configuration" below). The ~18× gap is the **F=1 recycling**
-> treatment — the coherent solver models it phenomenologically (F=1 dark ≈ 0.02), the repo uses the real
-> off-resonant probe (F=1 dark ≈ 0.36). What **both** agree on is the *structure*: the master clears |2,−2⟩,
-> **F=1 is the dominant residual**, and the comb byproducts hurt. The honest floor is somewhere between ~0.02 and
-> ~0.4 and is **not yet pinned**; the 0.0072/0.0048 below are optimistic fuller-scheme targets, not planning numbers.
+> computed in this repository. The master floor **~0.0072** is a **design target**, *not* computed here: the master
+> sits *on* the F′1 resonance, where the off-resonant (incoherent) repumper model of chapter 02 breaks down.
+> Pinning it needs the master and the F′1 vertex treated **coherently** — that is **chapter 04** (the |F′1,0⟩
+> dark-state vertex). What is solid here is the *structure*: a dedicated F′1 repumper clears |2,−2⟩, and **F=1
+> then sets the floor**. (The dual-end **0.0048** below is likewise a design target.)
 
 ---
 
@@ -74,42 +68,7 @@ reaches |2,−1..+2⟩, the master forward |2,−2..0⟩). The limit is then **F
 spontaneous decay and are recycled only weakly by the off-resonant probe — the intrinsic cost of cooling the
 multilevel D2 line, which is why D2 EIT cooling lands near n̄_z ~ 0.1 rather than the closed-Λ ideal. A
 *broadband* F=1 repumper does not help — it scatters |1,−1⟩ (the cooling leg) and light-shifts the EIT off
-resonance; the practical lever is the probe strength (a modest optimum near Ω_p/Ω_c ~ 0.25). *(This corrects an
-earlier note that flagged |2,+2⟩ as the residual — the control clears |2,+2⟩; the true residual is F=1.)*
-
----
-
-## Optimized master configuration (proposed recipe; floor *not* corroborated here)
-
-A coherent-solver optimization **proposes** running the master as a **weak, far-detuned "tickle"** (not an
-on-resonance repumper) with the **comb byproducts suppressed**. The reasoning is sound: an on-resonance/strong
-master clears |2,−2⟩ but pays a heavy **F=1 tax** (F′1 decays 5/6 → F=1, so it pumps the very F=1 dark states it
-is trying to empty), so the *lightest* drive that still clears |2,−2⟩ should be best. It claims a floor
-**n̄_z ≈ 0.023** (P₀ ≈ 98 %, ~30 ms⁻¹). **This repo's own model does not reproduce that number** — see below.
-
-**Proposed operating point** (in [`../02_multilevel/config.py`](../02_multilevel/config.py) as `master_*`):
-Δ = +80 (rate-driven), Ω_p/Ω_c = 0.20, master σ⁺ on F2→F′1 at ≈30 MHz red detuning, Ω_m ≈ 0.9 (the invariant is
-Ω_m²/det² ≈ 9×10⁻⁴). Reproduce: `python 02_multilevel/master_optimized.py`.
-
-**What checks out (both models agree — the robust part):**
-- the master clears |2,−2⟩ (the σ⁻-control-dark state) — confirmed by selection rules;
-- **F=1 (|1,0⟩, |1,+1⟩) is the dominant residual** — both models agree;
-- **the comb byproducts hurt** once a dedicated master repumps: in this repo, turning them on at the proposed
-  point degrades the floor **0.41 → 1.01**; the coherent solver sees 0.023 → 0.034. Either way: once you add the
-  master, you want a **clean two-tone EIT delivery with the comb gone** (single-sideband/IQ modulator, or the
-  probe on a separate retro path), *not* the single-EOM comb.
-
-**What does NOT check out (the floor):** at the proposed knobs this repo's solver gives **n̄_z ≈ 0.41**
-(P₀ ≈ 72 %), ~18× the claimed 0.023 — in fact *worse* than the repo's own ~0.10 baseline. Two reasons: (1) the
-*detuned* incoherent master only **partially** clears |2,−2⟩ (0.16 left) at Ω_m=0.9; (2) the repo recycles F=1
-with the **real off-resonant probe** (F=1 dark **0.36**), whereas the coherent solver used a **phenomenological**
-F=1 repump (F=1 dark 0.02). The ~18× gap is entirely that F=1-recycling treatment. So **the headline 0.023 and
-the "4× gain" are an optimistic, unconfirmed target**, not a result; the honest floor is unresolved between ~0.02
-and ~0.4.
-
-**Bottom line.** Trust the *recipe direction* (weak detuned master, comb byproducts off, Δ for rate, Ω_p/Ω_c≈0.2)
-and the *structure* (master clears |2,−2⟩; F=1 limits). Do **not** quote 0.023 — pinning the real floor needs the
-two solvers reconciled (chiefly: model F=1 recycling consistently). All numbers are 1D and radially-localized.
+resonance; the practical lever is the probe strength (a modest optimum near Ω_p/Ω_c ~ 0.25).
 
 ---
 

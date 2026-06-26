@@ -45,17 +45,6 @@ rep_scale    = 1.0    # multiply the chain-natural repumper Rabis -- raise it to
                       #   (off-resonant repumping is slow; more power/depth speeds it up)
 Nf_multi     = 5      # Fock cutoff for the multilevel solve (kept small; the cold floor is low-n)
 
-# --- the OPTIMIZED master config (the coherent-solver optimization; documented in 03_master/) -----------
-# A dedicated F2->F'1 repumper run as a WEAK, FAR-DETUNED "tickle": it clears |2,-2> (the one F=2 sublevel
-# the sigma- control can't reach) with MINIMAL F=1 loading -- F'1 decays 5/6 -> F=1, so a strong/on-resonance
-# master over-loads F=1 and raises the floor; the lightest touch that still empties |2,-2> is optimal.
-# CAVEAT: these are a COHERENT-SOLVER optimum (claimed floor ~0.023). This engine does NOT reproduce that --
-# at these knobs it gives ~0.41 (the F=1 recycling here, via the real off-res probe, is far weaker than the
-# coherent solver's phenomenological F=1 model). See ../03_master/README.md. Trust the recipe, not the 0.023.
-# Reproduce with:  cooling_multilevel.solve(d2=master_d2, Delta=master_Delta, OmR=master_OmR,
-#                                           rep_scale=0.0, master=True)   # rep_scale=0 -> comb byproducts OFF
-master_det   = -30.0  # master detuning from the in-trap F'1 line (2pi MHz; ~ -30..-45, red side)
-master_Om    = 0.9    # master Rabi (2pi MHz); invariant Om^2/det^2 ~ 9e-4 (just balances the |2,-2> feed)
-master_Delta = 80.0   # single-photon detuning at the optimum (rate-driven; floor flat over Delta = 60-100)
-master_OmR   = 0.20   # probe/control ratio at the optimum (small: once F=1 is clear, more probe = more carrier scatter)
-master_d2    = -0.05  # two-photon servo point at the optimum (the full level structure pulls it slightly red)
+# The master laser (chapter 03) is a DESIGN, not a number computed here: it sits on the F'1 resonance, where the
+# off-resonant (incoherent) repumper model below breaks down. Pinning its floor needs the F'1 vertex treated
+# coherently -- that is chapter 04. The master scheme figure is drawn by level_scheme.py; see ../03_master/.
