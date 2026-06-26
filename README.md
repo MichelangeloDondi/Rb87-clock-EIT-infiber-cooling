@@ -1,10 +1,11 @@
-# Clock-EIT cooling of a single ⁸⁷Rb atom in a 1064 nm fibre trap
+# Clock-EIT cooling of a single ⁸⁷Rb atom in a fibre trap — a numerical study
 
-EIT sideband cooling of a magnetic-field-insensitive ⁸⁷Rb **clock pair** on the **axial** motion of a 1064 nm
-optical-lattice trap inside a hollow-core photonic-crystal fibre. The Λ legs are
-|F=1,m=−1⟩ σ⁺ and |F=2,m=+1⟩ σ⁻, both to |F′=2,m′=0⟩; both have g_F·m_F = +½, so the dark state is
-first-order field-insensitive (the "clock" property). **The question this repo answers: how low does the
-axial motion cool?**
+A **numerical feasibility study** — theory plus simulation, with experimentally motivated parameters (*not* an
+experiment) — of EIT sideband cooling of a single ⁸⁷Rb atom on the **axial** motion of a 1064 nm optical-lattice
+trap inside a hollow-core photonic-crystal fibre. The Λ legs are |F=1,m=−1⟩ σ⁺ and |F=2,m=+1⟩ σ⁻, both to
+|F′=2,m′=0⟩. This is a **g_F·m_F-matched "clock" pair** (both legs have g_F·m_F = +½) — *not* the usual
+m_F=0↔m_F=0 clock pair, but it serves the same purpose: a first-order magnetically insensitive two-photon
+resonance (§2). **The question: how low does this model predict the axial motion cools?**
 
 > **Status:** work in progress. The 3-level core is settled and hand-checkable; the multilevel layer is
 > realistic but its repumper model has a stated validity limit (below). Numbers are single-atom and on-axis —
@@ -15,7 +16,7 @@ axial motion cool?**
 | model | floor n̄_z | what it includes | where |
 |---|---|---|---|
 | 3-level Λ (idealized) | **0.0013** | recoil-free lower bound; perfect repumping | [`01_three_level/`](01_three_level/) |
-| multilevel, clean Λ | **0.0032** | full ⁸⁷Rb manifold **+ photon recoil** — the realistic mechanism floor | [`02_multilevel/`](02_multilevel/) |
+| multilevel, clean Λ | **0.0032** | full ⁸⁷Rb manifold **+ photon recoil** — the realistic intrinsic cooling limit | [`02_multilevel/`](02_multilevel/) |
 | multilevel, real delivery | **≈ 0.10** | **+ the real off-resonant repumping** (≈ 40 % stuck in dark sublevels) | [`02_multilevel/`](02_multilevel/) |
 
 Quote **0.0032** as the intrinsic cooling limit and **≈ 0.10** as what the minimal single-EOM chain delivers. For this
@@ -25,9 +26,34 @@ dedicated repumpers recover it. The 0.0013 is the idealized 3-level number: a lo
 All frequencies are angular, in 2π·MHz (a literal `6.07` means 2π·6.07 MHz). Every physical number lives in the
 `config.py` of each folder.
 
+## Why these choices
+
+The three questions a reader asks first:
+
+- **Why EIT, not resolved-sideband Raman (RSC)?** The trap is weak — ν_z/Γ ≈ 0.07, deep in the *unresolved*-sideband
+  regime, where RSC fails. EIT builds its own narrow dark-resonance feature, so it cools where the bare linewidth
+  cannot (§3).
+- **Why the D2 line (780 nm)?** The delivery is a telecom chain seeded at 1560 nm and frequency-doubled — 1560/2 =
+  780 nm lands on D2. And on D2 the target |F′2,0⟩ is **tensor-null** (§1): a light-shift-stable, geometry-independent
+  upper state amid the otherwise tensor-split 5P₃/₂ manifold.
+- **Why this g_F·m_F-matched pair, not m_F=0↔m_F=0?** The σ⁺/σ⁻ Λ fits the fibre geometry (axial beams, axial B);
+  m_F=0 states would need π light (transverse B). And a g_F·m_F-matched pair is first-order B-insensitive at *any*
+  field, whereas m_F=0 states are insensitive only near B=0 (§2).
+
 ---
 
 ## 1. The 1064 nm trap, and why the excited state is expelled
+
+The trap at a glance (every number from [`config.py`](01_three_level/config.py) / [`stark.py`](01_three_level/stark.py)):
+
+| parameter | value | | parameter | value |
+|---|---|---|---|---|
+| wavelength | 1064 nm | | trap depth U₀ | 22.7 MHz = 1.09 mK |
+| power | 1 W × 2 (counter-propagating) | | axial trap freq ν_z | 2π·430 kHz |
+| 1/e² waist w₀ | 19 µm | | Lamb–Dicke η | 0.094 |
+| lattice spacing | 532 nm | | polarization | linear, ⊥ axial B (θ = 90°) |
+
+The derivation, and *why* the excited state is anti-trapped:
 
 Two 1064 nm beams, **1 W each, counter-propagating**, make the lattice. The AC light shift of a level of
 polarizability α in intensity I is
@@ -71,8 +97,10 @@ A Λ on the D2 line, both legs to **one** excited state:
 ![the clock-EIT Λ scheme](01_three_level/lambda_scheme.png)
 
 *Both legs are blue-detuned by Δ = +45 MHz; the two-photon detuning δ₂ = (probe − control) is servoed to zero.
-Both ground states have g_F·m_F = +½, so the dark state Ω_c|g₁⟩ − Ω_p|g₂⟩ is **first-order field-insensitive**
-— the "clock" property, and the reason for this exact pair. From [`plots.py`](01_three_level/plots.py).*
+Both ground states have g_F·m_F = +½, so their linear Zeeman shifts are **equal** and the two-photon resonance
+is **first-order field-insensitive at any field** — the "clock" property (m_F=0 clock states, by contrast, are
+insensitive only near B=0). A residual **second-order (quadratic) Zeeman** differential remains; the δ₂ servo
+absorbs it, and the cooling floor itself is field-insensitive. From [`plots.py`](01_three_level/plots.py).*
 
 ---
 
@@ -227,6 +255,25 @@ There is no separate test runner: each script prints its own self-check, and the
 formula you can check by hand.
 
 ---
+
+## What this model does (and does not) include
+
+So the numbers above are read with the right scope:
+
+- **Single atom, on axis, axial motion only** — no atom cloud, and no radial motion or radial–axial coupling
+  (the radial spread is the next layer, deliberately out of this repo; see below).
+- **Lamb–Dicke regime, first order in η** (η = 0.094) — higher-order recoil terms dropped.
+- **Perfect two-photon servo** (δ₂ held at 0) — no servo noise.
+- **No technical noise** — no laser intensity/phase noise, no magnetic-field noise, no trap-frequency jitter.
+- **Repumper model** (§6) is a low-saturation *incoherent* rate — trustworthy only near natural power (see the §6 scope note).
+- **Detuning reference** — the per-(F′,m′) 1064 tensor Stark on F′1/F′3 *is* included (via `stark.py`); sub-MHz
+  residuals in the bare-F′ hyperfine reference are not.
+- **The quoted digits are computed values** at the `config.py` parameters, not a claim of physical precision to
+  that many figures — read 0.0013 as ≈ 1.3×10⁻³.
+
+**Sensitivity.** The floor scales as (Γ/4Δ)², so a ±10 % drift in Δ shifts it by ≈ ∓20 %. The cooling itself
+relies on the AC-Stark condition Ω_c²/4Δ = ν_z holding, so the bright peak stays on the cooling sideband; a
+few-% drift in Ω_c or Δ is tolerable, and a full Δ/Ω_c sensitivity sweep is a natural next check (not yet done).
 
 ## What's beyond this repo
 

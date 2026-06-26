@@ -15,7 +15,7 @@ not as the realistic path.
 
 ![floor ladder](floor_ladder.png)
 
-> **What is computed where.** The minimal-chain **~0.10** and the mechanism floors **0.0032 / 0.0013** are
+> **What is computed where.** The minimal-chain **~0.10** and the intrinsic cooling limits **0.0032 / 0.0013** are
 > computed in this repository. The upgrade floor **~0.0072** is a **design target** — reproducing it needs a
 > dedicated-repumper (coherent F→F′1) solve, not included here. It is shown so the gain is visible, labelled as
 > a target, not a result.
@@ -73,6 +73,6 @@ the lower-floor-but-much-harder options (notably **dual-end double injection**, 
 little further but require re-plumbing the fibre delivery — not worth it over the master upgrade for a single
 atom. They are reference curiosities, not the recommended path.
 
-The mechanism floor all of these chase is **0.0032** (with recoil) / 0.0013 (recoil-free), both computed in this
+The intrinsic cooling limit all of these chase is **0.0032** (with recoil) / 0.0013 (recoil-free), both computed in this
 repo. Regenerate every figure here (and the subfolder's) with `python upgrade_figures.py` (matplotlib only, no
 solves).

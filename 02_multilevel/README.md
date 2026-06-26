@@ -7,7 +7,7 @@ levels), real Clebsch–Gordan couplings and photon recoil, and the two repumper
 **What it computes — two floors:**
 
 ```
-clean Lambda (manifold + recoil)              <n_z> = 0.0032   (the realistic mechanism floor)
+clean Lambda (manifold + recoil)              <n_z> = 0.0032   (the realistic intrinsic cooling limit)
 real delivery (off-resonant comb repumpers)   <n_z> ~ 0.10     (~40% stuck in dark sublevels)
 ```
 

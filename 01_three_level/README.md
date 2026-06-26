@@ -11,7 +11,7 @@ analytic floor  (Gamma/4Delta)^2 = 0.0011
 ground-state population P(n=0) ~ 0.999
 ```
 
-The 0.0013 is a **recoil-free lower bound** (perfect repumping assumed); the realistic mechanism floor, with
+The 0.0013 is a **recoil-free lower bound** (perfect repumping assumed); the realistic intrinsic cooling limit, with
 photon recoil, is 0.0032 — see [`../02_multilevel/`](../02_multilevel/).
 
 **Files**
