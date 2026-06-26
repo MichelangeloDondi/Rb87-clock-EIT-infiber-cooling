@@ -46,10 +46,11 @@ yG2, yG1 = -470.0, -550.0                   # ground rows (schematic; 6.835 GHz 
 # --- tone positions in the level frame (a tone "at P" is resonant with a level at height P) --
 # probe & control sit DELTA above |F'2,0>; the comb repumpers are +-2fA from them.
 P_LAMBDA = yE(2,0) + DELTA
-P_rep1   = P_LAMBDA + twofA                 # forward +1 sideband  (probe + 2fA)
-P_rep2   = P_LAMBDA - twofA                 # retro carrier        (control - 2fA)
-P_mast   = yE(2,0)                          # master, resonant on F'2 (OP / F=2 repump)
-P_4th    = P_mast + twofA                   # master retro         (master + 2fA)
+P_rep1   = P_LAMBDA + twofA                 # forward +1 sideband (probe + 2fA), UP from probe
+P_rep2   = P_LAMBDA - twofA                 # retro carrier       (control - 2fA), DOWN from control
+# The tag DOWN-shifts: retro = forward - 2f_A (config.py: repump2 = control - 2f_A; and the
+# probe is itself the retro of the forward +1 sideband -- the comb closes only this way).
+# with_master draws rep2 as a DEDICATED master on F'1; its positions are computed in draw().
 
 # --- nearest dipole-ALLOWED line to a tone, for honest detuning labels ----------------------
 ALLOWED = {1: (0,1,2), 2: (1,2,3)}          # F -> F' ; dF=+-2 (F1->F'3, F2->F'0) forbidden
@@ -100,22 +101,25 @@ def draw(with_master, fname, title):
     beam((-1, yG1), (-0.05, P_LAMBDA), C["probe"],   3.0)   # probe   sigma+  |1,-1> -> |F'2,0>
     beam((+1, yG2), ( 0.05, P_LAMBDA), C["control"], 3.0)   # control sigma-  |2,+1> -> |F'2,0>
 
-    # the two off-resonant comb repumpers (dashed) ----
+    # rep1 = the off-resonant comb F=1 leg (dashed); both figures ----
     tone(0, P_rep1, C["rep1"]); beam((+1, yG1), (0, P_rep1-9), C["rep1"], 2.3, dashed=True)  # rep1 s- |1,+1>->F'2
-    tone(0, P_rep2, C["rep2"]); beam((-1, yG2), (0, P_rep2+9), C["rep2"], 2.3, dashed=True)  # rep2 s+ |2,-1>->F'1
     F1, d1 = nearest_allowed(P_rep1, 1)
-    F2, d2 = nearest_allowed(P_rep2, 2)
-    ax.text(0, P_rep1+14, "rep1 $\\sigma^-$  %+.0f from F'%d" % (d1, F1), color=C["rep1"],
-            fontsize=8.8, ha="center", va="bottom", fontweight="bold")
-    ax.text(0.55, P_rep2, "rep2 $\\sigma^+$  %+.0f from F'%d" % (d2, F2), color=C["rep2"],
-            fontsize=8.8, ha="left", va="center", fontweight="bold")
+    ax.text(0, P_rep1+14, "rep1 $\\sigma^-$  %+.0f from F'%d  (also = MOT repumper)" % (d1, F1),
+            color=C["rep1"], fontsize=8.8, ha="center", va="bottom", fontweight="bold")
 
-    if with_master:
-        beam((0, yG2), (1.0, yE(2,1)), C["mast"], 2.6)                                   # master s+ |2,0>->|F'2,+1>
-        tone(-1, P_4th, C["four"]); beam((0, yG2), (-1, P_4th-9), C["four"], 2.1, dashed=True)  # 4th s- |2,0>->F'3
-        F4, d4 = nearest_allowed(P_4th, 2)
-        ax.text(-1, P_4th+14, "4th $\\sigma^-$ (retro)  %+.0f from F'%d" % (d4, F4), color=C["four"],
-                fontsize=8.8, ha="center", va="bottom", fontweight="bold")
+    if not with_master:
+        # rep2 = the off-resonant comb tone, control - 2f_A (the tag DOWN-shifts) ----
+        tone(0, P_rep2, C["rep2"]); beam((-1, yG2), (0, P_rep2+9), C["rep2"], 2.3, dashed=True)  # rep2 s+ |2,-1>->F'1
+        F2, d2 = nearest_allowed(P_rep2, 2)
+        ax.text(0.55, P_rep2, "rep2 $\\sigma^+$  %+.0f from F'%d  (retro carrier)" % (d2, F2),
+                color=C["rep2"], fontsize=8.8, ha="left", va="center", fontweight="bold")
+    else:
+        # rep2 = a DEDICATED master on F2->F'1 (sigma+, ON RESONANCE), sourced from a cooler
+        # daughter (DP ~181, lock-independent).  Its down-shifted retro lands 400 below F'1
+        # (benign) -- noted in the box rather than drawn (it falls below the frame).
+        beam((-1, yG2), (-0.05, yE(1,0)), C["mast"], 2.9)          # rep2(master) s+ |2,-1>->|F'1,0>
+        ax.text(0.55, yE(1,0), "rep2 = master $\\sigma^+$ on F'1 (resonant, from a cooler daughter)",
+                color=C["mast"], fontsize=8.8, ha="left", va="center", fontweight="bold")
 
     # detuning + shift brackets ----
     ax.annotate("", xy=(0.62, yE(2,0)), xytext=(0.62, P_LAMBDA), arrowprops=dict(arrowstyle="<->", color="#333", lw=1.4))
@@ -154,15 +158,15 @@ def draw(with_master, fname, title):
      Line2D([0],[0], color=C["control"], lw=3.0, label=r"control $\sigma^-$ · F2$\to$F'2 · $\Delta=+45$ above $|F'2,0\rangle$ · $\Omega/2\pi=8.8$"),
      Line2D([0],[0], color=C["probe"],   lw=3.0, label=r"probe $\sigma^+$ · F1$\to$F'2 · $\Delta=+45$ · $\Omega/2\pi=1.1$ ($\Omega_p/\Omega_c{=}0.12$)"),
      Line2D([0],[0], color=C["rep1"], lw=2.3, ls="--", label=r"repump1 $\sigma^-$ · F1$\to$F'2 · fwd EOM sideband (probe$+2f_A$)"),
-     Line2D([0],[0], color=C["rep2"], lw=2.3, ls="--", label=r"repump2 $\sigma^+$ · F2$\to$F'1 · retro carrier (control$-2f_A$)"),
     ]
-    if with_master:
-        leg += [
-         Line2D([0],[0], color=C["mast"], lw=2.6, label=r"master $\sigma^+$ · F2$\to$F'2 · on-resonance · OP / F=2 repump"),
-         Line2D([0],[0], color=C["four"], lw=2.1, ls="--", label=r"4th $\sigma^-$ · master retro (master$+2f_A$) · near F'3 (cycling)"),
-        ]
+    if not with_master:
+        leg += [Line2D([0],[0], color=C["rep2"], lw=2.3, ls="--",
+                       label=r"repump2 $\sigma^+$ · F2$\to$F'1 · retro carrier (control$-2f_A$)")]
+    else:
+        leg += [Line2D([0],[0], color=C["mast"], lw=2.8,
+                       label=r"rep2 = master $\sigma^+$ · F2$\to$F'1 · resonant · cooler daughter (DP$\sim$181)")]
     ttl = ("delivered tones — single seed + one EOM" if not with_master
-           else "with the 780 master folded in (+ its retro = 4th repumper)")
+           else "rep2 folded in as a dedicated master on F'1 (the tag down-shifts)")
     bl = ax.legend(handles=leg, loc="upper left", bbox_to_anchor=(0.605, 0.998), frameon=True,
                    fontsize=9.2, handlelength=2.4, borderpad=0.8, labelspacing=0.6,
                    title=ttl, title_fontsize=9.8)
@@ -178,11 +182,14 @@ def draw(with_master, fname, title):
 
     # physics / delivery box ----
     extra = ("" if not with_master else
-             "\n$\\bf{master\\ retro\\ (4th):}$ $\\sigma^-$ at master$+2f_A$.  Nearest ALLOWED line is\n"
-             "F'3 (F2$\\to$F'3 cycling), not F'2 -- keep its power low.  It cannot reach the\n"
-             "F=1 dark state (6.8 GHz away); the rep2-on-retro placement (master_aom.py)\n"
-             "instead lands the retro usefully on F'1.")
+             "\n$\\bf{rep2\\ here:}$ a dedicated master on F2$\\to$F'1 ($\\sigma^+$, resonant).\n"
+             "Source it from a CW slave on the cooler (F2$\\to$F'3): the shift is pure 87Rb\n"
+             "HFS + 1064 push $\\Rightarrow$ double-pass $\\sim$181 MHz, and the 85Rb lock never\n"
+             "enters (so the 321 MHz lock ambiguity is irrelevant).  F'1 not F'2: $\\sigma^+$\n"
+             "on F'2 would scatter the bright leg |2,+1$\\rangle\\!\\to\\!$|F'2,+2$\\rangle$.  Folded into\n"
+             "the tag arm, the DOWN-shifted retro lands 400 below F'1 (156/s, harmless).  [rep2_source.py]")
     txt = ("$\\bf{single\\ EOM}$:  $f_{mod}=A_{HFS}+2f_A=6.835+0.400=7.235$ GHz;  $2f_A=400$ (tag $\\times2$).\n"
+           "Tag DOWN-shifts: retro $=$ forward $-$ 2f_A (the probe is the retro of the fwd $+1$).\n"
            "The repumpers are leftover comb tones, deliberately OFF-resonant:\n"
            "   rep1 = fwd $+1$ sideband (probe$+2f_A$) $\\to$ F1$\\to$F'2.\n"
            "   rep2 = retro carrier (control$-2f_A$) $\\to$ F2$\\to$F'1.\n"
@@ -212,11 +219,12 @@ if __name__ == "__main__":
     print("1064 (stark.py, theta=%.0f):  scalar %+.2f,  ground -%.2f" % (TH, SCALAR, U0))
     print("|F'2,0> = %+.2f (tensor %.3f -> tensor-NULL, all F'=2 m' degenerate)"
           % (yE(2,0), stark.stark_tensor(2,0,TH)))
-    for nm, P, Fg in [("probe/control", P_LAMBDA, 2), ("rep1", P_rep1, 1),
-                      ("rep2", P_rep2, 2), ("master", P_mast, 2), ("4th (retro)", P_4th, 2)]:
+    for nm, P, Fg in [("probe/control", P_LAMBDA, 2), ("rep1 (comb)", P_rep1, 1),
+                      ("rep2 (comb)", P_rep2, 2), ("rep2=master/F'1", yE(1,0), 2),
+                      ("master retro", ctr(1)-twofA, 2)]:
         Fp, d = nearest_allowed(P, Fg)
-        print("  %-14s P=%+7.1f   nearest allowed F'%d  (%+.0f from its centre)" % (nm, P, Fp, d))
+        print("  %-16s P=%+7.1f   nearest allowed F'%d  (%+.0f from its centre)" % (nm, P, Fp, d))
     draw(False, "scheme_no_master",
          "$^{87}$Rb D2 clock-EIT — the four delivered tones (single seed + one EOM)")
     draw(True,  "scheme_with_master",
-         "$^{87}$Rb D2 clock-EIT — master folded in + its retro (the 4th repumper)")
+         "$^{87}$Rb D2 clock-EIT — rep2 folded in as a dedicated master on F'1 (tag down-shifts)")
