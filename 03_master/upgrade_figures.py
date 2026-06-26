@@ -28,27 +28,29 @@ MORE = os.path.join(HERE, "more hardware demanding schemes")   # the curiosities
 def floor_ladder():
     # (label, floor, color, source)   source: where the number comes from -- be honest
     rows = [
-        ("Minimal single-EOM chain\n(leftover-comb repumpers)",                 0.103,  RED,    "computed here"),
-        ("MASTER UPGRADE (realistic path):\ndedicated F'1 repumper, single-end", 0.0072, ORANGE, "design target"),
-        ("Dual-end double injection\n(more hardware demanding)",                 0.0048, GREEN,  "design target"),
-        ("+ anti-trap squeezer (all-in)",                                       0.009,  BLUE,   "design target"),
+        ("Minimal single-EOM chain\n(comb repumpers + F'1 leak)",  0.10, RED,    "computed here"),
+        ("Master upgrade\n(clears |2,-2> + comb scatter)",         0.06, ORANGE, "chapter 04"),
     ]
-    fig, ax = plt.subplots(figsize=(9.8, 5.0))
+    fig, ax = plt.subplots(figsize=(9.8, 3.8))
     y = np.arange(len(rows))[::-1]
     x0 = 0.0026
+    # the F'1 leak holds the floor between the intrinsic limit and ~0.06 -- master-proof (chapter 04)
+    ax.axvspan(0.0032, 0.06, color="#7b2fb5", alpha=0.07, zorder=0)
+    ax.text(np.sqrt(0.0032 * 0.06), 1.62, "the F'1 leak\n(master-proof; chapter 04)",
+            color="#7b2fb5", fontsize=8.4, ha="center", va="top", fontweight="bold")
     for yi, (lab, val, col, src) in zip(y, rows):
         ax.hlines(yi, x0, val, color=col, lw=2.0, alpha=0.7)
         ax.plot(val, yi, "o", ms=13, color=col, zorder=5)
-        ax.text(val * 1.13, yi, f"$\\bar n_z\\approx${val:.4f}   ({src})", va="center", ha="left",
+        ax.text(val * 1.13, yi, f"$\\bar n_z\\approx${val:.2f}   ({src})", va="center", ha="left",
                 fontsize=9.5, color=col, fontweight="bold")
-    # the target: the ideal mechanism floor (with recoil), computed in this repo
+    # the intrinsic mechanism floor (with recoil), computed in this repo -- the wall the leak holds you off
     ax.axvline(0.0032, color="#444", ls=(0, (4, 3)), lw=1.3)
-    ax.text(0.0033, 1.5, "ideal mechanism floor  0.0032\n(with recoil, this repo)",
+    ax.text(0.00335, 0.5, "intrinsic recoil limit  0.0032\n(this repo)",
             color="#444", fontsize=8, va="center", ha="left", rotation=90)
     ax.set_yticks(y); ax.set_yticklabels([r[0] for r in rows], fontsize=9)
-    ax.set_xscale("log"); ax.set_xlim(x0, 0.55); ax.set_ylim(-0.6, 3.7)
+    ax.set_xscale("log"); ax.set_xlim(x0, 0.2); ax.set_ylim(-0.6, 1.9)
     ax.set_xlabel(r"axial cooling floor  $\bar n_z$  (lower = colder)")
-    ax.set_title("Recovering the floor — the master upgrade (dedicated F'1 repumper)", pad=12)
+    ax.set_title("The master clears the dark sublevel + comb scatter; the F'1 leak is the wall", pad=12)
     for s in ("top", "right"):
         ax.spines[s].set_visible(False)
     fig.tight_layout()
@@ -103,13 +105,13 @@ def bench_single_end():
     _box(ax, 3.95, 6.05, 2.55, 1.05, "EDFA  +  PPLN\nSHG 1560$\\to$780 nm", ec=BLUE, fc="#e8f0fe")
     _arrow(ax, 3.6, 6.575, 3.95, 6.575, BLUE)
     # dedicated repumper source (lower-left) -- the NEW hardware
-    _box(ax, 0.3, 1.0, 2.55, 1.0, "780 master laser\n(F'1 reference)", ec=ORANGE, fc="#fdf2e7")
-    _box(ax, 3.25, 1.18, 2.05, 0.66, "157 MHz AOM", ec=ORANGE, fc="#fdf2e7", fs=8.0)
+    _box(ax, 0.3, 1.0, 2.55, 1.0, "780 master\n(cooler-locked slave)", ec=ORANGE, fc="#fdf2e7")
+    _box(ax, 3.25, 1.18, 2.05, 0.66, "363 MHz AOM\n($\\times$2, cooler-lock)", ec=ORANGE, fc="#fdf2e7", fs=7.6)
     _arrow(ax, 2.85, 1.5, 3.25, 1.5, ORANGE)
     # combiner
     _box(ax, 6.75, 3.5, 1.1, 1.0, "dichroic\ncombiner", ec=GREY, fc="#f2f2f2", fs=7.7)
-    _arrow(ax, 5.2, 6.05, 7.05, 4.5, BLUE, "$\\sigma^-$ carrier\n+ EOM comb", 4.6, 5.05, ha="right")
-    _arrow(ax, 5.3, 1.55, 6.95, 3.55, ORANGE, "repump1 $\\sigma^-$ (157 AOM)\nrepump2 $\\sigma^+$ (master)", 5.05, 2.72, ha="right")
+    _arrow(ax, 5.2, 6.05, 7.05, 4.5, BLUE, "$\\sigma^-$ carrier + EOM comb\n(comb incl. repump1 $\\sigma^-$)", 4.6, 5.05, ha="right")
+    _arrow(ax, 5.3, 1.55, 6.95, 3.55, ORANGE, "repump2 $\\sigma^+$\n(F2$\\to$F'1)", 5.05, 2.72, ha="right")
     # the fibre + atom
     _fibre(ax, 8.55, 11.35, 4.0)
     _arrow(ax, 7.85, 4.0, 8.55, 4.0, "#333", "ONE\nend", 8.2, 4.46)
@@ -119,10 +121,10 @@ def bench_single_end():
     _mirror(ax, 13.6, 3.25, 4.75)
     _arrow(ax, 11.35, 4.0, 11.6, 4.0, "#333")
     _arrow(ax, 13.5, 3.5, 8.55, 3.5, RED, "retro $\\to$ $\\sigma^+$ probe (tagged +400) — also leaves rejected comb tones near F'2", 11.0, 3.18, dashed=True, ha="center")
-    ax.text(7.0, 0.28, "ONE fibre end + retro mirror. The double-passed tag AOM (2$\\times$200 = 400 MHz) tags the retro as the $\\sigma^+$ probe;\n"
-            "the rejected comb tones still sit near F'2 (small residual dark-state scatter)  $\\Rightarrow$  floor $\\approx$ 0.0072.",
+    ax.text(7.0, 0.28, "ONE fibre end + retro mirror. The double-passed tag AOM (2$\\times$200 = 400 MHz) tags the retro as the $\\sigma^+$ probe.\n"
+            "The master clears $|2,-2\\rangle$ + the comb scatter, but the F'1 leak remains  $\\Rightarrow$  $\\bar n_z\\approx$ 0.06 (leak-limited, chapter 04).",
             ha="center", va="bottom", fontsize=8.6, color="#333")
-    ax.set_title("The master upgrade — single-end tagged retro  +  the dedicated F'1 repumper   ($\\bar n_z\\approx$ 0.0072)", fontsize=12.5, pad=10)
+    ax.set_title("The master upgrade — single-end tagged retro  +  the dedicated F'1 repumper   ($\\bar n_z\\approx$ 0.06, leak-limited)", fontsize=12.5, pad=10)
     fig.tight_layout()
     fig.savefig(os.path.join(HERE, "bench_single_end.png"), dpi=150, bbox_inches="tight")
     print("wrote bench_single_end.png")
@@ -146,12 +148,12 @@ def bench_dual_end():
     # the fibre + atom (both ends injected)
     _fibre(ax, 4.6, 8.9, 3.0)
     # dedicated repumpers (bottom)
-    _box(ax, 4.3, 0.95, 3.4, 0.85, "780 master  +  157 MHz AOM\n(dedicated F'1 repumpers)", ec=ORANGE, fc="#fdf2e7", fs=8.0)
-    _arrow(ax, 6.0, 1.8, 6.0, 2.82, ORANGE, "repump1 $\\sigma^-$,  repump2 $\\sigma^+$", 6.2, 2.28, ha="left")
+    _box(ax, 4.3, 0.95, 3.4, 0.85, "780 master  +  363 MHz AOM\n(dedicated F'1 repump2)", ec=ORANGE, fc="#fdf2e7", fs=8.0)
+    _arrow(ax, 6.0, 1.8, 6.0, 2.82, ORANGE, "repump2 $\\sigma^+$ (master)", 6.2, 2.28, ha="left")
     ax.text(7.0, 0.28, "BOTH fibre ends injected (double injection): control $\\sigma^-$ one end, the carrier-suppressed comb $\\sigma^+$ the other.\n"
-            "NO retro mirror, NO tag AOM  $\\Rightarrow$  floor $\\approx$ 0.0048 — but it needs optical access to BOTH HCPCF ends (much harder hardware).",
+            "NO retro / tag AOM, but it does NOT touch the F'1 leak  $\\Rightarrow$  $\\bar n_z\\approx$ 0.06 (same as the master); needs access to BOTH HCPCF ends.",
             ha="center", va="bottom", fontsize=8.6, color="#333")
-    ax.set_title("Dual-end double injection (more hardware demanding)   ($\\bar n_z\\approx$ 0.0048)", fontsize=12.5, pad=10)
+    ax.set_title("Dual-end double injection (more hardware demanding)   ($\\bar n_z\\approx$ 0.06, leak-limited)", fontsize=12.5, pad=10)
     fig.tight_layout()
     fig.savefig(os.path.join(MORE, "bench_dual_end.png"), dpi=150, bbox_inches="tight")
     print("wrote more hardware demanding schemes/bench_dual_end.png")

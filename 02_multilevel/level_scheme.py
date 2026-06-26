@@ -213,13 +213,14 @@ def draw(with_master, outpath, title):
     if not with_master:
         txt = (common +
                "Repumpers are leftover comb tones, deliberately OFF-resonant: repump1 $\\to$ F1$\\to$F'2; repump2 $\\to$ F2$\\to$F'1.\n"
-               "Nearest lines F'3 / F'0 are $\\Delta F=\\pm2$ dipole-FORBIDDEN $\\Rightarrow$ no coupling.")
+               "Nearest lines are $\\Delta F=\\pm2$ dipole-FORBIDDEN per ground (F'3 from F=1, F'0 from F=2) $\\Rightarrow$ no coupling.")
     else:
         txt = (common +
                "$\\bf{master\\ upgrade}$: a dedicated F'1 repumper (cooler-frequency slave). master fwd $\\sigma^+$ ON F'1 clears\n"
                "   $|2,\\!-\\!2\\rangle$ — the ONE F=2 sublevel the $\\sigma^-$ control cannot reach ($\\to|F'2,\\!-\\!3\\rangle$ forbidden).\n"
                "$|2,\\!+\\!2\\rangle$ is NOT a residual — the control clears it ($\\to|F'2,\\!+\\!1\\rangle$). The retro is 400 off F'1 (benign).\n"
-               "$\\bf{Real\\ floor\\ is\\ F{=}1\\!-\\!limited}$: $|1,0\\rangle,|1,\\!+\\!1\\rangle$ cleared only weakly by the probe ($\\bar n_z\\!\\sim\\!0.1$).")
+               "$\\bf{Floor\\ set\\ by\\ the\\ F'1\\ leak}$: the pair is 2-photon resonant on $|F'1,0\\rangle$ too, so the dark state\n"
+               "   scatters there ($\\to$5/6 into F=1). The master can't fix it $\\Rightarrow \\bar n_z\\!\\approx\\!0.06$ (chapter 04).")
     ax.text(4.45, yc(-150), txt, fontsize=8.2, va="top", ha="left", linespacing=1.5,
             bbox=dict(boxstyle="round,pad=0.7", fc="#f6f6f8", ec="#888", lw=1.0))
 

@@ -8,9 +8,9 @@ m_F=0↔m_F=0 clock pair, but it serves the same purpose: a first-order magnetic
 resonance (§2). **The question: how low does this model predict the axial motion cools?**
 
 > **Status:** work in progress. The 3-level core (ch. 01) is settled and hand-checkable; the multilevel layer
-> (ch. 02) is realistic but its repumper model has a stated validity limit (below); the master (ch. 03) is built,
-> but its floor is a design target, not yet pinned. Numbers are single-atom and on-axis — the atom cloud is not
-> modelled here.
+> (ch. 02) is realistic but its repumper model has a stated validity limit (below); the master (ch. 03) is built —
+> it lowers the floor toward the F′1-leak limit (≈ 0.06), which chapter 04 computes. Numbers are single-atom and
+> on-axis — the atom cloud is not modelled here.
 
 ## The numbers, honestly
 
@@ -245,13 +245,15 @@ forward σ⁺ resonant on F′1**, whose job is to clear |2,−2⟩ (its down-sh
 byproduct). Same encoding as §6: colour = comb line (master = purple), solid = forward, dashed = retro. From
 [`02_multilevel/level_scheme.py`](02_multilevel/level_scheme.py).*
 
-**How low does it go — honestly.** The design target is **n̄_z ≈ 0.0072**, but that number is **not computed in this
-repo**. The master sits *on* the F′1 resonance, where §6's incoherent-rate repumper model (valid only for tones
-100s of MHz off resonance) breaks down — so this repo, by construction, cannot pin the master floor. Doing so needs
-the master and the F′1 vertex treated **coherently**, which is exactly **chapter 04** (the |F′1,0⟩ dark-state vertex
-in the computation). So read **0.0072 as a design target, not a result**: what *is* solid here is the structure — a
-dedicated F′1 repumper clears |2,−2⟩, and **F=1 then sets the floor**. Chapter [`03_master/`](03_master/README.md)
-has the build (how to source the F′1 tone) and the heavier delivery alternatives.
+**How low does it go — honestly.** The master clears |2,−2⟩ and removes the off-resonant comb-tone scattering,
+pulling the floor below the minimal chain's ~0.10. But it **cannot** reach the 0.0032 mechanism limit, for a reason
+the earlier sections quietly assumed away: **the EIT dark state is not perfectly dark.** The cooling pair is
+two-photon resonant on **|F′1,0⟩** as well as |F′2,0⟩ (157 MHz below it), so the dark state keeps a residual
+coupling onto |F′1,0⟩, which scatters and decays 5/6 → F=1. This **F′1 leak** is the dominant floor term — it is
+fixed by atomic ratios (no choice of Rabi frequencies removes it), and the master, a *different* transition, does
+not touch it. So the master is **leak-limited at a few ×10⁻² (≈ 0.06)** — a real gain over the minimal chain, but
+well above the limit. Folding the leak into the solve, and the cancellation that could beat it, are **chapter 04**
+(the |F′1,0⟩ dark-state vertex). Chapter [`03_master/`](03_master/README.md) has the build and the alternatives.
 
 ---
 
@@ -264,8 +266,8 @@ before, and is self-contained (its own `config.py`, runnable on its own). Read t
 |---|---|---|---|---|
 | **01** | [`01_three_level/`](01_three_level/) | the idealized 3-level Λ: trap, Stark shifts, the EIT mechanism, the (Γ/4Δ)² floor | §1–§5 | **built** · n̄_z = 0.0013 |
 | **02** | [`02_multilevel/`](02_multilevel/) | the real ⁸⁷Rb D2 manifold + photon recoil + the single-EOM comb delivery (probe, control, retro-reflection) | §6 | **built** · 0.0032 clean / ≈ 0.10 real |
-| **03** | [`03_master/`](03_master/README.md) | the 780 master laser as a dedicated F′1 repumper | §7 | **built** · target ≈ 0.0072 (floor not yet pinned) |
-| 04 | *(planned)* | the second dark vertex: the cooling pair is two-photon resonant on the F′1 m′=0 state too, so the EIT dark state is not perfectly dark — fold that leak into the solve | — | planned |
+| **03** | [`03_master/`](03_master/README.md) | the 780 master laser as a dedicated F′1 repumper | §7 | **built** · clears the dark sublevel + comb scatter (~0.10 → ≈ 0.06, leak-limited) |
+| 04 | *(planned)* | the second dark vertex: the cooling pair is two-photon resonant on the F′1 m′=0 state too, so the EIT dark state is not perfectly dark — fold that leak in (it pins the chapter-03 master floor) | — | planned |
 | 05 | *(planned)* | the anti-trapping heating from the expelled (anti-trapped) 5P₃/₂ excited state | — | planned |
 | 06 | *(planned)* | the atom cloud (frozen atoms): a spread of ν_z and light shifts off-axis | — | planned |
 | 07 | *(planned)* | the full semiclassical Monte-Carlo simulation | — | planned |
