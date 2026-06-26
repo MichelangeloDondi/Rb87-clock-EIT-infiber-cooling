@@ -188,13 +188,14 @@ double-passed to 2f_A = 400 MHz. The tag **down-shifts** the retro (retro = forw
 *The four tones on the **1064-shifted** manifold (every level from [`stark.py`](02_multilevel/stark.py) at the
 real θ=90° trap; the grey dotted/dashed lines mark the bare and scalar-only positions, so the tensor shift is
 visible). **|F′2,0⟩ is flat at +38 (tensor-null)** — the clean target — while **F′1 fans to +33/+48** and
-**F′3 fans with the stretched |3,±3⟩ highest (+47) and |3,0⟩ lowest (+30)**. control σ⁻ and probe σ⁺ form the Λ,
-blue-detuned by Δ. The two repumpers are not separate lasers — they are the **leftover comb tones**: the forward
-+1 EOM sideband (σ⁻, F=1, at **probe + 400 MHz**) and the retro carrier (σ⁺, F=2, at **control − 400 MHz**; the
-tag down-shifts), both off-resonant. Their nearest **allowed** lines are F′2 (445 MHz, repump1) and F′1
-(198 MHz, repump2); the closer F′3 / F′0 are ΔF=±2 dipole-forbidden. Each beam shows two detunings: from the
-in-trap (Stark-shifted) level, and in parentheses from the **1064-OFF** transition — their difference is that
-transition's total 1064 shift (excited up + ground −23 down). From [`level_scheme.py`](02_multilevel/level_scheme.py).*
+**F′3 fans with the stretched |3,±3⟩ highest (+47) and |3,0⟩ lowest (+30)**. **Colour = comb line**, so the same
+beam forward and retro share a colour (carrier = blue, +1 sideband = green); **solid = forward, dashed = retro**.
+The Λ is control σ⁻ (forward carrier) + probe σ⁺ (retro of the +1 sideband); the repumpers are the leftover comb
+tones — repump1 σ⁻ (forward +1 sideband → F1→F′2) and repump2 σ⁺ (retro carrier → F2→F′1), both off-resonant
+(their closer F′3/F′0 lines are ΔF=±2 dipole-forbidden). Each beam's label is the Stark decomposition
+**WW(−s−t−g=ZZ)**: WW = detuning from the bare (1064-OFF) transition; s, t = excited scalar/tensor shift;
+g = ground scalar shift; ZZ = the in-trap detuning (each shift raises the transition, so subtracts). From
+[`level_scheme.py`](02_multilevel/level_scheme.py).*
 
 **(i) Manifold + recoil.** With every m-sublevel, the full recoil, and the per-(F′,m′) 1064 Stark, the clean-Λ
 floor is **0.0032** — just above the recoil-light 0.0013 of §5 (the difference *is* the recoil the 3-level

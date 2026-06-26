@@ -5,12 +5,14 @@ Generates TWO figures (one script so the two stay consistent):
   level_scheme.png                          (here, 02_multilevel/) -- the BASELINE: 4 comb tones, no master
   ../upgrades/level_scheme_dedicated.png                            -- the MASTER upgrade: + the master F'1 repumper
 
-Each beam carries TWO detunings, drawn as   in-trap (off):
-  in-trap = detuning from the 1064-SHIFTED level (the real operating detuning, no parentheses);
-  (off)   = detuning from the 1064-OFF (bare) transition, IN PARENTHESES.
-Their difference is that transition's total 1064 shift = excited shift (UP) + ground shift U0 (DOWN, 22.7).
-The grey reference lines show the shift: dotted = bare (no 1064), dashed = scalar-only, solid = full
-(scalar+tensor). For F'2, F'0 and the ground the dashed sits on the solid -- those are PURE SCALAR.
+Colour = comb line (same beam forward AND retro share a colour): carrier = blue, +1 sideband = green,
+780 master = purple.  SOLID = forward pass, DASHED = backward (retro) pass.
+
+Each beam's detuning label is the Stark decomposition  WW(-s-t-g=ZZ):
+  WW = detuning from the BARE (1064-OFF) transition;
+  s  = excited scalar 1064 shift (+38);   t = excited tensor 1064 shift (signed);
+  g  = ground scalar 1064 shift (+23);    ZZ = the IN-TRAP detuning the atom sees.
+Each Stark shift raises the F->F' transition, so each SUBTRACTS from the (blue) detuning: ZZ = WW - s - t - g.
 
 All frequencies are 2*pi*MHz.
 """
@@ -46,16 +48,28 @@ DELTA = c.Delta
 LV   = lt(2, 0) + DELTA                  # control/probe light (true MHz) = +83
 L_R1 = LV + 400.0                        # repump1 = fwd +1 EOM sideband (probe + 2f_A)
 L_R2 = LV - 400.0                        # repump2 = retro carrier      (control - 2f_A); tag DOWN-shifts
-L_MF = lt(1, 1)                          # master fwd: ON the shifted |F'1,+1>  (the dedicated repump)
+L_MF = lt(1, 1)                          # master fwd: ON the shifted |F'1,+-1>  (the dedicated repump)
 L_MR = L_MF - 400.0                      # master retro (down-shifted): benign off-resonant byproduct
 yG2, yG1 = -430.0, -495.0               # ground rows (schematic; below the broken axis)
 GB, GS = "#c4c4c4", "#9a9a9a"
-C = dict(control="#1565c0", probe="#2e8b3d", rep1="#e8730c", rep2="#d32f2f", mast="#7b2fb5", four="#c2185b")
 
-# two detunings per beam: (from the in-trap SHIFTED level | from the 1064-OFF BARE transition incl. ground U0)
-def twonum(Llight, Fp, mp): return (Llight - lt(Fp, mp), Llight - BARE[Fp] + U0)
-D = dict(control=twonum(LV, 2, 0), probe=twonum(LV, 2, 0), rep1=twonum(L_R1, 2, 0),
-         rep2=twonum(L_R2, 1, 0), mfwd=twonum(L_MF, 1, 1), mret=twonum(L_MR, 1, 1))
+# SAME colour per comb line (the same beam forward & retro); SOLID = forward, DASHED = backward (retro).
+CARRIER, SIDEBAND, MASTER = "#1565c0", "#2e8b3d", "#7b2fb5"   # carrier / +1 sideband / 780 master
+C   = dict(control=CARRIER, rep2=CARRIER, rep1=SIDEBAND, probe=SIDEBAND, mfwd=MASTER, mret=MASTER)
+FWD = dict(control=True, rep1=True, mfwd=True, probe=False, rep2=False, mret=False)   # forward? else retro
+
+# each beam's (light freq, target Fp, mp) for the Stark-decomposition label WW(-s-t-g=ZZ)
+TGT = dict(control=(LV, 2, 0), probe=(LV, 2, 0), rep1=(L_R1, 2, 0),
+           rep2=(L_R2, 1, 0), mfwd=(L_MF, 1, -1), mret=(L_MR, 1, 1))
+def parts(key):
+    """(WW bare-detuning, s exc-scalar, t exc-tensor, g gnd-scalar, ZZ in-trap detuning); ZZ = WW - s - t - g."""
+    Llight, Fp, mp = TGT[key]
+    s, t, g = SCAL, stark.stark_tensor(Fp, mp, TH), U0
+    return (Llight - BARE[Fp] + U0, s, t, g, Llight - lt(Fp, mp))
+def label(key):
+    WW, s, t, g, ZZ = parts(key)
+    tterm = -t if abs(t) > 0.5 else 0.0                    # tensor contribution (0.0, not -0.0, when tensor-null)
+    return "%+.0f(%+.0f%+.0f%+.0f=%+.0f)" % (WW, -s, tterm, -g, ZZ)
 
 
 def draw(with_master, outpath, title):
@@ -63,15 +77,13 @@ def draw(with_master, outpath, title):
     HW = 0.30
     def lvl(m, y, col="#9aa0aa", lw=2.0, z=2):
         ax.plot([m - HW, m + HW], [y, y], color=col, lw=lw, solid_capstyle="round", zorder=z)
-    def beam(p0, p1, col, lw=2.8, msc=16, dashed=False):
-        ax.add_patch(FancyArrowPatch(p0, p1, arrowstyle="-|>", mutation_scale=msc, color=col, lw=lw,
-                     zorder=5, shrinkA=6, shrinkB=5, linestyle=("--" if dashed else "-")))
+    def beam(p0, p1, key, lw=2.8, msc=16):
+        ax.add_patch(FancyArrowPatch(p0, p1, arrowstyle="-|>", mutation_scale=msc, color=C[key], lw=lw,
+                     zorder=5, shrinkA=6, shrinkB=5, linestyle=("-" if FWD[key] else "--")))
     def tick(m, y, col):
         ax.plot([m - 0.33, m + 0.33], [y, y], ls=(0, (3, 2)), color=col, lw=1.7, zorder=4)
-    def dl(x, y, key, col, ha="left", va="center"):
-        it, off = D[key]
-        ax.annotate("%+.0f (%+.0f)" % (it, off), xy=(x, y), color=col, fontsize=8.4,
-                    fontweight="bold", ha=ha, va=va, zorder=9)
+    def dl(x, y, key, ha="left", va="center"):
+        ax.annotate(label(key), xy=(x, y), color=C[key], fontsize=7.5, fontweight="bold", ha=ha, va=va, zorder=9)
 
     # ---- grey reference lines: bare (dotted) + scalar-only (dashed) for EVERY level family ----
     for Fp, ms in em.items():
@@ -83,7 +95,6 @@ def draw(with_master, outpath, title):
         x0, x1 = min(ms) - 0.42, max(ms) + 0.42
         ax.plot([x0, x1], [yg + yc(U0)] * 2, ls=(0, (1, 3)), color=GB, lw=1.0, zorder=1)          # bare (no 1064)
         ax.plot([x0, x1], [yg] * 2, ls=(0, (6, 3)), color=GS, lw=0.9, zorder=1)                   # scalar (= shifted)
-    # mark the ground scalar shift once
     ax.annotate("", xy=(-2.0, yG2), xytext=(-2.0, yG2 + yc(U0)), arrowprops=dict(arrowstyle="<->", color="#777", lw=1.1))
     ax.text(-2.12, yG2 + yc(U0) / 2, "$-%.1f$\nscalar\n(both F)" % U0, color="#666", fontsize=7.8,
             va="center", ha="right", linespacing=1.1)
@@ -108,36 +119,34 @@ def draw(with_master, outpath, title):
     for yy in (yb + 11, yb - 11):
         ax.plot([-4.30, -4.10], [yy - 6, yy + 6], color="#999", lw=1.4, clip_on=False)
 
-    # ---- the EIT Lambda (solid): control sigma- (dm=-1), probe sigma+ (dm=+1) ----
+    # ---- the EIT Lambda: control sigma- (carrier, FWD solid), probe sigma+ (sideband, RETRO dashed) ----
     ax.plot([-0.42, 0.42], [yc(LV), yc(LV)], ls=(0, (4, 3)), color="#777", lw=1.3, zorder=3)
-    beam((-1, yG1), (-0.05, yc(LV)), C["probe"], 3.0)         # probe   |1,-1> -> |F'2,0>  dm=+1
-    beam((+1, yG2), (0.05, yc(LV)), C["control"], 3.0)        # control |2,+1> -> |F'2,0>  dm=-1
-    dl(-1.18, yc(40), "probe", C["probe"], ha="right")
-    dl(1.20, yc(40), "control", C["control"], ha="left")
+    beam((+1, yG2), (0.05, yc(LV)), "control", 3.0)          # control |2,+1> -> |F'2,0>  dm=-1  (forward)
+    beam((-1, yG1), (-0.05, yc(LV)), "probe", 2.6)           # probe   |1,-1> -> |F'2,0>  dm=+1  (retro)
+    dl(1.20, yc(40), "control", ha="left")
+    dl(-1.18, yc(40), "probe", ha="right")
 
-    # ---- the two EOM-comb repumpers (present in BOTH figures; off-res, dashed) ----
-    tick(0.0, yc(L_R1), C["rep1"]); beam((1, yG1), (0.0, yc(L_R1) - 7), C["rep1"], 2.3, dashed=True)
-    dl(0.0, yc(L_R1) + 16, "rep1", C["rep1"], ha="center", va="bottom")     # |1,+1>->|F'2,0> dm=-1
-    tick(0.0, yc(L_R2), C["rep2"]); beam((-1, yG2), (0.0, yc(L_R2) + 7), C["rep2"], 2.3, dashed=True)
-    dl(0.42, yc(L_R2) + 1, "rep2", C["rep2"], ha="left")                    # |2,-1>->|F'1,0> dm=+1
+    # ---- the two EOM-comb repumpers: rep1 (sideband, FWD solid), rep2 (carrier, RETRO dashed) ----
+    tick(0.0, yc(L_R1), C["rep1"]); beam((1, yG1), (0.0, yc(L_R1) - 7), "rep1", 2.3)   # |1,+1>->F'2  (forward)
+    dl(0.0, yc(L_R1) + 16, "rep1", ha="center", va="bottom")
+    tick(0.0, yc(L_R2), C["rep2"]); beam((-1, yG2), (0.0, yc(L_R2) + 7), "rep2", 2.3)  # |2,-1>->F'1  (retro)
+    dl(0.42, yc(L_R2) + 1, "rep2", ha="left")
 
     if with_master:
-        # master fwd: sigma+ ON F'1. Its KEY job is to clear |2,-2> -- the ONE F=2 sublevel the sigma-
-        # control cannot reach (|2,-2>->|F'2,-3> is forbidden); with no repump 100% piles there.
-        beam((-2, yG2), (-1.0, yE(1, -1)), C["mast"], 2.8)                  # |2,-2>->|F'1,-1> dm=+1 on-res
-        dl(-2.0, (yG2 + yE(1, -1)) / 2, "mfwd", C["mast"], ha="right")
+        # master fwd: sigma+ ON F'1, FORWARD (solid). Clears |2,-2> -- the one F=2 state the sigma- control misses.
+        beam((-2, yG2), (-1.0, yE(1, -1)), "mfwd", 2.8)                     # |2,-2>->|F'1,-1>  (forward)
+        dl(-2.0, (yG2 + yE(1, -1)) / 2, "mfwd", ha="right")
         ax.annotate("master clears $|2,-2\\rangle$ —\nthe one F=2 state the $\\sigma^-$\ncontrol can't reach",
-                    xy=(-2.0, yG2 + 6), xytext=(-3.95, yG2 + 40), color=C["mast"], fontsize=7.6, ha="left",
+                    xy=(-2.0, yG2 + 6), xytext=(-3.95, yG2 + 40), color=C["mfwd"], fontsize=7.6, ha="left",
                     va="center", arrowprops=dict(arrowstyle="-", color="#b9a0d0", lw=0.8))
-        # |2,+2> is NOT a residual: the sigma- control clears it (|2,+2>->|F'2,+1>, near-resonant)
         ax.annotate("the $\\sigma^-$ control clears $|2,+2\\rangle$\n($\\to|F'2,+1\\rangle$) — not a residual",
                     xy=(2.0, yG2), xytext=(2.45, yG2 + 30), color="#666", fontsize=7.4, ha="left", va="center",
                     arrowprops=dict(arrowstyle="-", color="#bbb", lw=0.7))
-        # master retro: sigma-, down-shifted 400 MHz below F'1 -> benign off-resonant byproduct
-        tick(0.0, yc(L_MR), C["four"]); beam((1, yG2), (0.0, yc(L_MR) - 7), C["four"], 2.0, dashed=True)
-        ax.text(0.0, yc(L_MR) - 14, "master retro: benign byproduct (400 off F'1)", color=C["four"],
+        # master retro: sigma-, BACKWARD (dashed), 400 MHz below F'1 -> benign byproduct
+        tick(0.0, yc(L_MR), C["mret"]); beam((1, yG2), (0.0, yc(L_MR) - 7), "mret", 2.0)   # (retro)
+        dl(1.20, yc(L_MR) + 1, "mret", ha="left")
+        ax.text(0.0, yc(L_MR) - 14, "master retro: benign byproduct (400 off F'1)", color=C["mret"],
                 fontsize=7.4, ha="center", va="top")
-        # the REAL residual: F=1 (|1,0>,|1,+1>), cleared only weakly by the off-resonant probe
         ax.annotate("real residual: F=1 ($|1,0\\rangle,|1,\\!+\\!1\\rangle$),\nonly weakly cleared by the probe",
                     xy=(0.5, yG1), xytext=(2.2, yG1 + 22), color="#b5651d", fontsize=7.6, ha="left",
                     va="center", arrowprops=dict(arrowstyle="-", color="#d2a679", lw=0.8))
@@ -169,24 +178,25 @@ def draw(with_master, outpath, title):
     ax.plot([-3.95, -3.95], [sb0, sb0 + yc(100)], color="#444", lw=2.4)
     ax.text(-4.04, sb0 + yc(100) / 2, "100 MHz", rotation=90, va="center", ha="right", color="#444", fontsize=8.4)
 
-    # ---- beam legend (with both detuning numbers) ----
-    def lab(name, pol, tr, key, role):
-        it, off = D[key]
-        return r"%s $%s$ · %s · %+.0f (%+.0f)%s" % (name, pol, tr, it, off, role)
+    # ---- beam legend (colour = comb line; solid/dashed = forward/retro; with the decomposition label) ----
+    def leglab(name, pol, tr, key):
+        return r"%s $%s$ · %s · %s" % (name, pol, tr, label(key))
     leg = [
-        Line2D([0], [0], color=C["control"], lw=3.0, label=lab("control", "\\sigma^-", "F2$\\to$F'2", "control", " · $\\Omega/2\\pi$=%.1f" % Oc)),
-        Line2D([0], [0], color=C["probe"], lw=3.0, label=lab("probe", "\\sigma^+", "F1$\\to$F'2", "probe", " · $\\Omega/2\\pi$=%.1f" % Op)),
-        Line2D([0], [0], color=C["rep1"], lw=2.4, ls="--", label=lab("repump1", "\\sigma^-", "F1$\\to$F'2", "rep1", " · fwd EOM sideband")),
-        Line2D([0], [0], color=C["rep2"], lw=2.4, ls="--", label=lab("repump2", "\\sigma^+", "F2$\\to$F'1", "rep2", " · retro carrier")),
+        Line2D([0], [0], color=CARRIER, lw=3.0, ls="-",  label=leglab("control (fwd)", "\\sigma^-", "F2$\\to$F'2", "control")),
+        Line2D([0], [0], color=CARRIER, lw=2.4, ls="--", label=leglab("repump2 (retro)", "\\sigma^+", "F2$\\to$F'1", "rep2")),
+        Line2D([0], [0], color=SIDEBAND, lw=3.0, ls="-",  label=leglab("repump1 (fwd)", "\\sigma^-", "F1$\\to$F'2", "rep1")),
+        Line2D([0], [0], color=SIDEBAND, lw=2.4, ls="--", label=leglab("probe (retro)", "\\sigma^+", "F1$\\to$F'2", "probe")),
     ]
     if with_master:
         leg += [
-            Line2D([0], [0], color=C["mast"], lw=2.7, label=lab("master fwd", "\\sigma^+", "F2$\\to$F'1", "mfwd", " · ON-res, cooler slave")),
-            Line2D([0], [0], color=C["four"], lw=2.3, ls="--", label=lab("master retro", "\\sigma^-", "F2$\\to$F'1", "mret", " · benign byproduct")),
+            Line2D([0], [0], color=MASTER, lw=2.7, ls="-",  label=leglab("master (fwd)", "\\sigma^+", "F2$\\to$F'1", "mfwd")),
+            Line2D([0], [0], color=MASTER, lw=2.3, ls="--", label=leglab("master (retro)", "\\sigma^-", "F2$\\to$F'1", "mret")),
         ]
-    ttl = "delivered tones   ·   number = $\\Delta$ from the in-trap level   (in parentheses: $\\Delta$ from the 1064-OFF transition)"
-    bl = ax.legend(handles=leg, loc="upper left", bbox_to_anchor=(0.560, 0.998), frameon=True, fontsize=8.6,
-                   handlelength=2.4, borderpad=0.8, labelspacing=0.55, title=ttl, title_fontsize=9.0)
+    ttl = ("beams: colour = comb line (carrier blue, +1 sideband green, master purple); SOLID = forward, DASHED = retro.\n"
+           "detuning label  $WW(-s-t-g=ZZ)$:  WW = $\\Delta$ from the BARE (1064-OFF) transition; s,t = excited scalar/tensor\n"
+           "shift; g = ground scalar shift; ZZ = the in-trap $\\Delta$.  Each shift raises the transition, so subtracts: ZZ = WW$-$s$-$t$-$g.")
+    bl = ax.legend(handles=leg, loc="upper left", bbox_to_anchor=(0.520, 0.998), frameon=True, fontsize=8.4,
+                   handlelength=2.6, borderpad=0.8, labelspacing=0.55, title=ttl, title_fontsize=8.6)
     ax.add_artist(bl)
 
     # ---- grey-line key ----
@@ -196,25 +206,20 @@ def draw(with_master, outpath, title):
     ax.legend(handles=ghost, loc="upper left", bbox_to_anchor=(0.002, 0.86), frameon=True, fontsize=8.2,
               handlelength=2.6, borderpad=0.5, labelspacing=0.45, title="grey reference lines", title_fontsize=8.6)
 
-    # ---- Stark / delivery box ----
+    # ---- delivery / physics box ----
     common = ("$\\bf{single\\ EOM}$: $f_{mod}=A_{HFS}+2f_A=7.23$ GHz; $2f_A=400$ (tag $\\times2$, DOWN-shifts the retro).\n"
-              "Each arrow's numbers $=$ detuning from the in-trap (Stark-SHIFTED) level $|$ ($\\Delta$ from the 1064-OFF\n"
-              "   transition). Their difference is that transition's total 1064 shift $=$ excited (up) $+$ ground $U_0{=}{-}23$ (down):\n"
-              "   $|F'2,0\\rangle$ $+38$ excited $+23$ ground $=+61$; tensor-null $\\Rightarrow$ same for any geometry.\n")
+              "Each comb line appears twice: FORWARD (solid) and its $-2f_A$ RETRO (dashed), same colour. The carrier is\n"
+              "   control (fwd) / repump2 (retro); the $+1$ sideband is repump1 (fwd) / probe (retro).\n")
     if not with_master:
         txt = (common +
-               "Repumpers are leftover comb tones, deliberately OFF-resonant: repump1 $=$ fwd $+1$ sideband\n"
-               "   $\\to$ F1$\\to$F'2; repump2 $=$ retro carrier $\\to$ F2$\\to$F'1. Nearest lines F'3 / F'0 are\n"
-               "   $\\Delta F=\\pm2$ dipole-FORBIDDEN $\\Rightarrow$ no coupling.")
+               "Repumpers are leftover comb tones, deliberately OFF-resonant: repump1 $\\to$ F1$\\to$F'2; repump2 $\\to$ F2$\\to$F'1.\n"
+               "Nearest lines F'3 / F'0 are $\\Delta F=\\pm2$ dipole-FORBIDDEN $\\Rightarrow$ no coupling.")
     else:
         txt = (common +
-               "$\\bf{master\\ upgrade}$: a dedicated F'1 repumper from a cooler-frequency slave. master fwd $\\sigma^+$\n"
-               "   ON F'1 clears $|2,\\!-\\!2\\rangle$ — the ONE F=2 sublevel the $\\sigma^-$ control cannot reach\n"
-               "   ($|2,\\!-\\!2\\rangle\\!\\to\\!|F'2,\\!-\\!3\\rangle$ forbidden); with no repump 100% piles there and cooling stops.\n"
-               "$|2,\\!+\\!2\\rangle$ is NOT a residual — the $\\sigma^-$ control clears it ($\\to|F'2,\\!+\\!1\\rangle$, near-resonant).\n"
-               "Folded into the tag arm, the master retro sits 400 MHz off F'1 $\\Rightarrow$ benign byproduct.\n"
-               "$\\bf{The\\ real\\ floor\\ is\\ F{=}1\\!-\\!limited}$: $|1,0\\rangle,|1,\\!+\\!1\\rangle$ accumulate, cleared only weakly by\n"
-               "   the off-resonant probe — the intrinsic cost of cooling the multilevel D2 line ($\\bar n_z\\!\\sim\\!0.1$).")
+               "$\\bf{master\\ upgrade}$: a dedicated F'1 repumper (cooler-frequency slave). master fwd $\\sigma^+$ ON F'1 clears\n"
+               "   $|2,\\!-\\!2\\rangle$ — the ONE F=2 sublevel the $\\sigma^-$ control cannot reach ($\\to|F'2,\\!-\\!3\\rangle$ forbidden).\n"
+               "$|2,\\!+\\!2\\rangle$ is NOT a residual — the control clears it ($\\to|F'2,\\!+\\!1\\rangle$). The retro is 400 off F'1 (benign).\n"
+               "$\\bf{Real\\ floor\\ is\\ F{=}1\\!-\\!limited}$: $|1,0\\rangle,|1,\\!+\\!1\\rangle$ cleared only weakly by the probe ($\\bar n_z\\!\\sim\\!0.1$).")
     ax.text(4.45, yc(-150), txt, fontsize=8.2, va="top", ha="left", linespacing=1.5,
             bbox=dict(boxstyle="round,pad=0.7", fc="#f6f6f8", ec="#888", lw=1.0))
 
@@ -232,10 +237,9 @@ def draw(with_master, outpath, title):
 
 
 if __name__ == "__main__":
-    print("1064 (theta=%.0f): scalar +%.1f, ground -%.1f ; F'1 +%.0f/+%.0f ; F'3 +%.0f..+%.0f"
-          % (TH, SCAL, U0, shift(1, 1), shift(1, 0), shift(3, 0), shift(3, 3)))
-    for k in ("control", "rep1", "rep2", "mfwd", "mret"):
-        print("  %-8s in-trap %+7.1f   1064-OFF %+7.1f" % (k, D[k][0], D[k][1]))
+    print("1064 (theta=%.0f): scalar +%.1f, ground -%.1f" % (TH, SCAL, U0))
+    for k in ("control", "probe", "rep1", "rep2", "mfwd", "mret"):
+        print("  %-8s %s" % (k, label(k)))
     draw(False, os.path.join(HERE, "level_scheme.png"),
          r"$^{87}$Rb D2 clock-EIT — delivered tones (no master): the EIT $\Lambda$ + two comb repumpers")
     draw(True, os.path.join(UPG, "level_scheme_dedicated.png"),
