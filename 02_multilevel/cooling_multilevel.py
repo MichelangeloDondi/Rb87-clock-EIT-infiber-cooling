@@ -58,8 +58,12 @@ gF_g = {1: -0.5, 2: +0.5}                            # ground Lande gF (clock pa
 gF_e = 2.0 / 3.0                                     # 5P3/2 Lande gF (equal for F'=1,2,3)
 
 CGc = lambda F, m, q, Fp, mp: float(clebsch_gordan(S(F), 1, S(Fp), S(m), S(q), S(mp)))
-def Sfac(F, Fp):                                     # relative F->F' line strength
+def Sfac(F, Fp):                                     # relative F->F' line strength (= Samp**2)
     return (2 * Fp + 1) * float(wigner_6j(S(1)/2, S(3)/2, 1, S(Fp), S(F), S(3)/2))**2
+def Samp(F, Fp):                                     # SIGNED relative line amplitude (carries the 6j sign)
+    return np.sqrt(2 * Fp + 1) * float(wigner_6j(S(1)/2, S(3)/2, 1, S(Fp), S(F), S(3)/2))
+SIGNED_ADMIX = True   # True: cross-manifold (with_e1/e3) coherent admixtures use the SIGNED line-amplitude
+                      # ratio (correct); False reproduces the old sqrt(Sfac) magnitude (sign-erased) for A/B.
 
 def Eg(F, m, B):                                     # ground energy: hyperfine + linear Zeeman
     return (A_HFS / 2 if F == 2 else -A_HFS / 2) + gF_g[F] * uB * B * m
@@ -152,6 +156,8 @@ def repump_cops(bm_rep, gE, idx, P, If, Dsp, Gset, B, theta):
         for (g, e, cc) in b['edges']:
             if g not in Gset:
                 continue
+            # incoherent rate: sqrt(Sfac) magnitude is fine here -- R and acshift below both go as O**2, so the
+            # reduced-element SIGN is irrelevant (unlike the coherent H, which uses the signed Samp ratio).
             ls = np.sqrt(Sfac(g[0], e[0]) / Sfac(g[0], en[0])) if e[0] != en[0] else 1.0
             O = b['Rabi'] * ls * (cc / cnamed)                    # this edge's Rabi
             d = nu - (Ev(*e) - gE[g])                             # this edge's detuning
@@ -276,12 +282,15 @@ def solve(d2=0.0, clean=False, with_repump=True, with_e1=True, with_e3=True,
         (gn, en) = b['named']
         cnamed = [cc for (g, e, cc) in b['edges'] if g == gn and e == en][0]
         for (g, e, cc) in b['edges']:
-            # ls rescales a cross-manifold (e[0]!=en[0]) leak by the relative line strength. NOTE: sqrt(Sfac)
-            # drops the sign of the reduced matrix element, so the *relative phase* of a cross-manifold path is
-            # approximate. This only touches the with_e1/e3 spoilers (the primary dark state lives inside F'=2
-            # and uses the signed CG ratio cc/cnamed, which is exact); negligible for the floor, but it would
-            # need the signed reduced element if cross-manifold interference were made quantitative.
-            ls = np.sqrt(Sfac(g[0], e[0]) / Sfac(g[0], en[0])) if e[0] != en[0] else 1.0
+            # ls rescales a cross-manifold (e[0]!=en[0]) leak by the relative line amplitude. The SIGNED ratio
+            # Samp/Samp carries the 6j sign of the reduced matrix element -- needed because this is a COHERENT
+            # term whose relative phase matters for the with_e1/e3 admixture interference. (The old sqrt(Sfac)
+            # dropped that sign; |Samp/Samp| == sqrt(Sfac/Sfac), so only the phase changes.) The primary dark
+            # state lives inside F'=2 and uses the signed CG ratio cc/cnamed, which is exact regardless.
+            if e[0] != en[0]:
+                ls = (Samp(g[0], e[0]) / Samp(g[0], en[0])) if SIGNED_ADMIX else np.sqrt(Sfac(g[0], e[0]) / Sfac(g[0], en[0]))
+            else:
+                ls = 1.0
             O = b['Rabi'] * ls * (cc / cnamed)
             i, j = idx[('g', g)], idx[('e', e)]
             H += -(O / 2) * (qt.tensor(P(j, i), Dsp(b['kdir']))
