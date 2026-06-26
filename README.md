@@ -164,7 +164,9 @@ visible). **|F′2,0⟩ is flat at +38 (tensor-null)** — the clean target — 
 blue-detuned by Δ. The two repumpers are not separate lasers — they are the **leftover comb tones**: the forward
 +1 EOM sideband (σ⁻, F=1, at **probe + 400 MHz**) and the retro carrier (σ⁺, F=2, at **control − 400 MHz**; the
 tag down-shifts), both off-resonant. Their nearest **allowed** lines are F′2 (445 MHz, repump1) and F′1
-(198 MHz, repump2); the closer F′3 / F′0 are ΔF=±2 dipole-forbidden. From [`level_scheme.py`](02_multilevel/level_scheme.py).*
+(198 MHz, repump2); the closer F′3 / F′0 are ΔF=±2 dipole-forbidden. Each beam shows two detunings: from the
+in-trap (Stark-shifted) level, and in parentheses from the **1064-OFF** transition — their difference is that
+transition's total 1064 shift (excited up + ground −23 down). From [`level_scheme.py`](02_multilevel/level_scheme.py).*
 
 **(i) Manifold + recoil.** With every m-sublevel, the full recoil, and the per-(F′,m′) 1064 Stark, the clean-Λ
 floor is **0.0032** — just above the recoil-light 0.0013 of §5 (the difference *is* the recoil the 3-level

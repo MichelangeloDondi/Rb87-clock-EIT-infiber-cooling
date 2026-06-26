@@ -23,7 +23,7 @@ dedicated F′1 repumpers — see [`../upgrades/`](../upgrades/README.md).
 | `cooling_multilevel.py` | the multilevel Lindblad floor, repumpers in the computation (~1 min) |
 | `cg_validate.py` | reconstructs known ⁸⁷Rb D2 facts from raw Clebsch–Gordan (checks the conventions) |
 | `explore_configs.py` | the single-EOM / one-AOM configuration sweep (why the current placement wins) |
-| `level_scheme.py` | the 24-level scheme figure (control, probe, the two σ repumpers) |
+| `level_scheme.py` | the 24-level scheme figures on the 1064-shifted manifold — the baseline (no master) here, **and** the master-upgrade variant (written into `../upgrades/`); each beam shows its in-trap detuning with the 1064-OFF value in parentheses |
 
 **Run:** `python level_scheme.py` (no solve) · `python cooling_multilevel.py` (~1 min) ·
 `python cg_validate.py` · `python explore_configs.py`.
