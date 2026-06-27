@@ -298,9 +298,10 @@ before, and is self-contained (its own `config.py`, runnable on its own). Read t
 
 Chapters 05–08 are the roadmap, not yet built.
 
-**Beyond the chapters.** [`appendix/`](appendix/README.md) is a deep-dive on the chapter-04 F′1 leak — *can it be
-cancelled?* (No: a co-propagating tone can't, proven by a Floquet test; the D2 floor bottoms at ≈ 0.055.) It also
-names the **D1 line** as the most promising lever to beat the leak — a future from-scratch calculation.
+**Beyond the chapters.** [`appendix/`](appendix/README.md) collects deep-dives on the chapter-04 **F′1 leak**:
+the leak can't be cancelled by a co-propagating tone (Floquet test → D2 bottoms at ≈ 0.055); the **D1 line** has a
+~41× weaker leak (detuning-driven, not branching — a future from-scratch chapter); the field-noise trade against a
+leak-free but field-sensitive stretched scheme; and the full menu of alternatives (incl. a dRSC pivot) with verdicts.
 
 ## How to run
 
