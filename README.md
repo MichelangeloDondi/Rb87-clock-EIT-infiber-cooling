@@ -26,20 +26,6 @@ a dedicated repumper recovers it. The 0.0013 is the idealized 3-level number: a 
 All frequencies are angular, in 2π·MHz (a literal `6.07` means 2π·6.07 MHz). Every physical number lives in the
 `config.py` of each folder.
 
-## Why these choices
-
-The three questions a reader asks first:
-
-- **Why EIT, not resolved-sideband Raman (RSC)?** The trap is weak — ν_z/Γ ≈ 0.07, deep in the *unresolved*-sideband
-  regime, where RSC fails. EIT builds its own narrow dark-resonance feature, so it cools where the bare linewidth
-  cannot (§3).
-- **Why the D2 line (780 nm)?** The delivery is a telecom chain seeded at 1560 nm and frequency-doubled — 1560/2 =
-  780 nm lands on D2. And on D2 the target |F′2,0⟩ is **tensor-null** (§1): a light-shift-stable, geometry-independent
-  upper state amid the otherwise tensor-split 5P₃/₂ manifold.
-- **Why this g_F·m_F-matched pair, not m_F=0↔m_F=0?** The σ⁺/σ⁻ Λ fits the fibre geometry (axial beams, axial B);
-  m_F=0 states would need π light (transverse B). And a g_F·m_F-matched pair is first-order B-insensitive at *any*
-  field, whereas m_F=0 states are insensitive only near B=0 (§2).
-
 ---
 
 ## 1. The 1064 nm trap, and why the excited state is expelled
