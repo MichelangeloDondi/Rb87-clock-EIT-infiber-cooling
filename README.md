@@ -1,7 +1,6 @@
 # Clock-EIT cooling of a single ⁸⁷Rb atom in a fibre trap — a numerical study
 
-A **numerical feasibility study** — theory plus simulation, with experimentally motivated parameters (*not* an
-experiment) — of EIT sideband cooling of a single ⁸⁷Rb atom on the **axial** motion of a 1064 nm optical-lattice
+A **numerical feasibility study** of EIT sideband cooling of a single ⁸⁷Rb atom on the **axial** motion of a 1064 nm optical-lattice
 trap inside a hollow-core photonic-crystal fibre. The Λ legs are |F=1,m=−1⟩ σ⁺ and |F=2,m=+1⟩ σ⁻, both to
 |F′=2,m′=0⟩. This is a **g_F·m_F-matched "clock" pair** (both legs have g_F·m_F = +½) — *not* the usual
 m_F=0↔m_F=0 clock pair, but it serves the same purpose: a first-order magnetically insensitive two-photon
