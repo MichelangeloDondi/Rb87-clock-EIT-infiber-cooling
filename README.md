@@ -126,8 +126,8 @@ heating is the natural-linewidth tail reaching back to the carrier, scaling as (
 
 $$\boxed{\ \bar n_{\min} \approx \left(\frac{\Gamma}{4\Delta}\right)^2 = \left(\frac{6.07}{180}\right)^2 \approx 0.0011\;}$$
 
-— check it on a calculator. More detuning ⇒ lower floor, until photon recoil (~η² per scatter) takes over.
-That one formula is the supervisable heart of the scheme.
+More detuning ⇒ lower floor, until photon recoil (~η² per scatter) takes over.
+That one formula is the heart of the scheme.
 
 ---
 
