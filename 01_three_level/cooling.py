@@ -1,5 +1,5 @@
 """
-cooling.py -- the LAST-RESORT numerical confirmation of the analytic floor.
+cooling.py -- the LAST-RESORT numerical confirmation of the analytic floor. 
 
 The physics and the algebra (README) get us to the EIT-cooling floor analytically:
   n_min  ~  (Gamma / 4 Delta)^2      [the off-resonant-scatter limit]
@@ -38,6 +38,7 @@ def nbar(delta2):
     # probe leg dressed by the Lamb-Dicke recoil (first order in eta is plenty at eta=0.094)
     LD = tensor(qeye(3), qeye(N)) + 1j * c.eta * (a + a.dag())
     probe = seg1 * LD
+  # control leg only diagonal in the harmonic oscillator space (FM, 30/6/2026) 
 
     # rotating frame: ground states carry the laser detunings; |e> at 0.
     H = ((c.Delta + delta2) * P_g1 + c.Delta * P_g2 + c.nu_z * n
