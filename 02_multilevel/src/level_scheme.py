@@ -8,11 +8,14 @@ Generates TWO figures (one script so the two stay consistent):
 Colour = comb line (same beam forward AND retro share a colour): carrier = blue, +1 sideband = green,
 780 master = purple.  SOLID = forward pass, DASHED = backward (retro) pass.
 
-Each beam's detuning label is the Stark decomposition  WW(-s-t-g=ZZ):
-  WW = detuning from the bare_hf (1064-OFF) transition;
+Each beam's detuning label is the shift decomposition  WW(-s-t-z=ZZ):
+  WW = detuning from the bare (1064-OFF) transition;
   s  = excited scalar 1064 shift (+38);   t = excited tensor 1064 shift (signed);
-  g  = ground scalar 1064 shift (+23);    ZZ = the IN-TRAP detuning the atom sees.
-Each Stark shift raises the F->F' transition, so each SUBTRACTS from the (blue) detuning: ZZ = WW - s - t - g.
+  z  = excited Zeeman (+ vector) shift    (0 for m'=0, or for linear polarization);
+  ZZ = the IN-TRAP single-photon detuning the atom sees (measured to the shifted excited level).
+Each excited-level shift raises the F->F' transition, so each SUBTRACTS: ZZ = WW - s - t - z.  The ground
+scalar shift moves BOTH ground states equally, so it does NOT change this single-photon detuning -- it shifts
+the two-photon resonance instead (set by delta2) -- and therefore does not appear here.
 
 All frequencies are 2*pi*MHz.
 """
@@ -75,14 +78,19 @@ is_forward = dict(control=True, rep1=True, mfwd=True, probe=False, rep2=False, m
 beam_targets = dict(control=(control_probe_freq, 2, 0), probe=(control_probe_freq, 2, 0), rep1=(repump1_freq, 2, 0),
            rep2=(repump2_freq, 1, 0), mfwd=(master_fwd_freq, 1, -1), mret=(master_retro_freq, 1, 1))
 def stark_parts(key):
-    """(WW bare-detuning, s exc-scalar, t exc-tensor, g gnd-scalar, ZZ in-trap detuning); ZZ = WW - s - t - g."""
+    """(WW bare-detuning, s exc-scalar, t exc-tensor, z exc-Zeeman(+vector), ZZ in-trap detuning); ZZ = WW - s - t - z.
+       The ground scalar shift is absent on purpose: this is the single-photon detuning to the (shifted) excited
+       level, which the ground shift does not move -- it moves the two-photon resonance (set by delta2) instead."""
     Llight, Fp, mp = beam_targets[key]
-    s, t, g = scalar_shift, stark.stark_tensor(Fp, mp, theta), trap_depth
-    return (Llight - bare_hf[Fp] + trap_depth, s, t, g, Llight - level_in_trap(Fp, mp))
+    s = scalar_shift
+    t = stark.stark_tensor(Fp, mp, theta)
+    z = zeeman(gF_excited, mp) + stark.stark_vector(c.alpha1_5P32, Fp, mp, c.ellipticity)   # Zeeman (+ vector if elliptical)
+    return (Llight - bare_hf[Fp], s, t, z, Llight - level_in_trap(Fp, mp))
 def label(key):
-    WW, s, t, g, ZZ = stark_parts(key)
+    WW, s, t, z, ZZ = stark_parts(key)
     tterm = -t if abs(t) > 0.5 else 0.0                    # tensor contribution (0.0, not -0.0, when tensor-null)
-    return "%+.0f(%+.0f%+.0f%+.0f=%+.0f)" % (WW, -s, tterm, -g, ZZ)
+    zterm = -z if abs(z) > 0.5 else 0.0                    # Zeeman(+vector); 0 for m'=0 or linear polarization
+    return "%+.0f(%+.0f%+.0f%+.0f=%+.0f)" % (WW, -s, tterm, zterm, ZZ)
 
 
 # ---- drawing primitives (each takes the axes; width/colour come from the tone dictionaries above) ----

@@ -38,9 +38,11 @@ visible). **|F′2,0⟩ is flat at +38 (tensor-null)** — the clean target — 
 beam forward and retro share a colour (carrier = blue, +1 sideband = green); **solid = forward, dashed = retro**.
 The Λ is control σ⁻ (forward carrier) + probe σ⁺ (retro of the +1 sideband); the repumpers are the leftover comb
 tones — repump1 σ⁻ (forward +1 sideband → F1→F′2) and repump2 σ⁺ (retro carrier → F2→F′1), both off-resonant
-(their closer F′3/F′0 lines are ΔF=±2 dipole-forbidden). Each beam's label is the Stark decomposition
-**WW(−s−t−g=ZZ)**: WW = detuning from the bare (1064-OFF) transition; s, t = excited scalar/tensor shift;
-g = ground scalar shift; ZZ = the in-trap detuning (each shift raises the transition, so subtracts). From
+(their closer F′3/F′0 lines are ΔF=±2 dipole-forbidden). Each beam's label is the shift decomposition
+**WW(−s−t−z=ZZ)**: WW = detuning from the bare (1064-OFF) transition; s, t = excited scalar/tensor shift;
+z = excited Zeeman(+vector) shift (0 for m′=0 or linear pol); ZZ = the in-trap single-photon detuning (each
+excited-level shift raises the transition, so subtracts; the ground scalar shift moves both ground states
+equally, so it sets δ₂ rather than this detuning and is absent here). From
 [`level_scheme.py`](src/level_scheme.py).*
 
 ## 3. Repumping is essential — and it is the real cost
@@ -94,7 +96,7 @@ whose only workaround with hardware is the optional dedicated F′1 repumper, th
 | `cooling_multilevel.py` | the multilevel Lindblad floor, repumpers in the computation (~1 min) |
 | `clebsch_gordan_checks.py` | reconstructs known ⁸⁷Rb D2 facts from raw Clebsch–Gordan (checks the conventions) |
 | `explore_configs.py` | the single-EOM / one-AOM configuration sweep (why the current placement wins) |
-| `level_scheme.py` | the 24-level scheme figures on the 1064-shifted manifold — both the baseline (no master) and the master variant, written into this chapter's `images/`; colour = comb line, solid/dashed = forward/retro, each beam's label is the Stark decomposition `WW(−s−t−g=ZZ)` (bare detuning → in-trap) |
+| `level_scheme.py` | the 24-level scheme figures on the 1064-shifted manifold — both the baseline (no master) and the master variant, written into this chapter's `images/`; colour = comb line, solid/dashed = forward/retro, each beam's label is the shift decomposition `WW(−s−t−z=ZZ)` (bare detuning → in-trap) |
 
 **Run:** `python src/level_scheme.py` (no solve) · `python src/cooling_multilevel.py` (~1 min) ·
 `python src/clebsch_gordan_checks.py` · `python src/explore_configs.py`.
