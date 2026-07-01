@@ -80,7 +80,9 @@ leak-free but field-sensitive stretched scheme; and the full menu of alternative
 ## How to run
 
 ```bash
-pip install -r requirements.txt        # numpy, scipy, qutip, sympy, matplotlib
+python3 -m venv .venv                  # an isolated environment (tested on Python 3.9)
+source .venv/bin/activate              # Windows: .venv\Scripts\activate
+pip install -r requirements.txt        # numpy<2, scipy, qutip, sympy, matplotlib (versions pinned)
 
 cd 01_three_level
 python src/stark.py            # trap depth + the 5P3/2 Stark shifts (closed form)
