@@ -8,9 +8,9 @@ m_F=0↔m_F=0 clock pair, but it serves the same purpose: a first-order magnetic
 resonance (§2). **The question: how low does this model predict the axial motion cools?**
 
 > **Status:** work in progress. The 3-level core (ch. 01) is settled and hand-checkable; the multilevel layer
-> (ch. 02) is realistic but its repumper model has a stated validity limit (below); the master (ch. 03) is built —
-> it lowers the floor toward the F′1-leak limit (≈ 0.06), which chapter 04 computes. Numbers are single-atom and
-> on-axis — the atom cloud is not modelled here.
+> (ch. 02) is realistic but its repumper model has a stated validity limit (below); the **F′1 leak** (ch. 03) sets the
+> real floor (best no-master ≈ 0.087), and the optional **master** (ch. 04) pushes it to ≈ 0.055 (leak-limited).
+> Numbers are single-atom and on-axis — the atom cloud is not modelled here.
 
 ## The numbers, honestly
 
@@ -21,9 +21,10 @@ resonance (§2). **The question: how low does this model predict the axial motio
 | multilevel, real delivery | **≈ 0.09** | **+ the real off-resonant repumping**, at the servoed δ₂-optimum (≈ 40 % stuck in dark sublevels) | [`02_multilevel/`](02_multilevel/) |
 
 Quote **0.0032** as the intrinsic cooling limit and **≈ 0.09** as what the minimal single-EOM chain delivers. For this
-chain the **repumping**, not the EIT mechanism, sets the floor — [`03_master/`](03_master/README.md) shows how
-a dedicated repumper recovers it. The 0.0020 is the idealized 3-level number (recoil-free mechanism floor 0.0011):
-a lower bound, not a result.
+chain the **repumping** sets the floor; [`03_dark_vertex/`](03_dark_vertex/README.md) exposes the deeper F′1-leak
+limit underneath (best no-master floor ≈ 0.087), and [`04_master/`](04_master/README.md) how far an optional master
+laser pushes it (≈ 0.055, leak-limited). The 0.0020 is the idealized 3-level number (recoil-free mechanism floor
+0.0011): a lower bound, not a result.
 
 All frequencies are angular, in 2π·MHz (a literal `6.07` means 2π·6.07 MHz). Every physical number lives in the
 `config.py` of each folder.
@@ -80,7 +81,7 @@ whole scheme leans on:
 > |3,0⟩ lowest at +30 MHz. The sign is geometry-dependent: at θ=0, pol ∥ B — the `stark_validate.py` check
 > case — the ordering inverts, stretched lowest at +19 MHz.)
 
-![1064 nm light shifts: ground trapped, the 5P₃/₂ manifold expelled](01_three_level/stark_manifold.png)
+![1064 nm light shifts: ground trapped, the 5P₃/₂ manifold expelled](01_three_level/images/stark_manifold.png)
 
 *The 1064 nm light shifts, every number from [`stark.py`](01_three_level/stark.py). The ground state is pulled
 into a 23 MHz (1.1 mK) well; the whole 5P₃/₂ manifold is pushed up (anti-trapped). The EIT target |F′2,0⟩ sits
@@ -96,7 +97,7 @@ re-derives the Wigner-6j factors from scratch and checks them. "Δ = +45 MHz" is
 
 A Λ on the D2 line, both legs to **one** excited state:
 
-![the clock-EIT Λ scheme](01_three_level/lambda_scheme.png)
+![the clock-EIT Λ scheme](01_three_level/images/lambda_scheme.png)
 
 *Both legs are blue-detuned by Δ = +45 MHz; the two-photon detuning δ₂ = (probe − control) is servoed to the
 **dark resonance** — which lies at δ₂ = 0 in this idealized 3-level Λ, but is shifted by the real manifold's light
@@ -123,7 +124,7 @@ heating). EIT cools by lining the spectrum up so that
 Crucially this needs no resolved sideband (here ν_z/Γ ≈ 0.07): the *narrow EIT feature*, not the natural
 linewidth, gives the selectivity. That is the whole point of EIT cooling.
 
-![EIT spectrum: dark carrier, bright cooling sideband, suppressed heating](01_three_level/eit_spectrum.png)
+![EIT spectrum: dark carrier, bright cooling sideband, suppressed heating](01_three_level/images/eit_spectrum.png)
 
 *Absorption (excited population) vs the two-photon detuning δ₂. Zero at the carrier (the dark resonance), a
 narrow bright peak parked on the cooling sideband at +ν_z, and the heating sideband at −ν_z left in the
@@ -166,7 +167,7 @@ ground-state population P(n=0) ~ 0.998
 spontaneous emission), and just below the full multilevel solver's clean-Λ **0.0032** (§6) — the remaining gap is
 the full m-resolved D2 decay branching that this 3-level model, with its two-channel decay, leaves out.
 
-![cooling curve from a hot start, and the final motional distribution](01_three_level/cooling_curve.png)
+![cooling curve from a hot start, and the final motional distribution](01_three_level/images/cooling_curve.png)
 
 *Left: starting hot (n̄₀ ≈ 2.8), the axial motion cools to the floor in ~140 µs. Right: at steady state
 essentially all the population is in the motional ground state, P(n=0) ≈ 0.999. From
@@ -189,7 +190,7 @@ EBLANA (1560) → EOM → EDFA → PPLN (SHG 780) → HCPCF (trap + delivery) �
 a **single seed and one EOM**: f_mod = A_HFS + 2f_A = 6.83 + 0.40 = 7.23 GHz, with a 200 MHz tag AOM
 double-passed to 2f_A = 400 MHz. The tag **down-shifts** the retro (retro = forward − 2f_A).
 
-![the 24-level scheme on the 1064-shifted 5P₃/₂ manifold](02_multilevel/level_scheme.png)
+![the 24-level scheme on the 1064-shifted 5P₃/₂ manifold](02_multilevel/images/level_scheme.png)
 
 *The four tones on the **1064-shifted** manifold (every level from [`stark.py`](02_multilevel/stark.py) at the
 real θ=90° trap; the grey dotted/dashed lines mark the bare and scalar-only positions, so the tensor shift is
@@ -242,67 +243,72 @@ that protection. A configuration sweep ([`explore_configs.py`](02_multilevel/exp
 current choice is the best of the reachable comb geometries, **capping the single-EOM chain near ~0.1**. (This cap
 is a rate argument plus the reachable-geometry sweep, not a fully computed optimum: the incoherent-rate model is by
 construction invalid *within* ≈ 200 MHz of F′2 — where the dark-state spoiling would have to be treated
-coherently — so it marks that boundary rather than solving across it.) The way below it is a *separate* manifold — dedicated
-repumpers **on F′1** — the subject of §7, and of chapter [`03_master/`](03_master/README.md).
+coherently — so it marks that boundary rather than solving across it.) And underneath the repumping sits a deeper
+limit — the **F′1 leak** (§7) — whose only workaround with hardware is the optional dedicated F′1 repumper, the master laser (§8).
 
 ---
 
-## 7. Adding the master laser ([`03_master/`](03_master/README.md))
+## 7. The second dark vertex — the F′1 leak, and the best floor without the master ([`03_dark_vertex/`](03_dark_vertex/README.md))
 
-§6 leaves the minimal chain **repump-limited at ≈ 0.10**: its repumpers are leftover comb tones stuck near the
-cooling **F′2** manifold — too close to repump strongly without scattering the dark state, too far to repump fast.
-**Chapter 03 adds one piece of hardware** to break that tension: the 780 nm **master laser, run as a dedicated
-repumper on F′1**. Nothing else changes — same fibre, same single-end retro, same tag.
+§6 called the minimal chain "repump-limited at ≈ 0.09." Underneath the repumping sits a floor term the earlier
+sections quietly assumed away: **the EIT dark state is not perfectly dark.** The cooling pair is two-photon
+resonant on **|F′1,0⟩** (157 MHz below |F′2,0⟩) as well as on |F′2,0⟩ — two-photon resonance is fixed by the two
+ground energies and the two laser frequencies, not by which excited state sits between. So the dark state keeps a
+residual coupling onto |F′1,0⟩, which scatters and decays 5/6 → F=1. This **F′1 leak** is set by atomic ratios
+alone (R_c = −0.35, R_p = +1.73; no choice of Rabi frequencies removes it) — the chapter-02 solver already carries
+it coherently, which is *why* the chapter-02 headline is ~0.09, not the 0.0032 mechanism limit.
 
-F′=1 is a *separate* hyperfine level of 5P₃/₂, **157 MHz below F′2**. A tone resonant on F′1 repumps **resonantly**
-(strong) yet sits 157 MHz off the cooling F′2, so it barely scatters the dark state. Its specific job is to clear
-**|2,−2⟩** — the *one* F=2 sublevel the σ⁻ control cannot reach (|2,−2⟩→|F′2,−3⟩ is dipole-forbidden; with no
-repump, population piles there and cooling stops). With |2,−2⟩ cleared, all of F=2 is covered, and the limit moves
-to **F=1**: |1,0⟩ and |1,+1⟩ collect spontaneous decay and are recycled only weakly by the off-resonant probe —
-the intrinsic cost of cooling the real D2 line, and why D2 EIT cooling lands near n̄_z ~ 0.1, not the closed-Λ ideal.
+![the F′1-leak floor ladder and the leak-cancellation curve](03_dark_vertex/images/dark_vertex_floor.png)
 
-![the chapter-03 level scheme: the same delivery with the master F′1 repumper added](03_master/level_scheme_dedicated.png)
+*Left: the floor ladder (at a fixed Δ = 45). The minimal chain (≈ 0.088) and, for reference, the same chain with
+one extra repumper (≈ 0.082) both sit above the 0.0032 limit by the **F′1 leak** — turn the leak off and the floor
+drops to ≈ 0.029, so the ≈ 0.05 that remains is the leak, and no repumper reaches it. Right: the leak is a coherent
+coupling, so scaling the probe's |1,−1⟩→|F′1,0⟩ edge down would recover the floor toward the no-leak ideal — but
+that scale is not a knob you have (R_c, R_p are atomic constants). From
+[`03_dark_vertex/make_figure.py`](03_dark_vertex/make_figure.py).*
+
+**How cold can the chain go with no extra hardware?** The leak's scatter ∝ Δ/(Δ+157)² *grows* with Δ, so — once
+the leak is the limit — the cold operating point wants *smaller* Δ, the opposite of the usual detune-harder
+instinct. But the minimal comb chain cannot follow it there: its repumpers are leftover comb tones stuck near F′2,
+and at small Δ they scatter the dark state more, so the floor *rises* below Δ ≈ 40. Optimised over Δ (leak folded
+in, chain-natural repumper power), the best the single-EOM chain reaches is **n̄_z ≈ 0.087** (near Δ = 45) —
+repump-limited, and the honest answer to "how cold with the hardware already on the table." Beating it needs either
+to **cancel the leak** (a time-dependent / Floquet tone — the frontier past this repo) or to remove the comb-repump
+limitation so the chain *can* drop to the leak-favoured small Δ — which is the job of the optional master laser (§8).
+
+---
+
+## 8. The master laser — a possible upgrade ([`04_master/`](04_master/README.md))
+
+The single-EOM chain is repump-limited at ≈ 0.087 (§7): its comb-tone repumpers sit near the cooling F′2
+manifold — too close to repump hard without scattering the dark state, too far to repump fast, and unable to follow
+the leak to small Δ. **One piece of extra hardware breaks that tension:** the 780 nm **master laser, run as a
+dedicated repumper on F′1.** Nothing else changes — same fibre, same single-end retro, same tag. F′=1 is a
+*separate* hyperfine level 157 MHz below F′2, so a tone resonant on it repumps **strongly** yet barely scatters the
+dark state, and it clears **|2,−2⟩** (the one F=2 sublevel the σ⁻ control cannot reach). With the comb scatter
+gone, the chain can now be run at the leak-favoured **small Δ ≈ 25**.
+
+![the master upgrade level scheme on the 1064-shifted manifold](04_master/images/level_scheme_dedicated.png)
 
 *The chapter-02 delivery with the master folded in, on the 1064-shifted manifold (every level from
 [`stark.py`](02_multilevel/stark.py)): the cooling Λ and the leftover comb repumpers as in §6, **plus the master
 forward σ⁺ resonant on F′1**, whose job is to clear |2,−2⟩ (its down-shifted retro lands 400 MHz off F′1 — a benign
-byproduct). Same encoding as §6: colour = comb line (master = purple), solid = forward, dashed = retro. From
+byproduct). Colour = comb line (master = purple), solid = forward, dashed = retro. From
 [`02_multilevel/level_scheme.py`](02_multilevel/level_scheme.py).*
 
-**How low does it go — honestly.** The master clears |2,−2⟩ and removes the off-resonant comb-tone scattering,
-pulling the floor below the minimal chain's ~0.10. But it **cannot** reach the 0.0032 mechanism limit, for a reason
-the earlier sections quietly assumed away: **the EIT dark state is not perfectly dark.** The cooling pair is
-two-photon resonant on **|F′1,0⟩** as well as |F′2,0⟩ (157 MHz below it), so the dark state keeps a residual
-coupling onto |F′1,0⟩, which scatters and decays 5/6 → F=1. This **F′1 leak** is the dominant floor term — it is
-fixed by atomic ratios (no choice of Rabi frequencies removes it), and the master, a *different* transition, does
-not touch it. So the master is **leak-limited at a few ×10⁻² (≈ 0.06)** — a real gain over the minimal chain, but
-well above the limit. **Chapter 04 (§8) folds the leak into the solve and computes it.** Chapter
-[`03_master/`](03_master/README.md) has the build and the alternatives.
+**Is it a game-changer? — the honest comparison.** Each configuration optimised over Δ, with the leak folded in:
 
----
+| | best floor n̄_z | at Δ | limited by |
+|---|---|---|---|
+| single-EOM chain (no master) | **≈ 0.087** | ~45 | repumping |
+| + the master | **≈ 0.055** | ~25 | the F′1 leak |
 
-## 8. The second dark vertex — computing the master floor ([`04_dark_vertex/`](04_dark_vertex/README.md))
-
-§7 left the master floor as "leak-limited, ≈ 0.06." This chapter computes it. The chapter-02 solver already
-carries the F′1/F′3 spoiler edges coherently (that is *why* its headline is ~0.10, not 0.0032); adding a
-*detuned* dedicated master on top — possible now that the master is far enough off resonance for the
-incoherent-rate model to hold — gives the honest number:
-
-![the master floor with the F′1 leak folded in, and the leak-cancellation curve](04_dark_vertex/dark_vertex_floor.png)
-
-*Left: the floor ladder, each configuration shown at its own cold detuning — the minimal chain at Δ = 45, the
-master at Δ ≈ 30 (where the leak-dominated floor bottoms; see below). Comparing at a *fixed* Δ = 45 separates the
-two effects: the master itself lowers 0.088 → 0.082 (clearing |2,−2⟩ and the comb scatter), and turning the F′1
-leak off then drops it to ≈ 0.029 — so the **≈ 0.05 that remains is the F′1 leak**, and no repumper reaches it
-(re-optimising to Δ ≈ 30 gives the ≈ 0.058 headline). Right: the leak is a coherent coupling, so scaling the probe's |1,−1⟩→|F′1,0⟩ edge
-down recovers the floor toward the no-leak ideal — but the scale is not a knob you have (R_c, R_p are atomic
-constants). From [`04_dark_vertex/make_figure.py`](04_dark_vertex/make_figure.py).*
-
-So the master lands at **n̄_z ≈ 0.06**, leak-limited. Two consequences: the leak's scatter ∝ Δ/(Δ+157)² *grows*
-with Δ in the operating range, so the cold operating point is at **smaller Δ (≈ 30)** once the leak dominates —
-the opposite of the detune-harder instinct; and the only way below ≈ 0.06 is to **cancel the leak** (engineer the
-dark state dark on F′1 too), which needs a time-dependent (Floquet) tone — the frontier past this repo. Full
-treatment in [`04_dark_vertex/`](04_dark_vertex/README.md).
+So the master is a **real but modest** upgrade — ≈ 0.087 → ≈ 0.055 (~37 % colder) — that moves the limit from
+*repumping* to the *leak*. It **cannot** approach the 0.0032 ideal: the F′1 leak, which the master (a different
+transition) does not touch, caps it at a few ×10⁻². Before the leak was folded in, the master looked
+transformative (a clean ~0.10 → ~0.06 heading for the ideal); with the leak in, it is a worthwhile-but-bounded
+gain, and whether it earns the extra 780 nm laser is a genuine call. The build, the alternatives, and the
+leak-cancellation frontier are in [`04_master/`](04_master/README.md) and [`appendix/`](appendix/README.md).
 
 ---
 
@@ -315,8 +321,8 @@ before, and is self-contained (its own `config.py`, runnable on its own). Read t
 |---|---|---|---|---|
 | **01** | [`01_three_level/`](01_three_level/) | the idealized 3-level Λ: trap, Stark shifts, the EIT mechanism, the (Γ/4Δ)² floor | §1–§5 | **built** · n̄_z = 0.0020 |
 | **02** | [`02_multilevel/`](02_multilevel/) | the real ⁸⁷Rb D2 manifold + photon recoil + the single-EOM comb delivery (probe, control, retro-reflection) | §6 | **built** · 0.0032 clean / ≈ 0.09 real |
-| **03** | [`03_master/`](03_master/README.md) | the 780 master laser as a dedicated F′1 repumper | §7 | **built** · clears the dark sublevel + comb scatter (~0.10 → ≈ 0.06, leak-limited) |
-| **04** | [`04_dark_vertex/`](04_dark_vertex/README.md) | the second dark vertex: the cooling pair is two-photon resonant on the F′1 m′=0 state too, so the dark state isn't perfectly dark — folds that leak in and computes the master floor | §8 | **built** · ≈ 0.06 (leak-limited) |
+| **03** | [`03_dark_vertex/`](03_dark_vertex/README.md) | the second dark vertex: the cooling pair is two-photon resonant on the F′1 m′=0 state too, so the dark state isn't perfectly dark — folds that leak in and finds the best floor **without** the master | §7 | **built** · ≈ 0.087 (no-master, repump-limited) |
+| **04** | [`04_master/`](04_master/README.md) | the 780 master laser as a dedicated F′1 repumper — a possible upgrade; does it earn the extra hardware? | §8 | **built** · ≈ 0.055 (leak-limited) |
 | 05 | *(planned)* | the anti-trapping heating from the expelled 5P₃/₂ excited state, computed explicitly (estimated < 2 % in the scope notes) | — | planned |
 | 06 | *(planned)* | the atom cloud (frozen atoms): a spread of ν_z and light shifts off-axis | — | planned |
 | 07 | *(planned)* | the full semiclassical Monte-Carlo simulation | — | planned |
@@ -324,7 +330,7 @@ before, and is self-contained (its own `config.py`, runnable on its own). Read t
 
 Chapters 05–08 are the roadmap, not yet built.
 
-**Beyond the chapters.** [`appendix/`](appendix/README.md) collects deep-dives on the chapter-04 **F′1 leak**:
+**Beyond the chapters.** [`appendix/`](appendix/README.md) collects deep-dives on the chapter-03 **F′1 leak**:
 the leak can't be cancelled by a co-propagating tone (Floquet test → D2 bottoms at ≈ 0.055); the **D1 line** has a
 ~41× weaker leak (detuning-driven, not branching — a future from-scratch chapter); the field-noise trade against a
 leak-free but field-sensitive stretched scheme; and the full menu of alternatives (incl. a dRSC pivot) with verdicts.
@@ -345,12 +351,12 @@ python level_scheme.py        # the 24-level scheme figure (no solve)
 python cooling_multilevel.py  # the realistic floor with recoil + repumping  (~1 min)
 python explore_configs.py     # the single-EOM configuration sweep
 
-cd ../03_master
-python upgrade_figures.py     # the chapter-03 figures: floor ladder + benches (no solve)
+cd ../03_dark_vertex
+python cooling_dark_vertex.py # the F′1 leak + the best no-master floor, scanned over Δ  (~minutes; qutip)
+python make_figure.py         # the chapter-03 figure (no solve)
 
-cd ../04_dark_vertex
-python cooling_dark_vertex.py # the master floor with the F′1 leak folded in  (~minutes; qutip)
-python make_figure.py         # the chapter-04 figure (no solve)
+cd ../04_master
+python upgrade_figures.py     # the master-upgrade figures: floor ladder + benches (no solve)
 
 cd ../appendix
 python cancellation_floquet.py # the leak-cancellation Floquet test  (~minutes; qutip)

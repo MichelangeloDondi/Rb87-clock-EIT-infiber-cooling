@@ -3,7 +3,7 @@ make_figure.py -- the appendix figure: (left) the canceller verdict (static prox
 (right) the leak-aware Delta optimum (the coldest the D2 scheme delivers).
 
 Pure matplotlib (no solve). The plotted values are the output of cancellation_floquet.py (panel A) and of
-04_dark_vertex's floor() scanned over Delta (panel B); they are written here as constants so the figure
+03_dark_vertex's floor() scanned over Delta (panel B); they are written here as constants so the figure
 regenerates without qutip. Numbers are ~10% Delta-/run-dependent -- read them as "a few x 10^-2".
 
 Run:  python make_figure.py
@@ -46,7 +46,7 @@ axA.set_title("Can a tone cancel the leak? The Floquet verdict\n"
 axA.legend(fontsize=8.6, loc="lower left")
 axA.grid(alpha=0.25, which="both")
 
-# ---- panel B: the leak-aware Delta optimum (04_dark_vertex floor scan) ----
+# ---- panel B: the leak-aware Delta optimum (03_dark_vertex floor scan) ----
 Ds   = np.array([15, 20, 25, 30, 35, 45, 55])
 fon  = np.array([0.0602, 0.0556, 0.0554, 0.0581, 0.0632, 0.0825, 0.1199])   # floor with the leak (honest)
 foff = np.array([0.0394, 0.0327, 0.0301, 0.0292, 0.0290, 0.0298, 0.0312])   # no-leak floor (unreachable)
@@ -69,5 +69,5 @@ axB.grid(alpha=0.25)
 
 fig.suptitle("The leak frontier — cancellation fails; the D2 scheme bottoms out near 0.055", fontsize=13.5, y=1.02)
 fig.tight_layout()
-fig.savefig(os.path.join(HERE, "cancellation_verdict.png"), dpi=140, bbox_inches="tight")
+fig.savefig(os.path.join(HERE, "images", "cancellation_verdict.png"), dpi=140, bbox_inches="tight")
 print("wrote cancellation_verdict.png")

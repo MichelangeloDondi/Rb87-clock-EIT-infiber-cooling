@@ -50,7 +50,7 @@ def eit_spectrum():
     for s in ("top", "right"):
         ax.spines[s].set_visible(False)
     fig.tight_layout()
-    fig.savefig(os.path.join(HERE, "eit_spectrum.png"), dpi=150)
+    fig.savefig(os.path.join(HERE, "images", "eit_spectrum.png"), dpi=150)
     print("wrote eit_spectrum.png")
 
 
@@ -104,7 +104,7 @@ def cooling_curve(n_init=3.0, N=16):
         for s in ("top", "right"):
             ax.spines[s].set_visible(False)
     fig.tight_layout()
-    fig.savefig(os.path.join(HERE, "cooling_curve.png"), dpi=150)
+    fig.savefig(os.path.join(HERE, "images", "cooling_curve.png"), dpi=150)
     print("wrote cooling_curve.png")
 
 
@@ -139,7 +139,7 @@ def stark_manifold():
     for s in ("top", "right", "bottom"):
         ax.spines[s].set_visible(False)
     fig.tight_layout()
-    fig.savefig(os.path.join(HERE, "stark_manifold.png"), dpi=150)
+    fig.savefig(os.path.join(HERE, "images", "stark_manifold.png"), dpi=150)
     print("wrote stark_manifold.png")
 
 
@@ -194,7 +194,7 @@ def lambda_scheme():
     for s in ax.spines.values():
         s.set_visible(False)
     fig.tight_layout()
-    fig.savefig(os.path.join(HERE, "lambda_scheme.png"), dpi=150, bbox_inches="tight")
+    fig.savefig(os.path.join(HERE, "images", "lambda_scheme.png"), dpi=150, bbox_inches="tight")
     print("wrote lambda_scheme.png")
 
 

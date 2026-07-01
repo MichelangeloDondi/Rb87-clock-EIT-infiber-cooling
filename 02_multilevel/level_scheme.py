@@ -3,7 +3,7 @@ level_scheme.py -- the delivered tones on the 1064-shifted 87Rb 5P3/2 manifold, 
 
 Generates TWO figures (one script so the two stay consistent):
   level_scheme.png                          (here, 02_multilevel/) -- the BASELINE: 4 comb tones, no master
-  ../03_master/level_scheme_dedicated.png                            -- the MASTER upgrade: + the master F'1 repumper
+  ../04_master/images/level_scheme_dedicated.png                            -- the MASTER upgrade: + the master F'1 repumper
 
 Colour = comb line (same beam forward AND retro share a colour): carrier = blue, +1 sideband = green,
 780 master = purple.  SOLID = forward pass, DASHED = backward (retro) pass.
@@ -27,7 +27,7 @@ import stark
 import config as c
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-UPG  = os.path.join(os.path.dirname(HERE), "03_master")
+UPG  = os.path.join(os.path.dirname(HERE), "04_master", "images")
 plt.rcParams.update({"font.size": 11, "font.family": "DejaVu Sans"})
 
 # ---- 1064 light shifts from stark.py (theta = the real transverse-lattice angle) ----
@@ -220,7 +220,7 @@ def draw(with_master, outpath, title):
                "   $|2,\\!-\\!2\\rangle$ — the ONE F=2 sublevel the $\\sigma^-$ control cannot reach ($\\to|F'2,\\!-\\!3\\rangle$ forbidden).\n"
                "$|2,\\!+\\!2\\rangle$ is NOT a residual — the control clears it ($\\to|F'2,\\!+\\!1\\rangle$). The retro is 400 off F'1 (benign).\n"
                "$\\bf{Floor\\ set\\ by\\ the\\ F'1\\ leak}$: the pair is 2-photon resonant on $|F'1,0\\rangle$ too, so the dark state\n"
-               "   scatters there ($\\to$5/6 into F=1). The master can't fix it $\\Rightarrow \\bar n_z\\!\\approx\\!0.06$ (chapter 04).")
+               "   scatters there ($\\to$5/6 into F=1). The master can't fix it $\\Rightarrow \\bar n_z\\!\\approx\\!0.06$ (chapter 03).")
     ax.text(4.45, yc(-150), txt, fontsize=8.2, va="top", ha="left", linespacing=1.5,
             bbox=dict(boxstyle="round,pad=0.7", fc="#f6f6f8", ec="#888", lw=1.0))
 
@@ -241,7 +241,7 @@ if __name__ == "__main__":
     print("1064 (theta=%.0f): scalar +%.1f, ground -%.1f" % (TH, SCAL, U0))
     for k in ("control", "probe", "rep1", "rep2", "mfwd", "mret"):
         print("  %-8s %s" % (k, label(k)))
-    draw(False, os.path.join(HERE, "level_scheme.png"),
+    draw(False, os.path.join(HERE, "images", "level_scheme.png"),
          r"$^{87}$Rb D2 clock-EIT — delivered tones (no master): the EIT $\Lambda$ + two comb repumpers")
     draw(True, os.path.join(UPG, "level_scheme_dedicated.png"),
          r"$^{87}$Rb D2 clock-EIT — the master upgrade: + a dedicated F'1 repumper (master fwd $\sigma^+$, retro benign)")

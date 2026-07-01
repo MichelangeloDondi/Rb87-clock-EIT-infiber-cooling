@@ -12,7 +12,7 @@ real delivery (off-resonant comb repumpers)   <n_z> ~ 0.10     (~40% stuck in da
 ```
 
 For this minimal chain the **repumping**, not the EIT mechanism, sets the floor. Going below ~0.1 needs
-dedicated F′1 repumpers — see [`../03_master/`](../03_master/README.md).
+dedicated F′1 repumpers — see [`../04_master/`](../04_master/README.md).
 
 **Files**
 
@@ -23,7 +23,7 @@ dedicated F′1 repumpers — see [`../03_master/`](../03_master/README.md).
 | `cooling_multilevel.py` | the multilevel Lindblad floor, repumpers in the computation (~1 min) |
 | `cg_validate.py` | reconstructs known ⁸⁷Rb D2 facts from raw Clebsch–Gordan (checks the conventions) |
 | `explore_configs.py` | the single-EOM / one-AOM configuration sweep (why the current placement wins) |
-| `level_scheme.py` | the 24-level scheme figures on the 1064-shifted manifold — the baseline (no master) here, **and** the chapter-03 variant (written into `../03_master/`); colour = comb line, solid/dashed = forward/retro, each beam's label is the Stark decomposition `WW(−s−t−g=ZZ)` (bare detuning → in-trap) |
+| `level_scheme.py` | the 24-level scheme figures on the 1064-shifted manifold — the baseline (no master) here, **and** the chapter-04 variant (written into `../04_master/`); colour = comb line, solid/dashed = forward/retro, each beam's label is the Stark decomposition `WW(−s−t−g=ZZ)` (bare detuning → in-trap) |
 
 **Run:** `python level_scheme.py` (no solve) · `python cooling_multilevel.py` (~1 min) ·
 `python cg_validate.py` · `python explore_configs.py`.

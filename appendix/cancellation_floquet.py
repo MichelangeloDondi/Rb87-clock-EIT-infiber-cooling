@@ -1,5 +1,5 @@
 """
-cancellation_floquet.py -- can the F'1 leak (chapter 04) be cancelled?  The Floquet verdict.
+cancellation_floquet.py -- can the F'1 leak (chapter 03) be cancelled?  The Floquet verdict.
 
 Chapter 04 showed that *if* the dark state's residual coupling onto |F'1,0> could be removed, the floor
 would recover from ~0.06 toward the ~0.03 no-leak ideal -- but it tested this by SCALING the probe's
@@ -33,7 +33,7 @@ import numpy as np, qutip as qt
 
 Delta, S, Gam = 45.0, 157.0, 6.07          # detuning, F'2-F'1 spacing, linewidth (2pi MHz)
 Om_c, Om_p = 4.0, 2.0                       # representative dark-state Rabis
-R_c, R_p = -0.346, 1.732                    # the atomic F'1/F'2 coupling ratios (from chapter 04)
+R_c, R_p = -0.346, 1.732                    # the atomic F'1/F'2 coupling ratios (from chapter 03)
 
 _k = lambda i: qt.basis(4, i)
 _op = lambda i, j: _k(i) * _k(j).dag()

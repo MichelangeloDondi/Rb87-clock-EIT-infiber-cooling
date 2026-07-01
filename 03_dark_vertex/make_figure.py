@@ -1,8 +1,8 @@
 """
-make_figure.py -- the chapter-04 figure: (left) the floor ladder with the F'1 leak folded in,
+make_figure.py -- the chapter-03 figure: (left) the floor ladder with the F'1 leak folded in,
 (right) the leak-cancellation curve.
 
-Pure matplotlib (no solve), like 03_master/upgrade_figures.py. The plotted floors are the output
+Pure matplotlib (no solve), like 04_master/upgrade_figures.py. The plotted floors are the output
 of cooling_dark_vertex.py (run it to reproduce them); they are written here as constants so the
 figure regenerates without qutip. All values are ~10% Delta-/run-dependent -- read them as "a few
 x 10^-2", not to the last digit.
@@ -84,5 +84,5 @@ for s in ("top", "right"):
 fig.suptitle(r"Chapter 04 — the second dark vertex: $|D_2\rangle$ is not dark on $|F'1,0\rangle$  "
              r"($R_c=%.2f,\ R_p=%+.2f$)" % (R_c, R_p), fontsize=13.5, y=1.02)
 fig.tight_layout()
-fig.savefig(os.path.join(HERE, "dark_vertex_floor.png"), dpi=140, bbox_inches="tight")
+fig.savefig(os.path.join(HERE, "images", "dark_vertex_floor.png"), dpi=140, bbox_inches="tight")
 print("wrote dark_vertex_floor.png")

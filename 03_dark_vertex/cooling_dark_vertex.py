@@ -1,5 +1,5 @@
 """
-04_dark_vertex -- fold the |F'1,0> leak into the solve, and compute the master floor.
+03_dark_vertex -- fold the |F'1,0> leak into the solve, and compute the master floor.
 
 The cooling pair |2,+1>, |1,-1> is two-photon resonant on EVERY m'=0 excited state it can reach --
 |F'2,0> (the intended vertex) AND |F'1,0> (157 MHz below it). Two-photon resonance is fixed by the
@@ -10,7 +10,7 @@ between. So the EIT dark state
 
 is NOT dark on F'1: it keeps a residual coupling onto |F'1,0>, which decays 5/6 to F=1 and loads the
 F=1 dark states. That leak -- not repumper inefficiency, not the master placement -- is the dominant,
-master-proof floor term, and it is what sets the master floor at ~0.06 (chapter 03's design only
+master-proof floor term, and it is what sets the master floor at ~0.06 (chapter 04's design only
 called it a target; here it is computed).
 
 This module reuses 02_multilevel/cooling_multilevel.py verbatim. Its `with_e1` already carries the
@@ -140,8 +140,18 @@ if __name__ == "__main__":
     ]
     for label, val in rows:
         print("      %-46s  n_z = %.4f" % (label, val))
-    print("\n      => master floor ~ 0.06 (leak-limited).  The master earns 0.10 -> ~0.06 (clears |2,-2>")
-    print("         and kills the comb scatter); the LEAK (~0.045) is what's left, and it is master-proof.")
+    print("\n      => at fixed Delta=45 the master earns 0.088 -> 0.082 (clears |2,-2> + comb scatter); the")
+    print("         LEAK (0.082 -> 0.029 with the leak off) is the ~0.05 that remains, and it is master-proof.")
+
+    print("\n" + "=" * 82)
+    print("2b. The game-changer test: best floor vs Delta (leak ON), no-master chain vs the master:\n")
+    print("      Delta   no-master (comb)   + master")
+    for D in (25, 30, 35, 45):
+        print("      %4.0f       %.4f           %.4f" % (D, floor(D, True, 1.0, None), floor(D, True, 0.0, MASTER)))
+    print("\n      => WITHOUT the master the comb chain is best at large Delta (~0.087, repump-limited: its")
+    print("         comb tones sit near F'2 and can't follow the leak to small Delta). WITH the master the")
+    print("         leak-favoured small Delta~25 is reachable (~0.055, leak-limited). So the master is a real")
+    print("         but modest upgrade (0.087 -> 0.055), NOT a route to the 0.0032 ideal.")
 
     print("\n" + "=" * 82)
     print("3.  Can the leak be cancelled?  Scale the probe's F'1 edge (constructive dark engineering):\n")

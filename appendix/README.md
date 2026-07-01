@@ -1,7 +1,7 @@
 # Appendix — the leak frontier
 
 This appendix sits **outside the numbered 01–08 chapters**. Those build the model up in realism; this is a set of
-focused deep-dives on the question chapter 04 raised — the **F′1 leak** that caps the D2 master floor at ≈ 0.06 —
+focused deep-dives on the question chapter 03 raised — the **F′1 leak** that caps the D2 master floor at ≈ 0.06 —
 and on what, if anything, beats it.
 
 | note | question | verdict |

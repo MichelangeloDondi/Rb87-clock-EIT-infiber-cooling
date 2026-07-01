@@ -8,7 +8,7 @@ vertex — but the clean candidate is **field-sensitive**, so the choice becomes
 
 - **Clock pair** (this repo): |1,−1⟩(σ⁻) + |2,+1⟩(σ⁻… σ⁺) → |F′2,0⟩. Both legs have g_F·m_F = +½, so the
   two-photon resonance is **first-order field-insensitive** (slope 0, exact). It pays the F′1 leak — floor
-  ≈ 0.055–0.086 (chapters 04–05 / [cancellation.md](cancellation.md)).
+  ≈ 0.055–0.086 (chapter 03 / [cancellation.md](cancellation.md)).
 - **Stretched** ([colleague's scheme](https://github.com/valepioli/EIT_cooling_simulation),
   `EIT_cooling_Rb_F1_axial`): with **B along the fibre axis** the axial beams drive only σ (π would need a field
   component along the beams, which the axial geometry lacks), so both legs are σ⁻ at m_F = −1 —

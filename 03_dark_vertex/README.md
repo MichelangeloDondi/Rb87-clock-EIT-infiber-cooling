@@ -1,8 +1,9 @@
-# 04 — the second dark vertex (the F′1 leak)
+# 03 — the second dark vertex: the F′1 leak, and the best floor without the master
 
-Chapter 03 added the master and could describe its floor only as "leak-limited, ≈ 0.06." **Chapter 04
-folds the leak into the solve and computes it.** The result: the master floor is **≈ 0.06**, set by a
-piece of physics the earlier chapters assumed away — **the EIT dark state is not perfectly dark.**
+Chapter 02 delivered the real chain at ≈ 0.09 and called it "repump-limited." **This chapter folds in the piece of
+physics underneath that number — the EIT dark state is not perfectly dark** — and asks how cold the chain gets with
+**no extra hardware**. The answer: the F′1 leak sets a floor the single-EOM chain reaches at **≈ 0.087** (optimised
+over Δ); going below it needs the optional master laser (chapter 04) or leak cancellation (appendix).
 
 > The physics is in §7–§8 of the [main README](../README.md). This folder is the solver, the figure,
 > and the numbers.
@@ -32,12 +33,12 @@ Because **R_c ≠ R_p**, no choice of Rabi frequencies can make |D2⟩ dark on F
 residual coupling Ω_res ∝ Ω_c Ω_p (R_c − R_p)/N is nonzero for any drive. |F′1,0⟩ decays **5/6 → F=1**,
 so this leak is exactly what loads the F=1 dark states. The F=1 floor is *downstream* of the leak.
 
-## 2. The master floor (`cooling_dark_vertex.py`)
+## 2. The floor, with and without the master (`cooling_dark_vertex.py`)
 
 The chapter-02 solver already carries the F′1/F′3 spoiler edges coherently (its `with_e1`/`with_e3`),
-at the cooling-Λ frequency, so the rotating frame still closes (conf = 0). This chapter adds one thing:
-a **dedicated master**, a *detuned* F2→F′1 σ⁺ repumper (det ≫ 3Γ, so the incoherent-rate model stays
-valid — and the lightest touch that clears |2,−2⟩ is what the physics wants anyway).
+at the cooling-Λ frequency, so the rotating frame still closes (conf = 0). `cooling_dark_vertex.py` scans the floor
+over Δ with the leak in — and, as a *preview* of chapter 04, adds a **detuned dedicated master** (a F2→F′1 σ⁺
+repumper, det ≫ 3Γ so the incoherent-rate model stays valid) to show how far the leak lets you go:
 
 ```
    minimal single-EOM chain (comb),  leak ON,  Δ = 45    n̄_z ≈ 0.088     (≈ chapter 02's 0.10)
@@ -47,14 +48,14 @@ valid — and the lightest touch that clears |2,−2⟩ is what the physics want
    master config (comb suppressed),  leak ON,  Δ = 30    n̄_z ≈ 0.058     (leak-aware optimum → the headline)
 ```
 
-![the master floor with the F′1 leak folded in, and the cancellation curve](dark_vertex_floor.png)
+![the master floor with the F′1 leak folded in, and the cancellation curve](images/dark_vertex_floor.png)
 
 Reading these:
 
-- **The master helps, modestly.** Comparing at a *fixed* Δ = 45 isolates its effect: it pulls the
-  realistic floor from ≈ 0.088 to ≈ 0.082 by clearing |2,−2⟩ and removing the leftover-comb scatter.
-  Re-optimising to the leak-aware Δ ≈ 30 (next bullet) then gives the ≈ 0.058 headline. The chapter-03
-  motivation stands.
+- **Without the master, ≈ 0.087 is the floor.** The comb chain (first row) is repump-limited: its tones sit near
+  F′2 and cannot follow the leak to small Δ, so optimising over Δ does not beat ≈ 0.087 — that is the best this
+  hardware delivers. *(The master rows preview chapter 04: at a fixed Δ = 45 the master buys 0.088 → 0.082, and
+  enabling the small Δ ≈ 25–30 then reaches ≈ 0.055 — whether that gain earns the extra laser is chapter 04's call.)*
 - **But the floor is the leak.** At the *same* Δ = 45, turning the leak off drops the master config from
   ≈ 0.082 to ≈ 0.029 — so the **≈ 0.05 gap is the F′1 leak**, and **no repumper reaches into it**: it is
   the dark state itself scattering, not an unpumped reservoir, so the master (a different transition)
