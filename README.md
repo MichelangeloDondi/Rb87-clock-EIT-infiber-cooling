@@ -57,7 +57,7 @@ The three questions a reader asks first:
 
 ## 1. The 1064 nm trap, and why the excited state is expelled
 
-The trap at a glance (every number from [`config.py`](01_three_level/config.py) / [`stark.py`](01_three_level/stark.py)):
+The trap at a glance (every number from [`config.py`](01_three_level/src/config.py) / [`stark.py`](01_three_level/src/stark.py)):
 
 | parameter | value | | parameter | value |
 |---|---|---|---|---|
@@ -93,11 +93,11 @@ whole scheme leans on:
 
 ![1064 nm light shifts: ground trapped, the 5P₃/₂ manifold expelled](01_three_level/images/stark_manifold.png)
 
-*The 1064 nm light shifts, every number from [`stark.py`](01_three_level/stark.py). The ground state is pulled
+*The 1064 nm light shifts, every number from [`stark.py`](01_three_level/src/stark.py). The ground state is pulled
 into a 23 MHz (1.1 mK) well; the whole 5P₃/₂ manifold is pushed up (anti-trapped). The EIT target |F′2,0⟩ sits
 at the pure-scalar +38 MHz — fixed by the 6j-null, the same in any polarization geometry.*
 
-Run [`python stark.py`](01_three_level/stark.py) for every number above; [`stark_validate.py`](01_three_level/stark_validate.py)
+Run [`python src/stark.py`](01_three_level/src/stark.py) for every number above; [`stark_validate.py`](01_three_level/src/stark_validate.py)
 re-derives the Wigner-6j factors from scratch and checks them. "Δ = +45 MHz" is measured from the *in-trap*
 |F′2,0⟩.
 
@@ -114,7 +114,7 @@ A Λ on the D2 line, both legs to **one** excited state:
 shifts (§6). Both ground states have g_F·m_F = +½, so their linear Zeeman shifts are **equal** and the two-photon resonance
 is **first-order field-insensitive at any field** — the "clock" property (m_F=0 clock states, by contrast, are
 insensitive only near B=0). A residual **second-order (quadratic) Zeeman** differential remains; the δ₂ servo
-absorbs it, and the cooling floor itself is field-insensitive. From [`plots.py`](01_three_level/plots.py).*
+absorbs it, and the cooling floor itself is field-insensitive. From [`plots.py`](01_three_level/src/plots.py).*
 
 ---
 
@@ -138,7 +138,7 @@ linewidth, gives the selectivity. That is the whole point of EIT cooling.
 
 *Absorption (excited population) vs the two-photon detuning δ₂. Zero at the carrier (the dark resonance), a
 narrow bright peak parked on the cooling sideband at +ν_z, and the heating sideband at −ν_z left in the
-transparency window. Computed by [`plots.py`](01_three_level/plots.py).*
+transparency window. Computed by [`plots.py`](01_three_level/src/plots.py).*
 
 ---
 
@@ -161,7 +161,7 @@ That one formula is the supervisable heart of the scheme.
 
 ---
 
-## 5. The number ([`01_three_level/cooling.py`](01_three_level/cooling.py))
+## 5. The number ([`01_three_level/cooling.py`](01_three_level/src/cooling.py))
 
 The exact steady state of the driven Λ dressed by the oscillator has no clean closed form, so **this is the one
 place the 3-level core uses code** — a ~60-line `qutip` master equation (3 levels ⊗ oscillator), scanned over
@@ -181,17 +181,17 @@ the full m-resolved D2 decay branching that this 3-level model, with its two-cha
 
 *Left: starting hot (n̄₀ ≈ 2.8), the axial motion cools to the floor in ~140 µs. Right: at steady state
 essentially all the population is in the motional ground state, P(n=0) ≈ 0.999. From
-[`plots.py`](01_three_level/plots.py).*
+[`plots.py`](01_three_level/src/plots.py).*
 
 ---
 
-## 6. The real manifold and the delivery ([`02_multilevel/cooling_multilevel.py`](02_multilevel/cooling_multilevel.py))
+## 6. The real manifold and the delivery ([`02_multilevel/cooling_multilevel.py`](02_multilevel/src/cooling_multilevel.py))
 
 The clean 3-level Λ idealises two things; this layer puts them back — the full ⁸⁷Rb D2 manifold (8 ground
 sublevels + the 5P₃/₂ levels), real Clebsch–Gordan couplings and photon recoil. It is a standard multilevel
 Lindblad solve; the CG / line-strength conventions are checked against the known D2 branching by
-[`clebsch_gordan_checks.py`](02_multilevel/clebsch_gordan_checks.py), and the per-(F′,m′) 1064 Stark comes from the same
-[`stark.py`](02_multilevel/stark.py) as §1. The tones are made and delivered by the finalised chain
+[`clebsch_gordan_checks.py`](02_multilevel/src/clebsch_gordan_checks.py), and the per-(F′,m′) 1064 Stark comes from the same
+[`stark.py`](02_multilevel/src/stark.py) as §1. The tones are made and delivered by the finalised chain
 
 ```
 EBLANA (1560) → EOM → EDFA → PPLN (SHG 780) → HCPCF (trap + delivery) → AOM (tag, ×2 pass) → retro
@@ -202,7 +202,7 @@ double-passed to 2f_A = 400 MHz. The tag **down-shifts** the retro (retro = forw
 
 ![the 24-level scheme on the 1064-shifted 5P₃/₂ manifold](02_multilevel/images/level_scheme.png)
 
-*The four tones on the **1064-shifted** manifold (every level from [`stark.py`](02_multilevel/stark.py) at the
+*The four tones on the **1064-shifted** manifold (every level from [`stark.py`](02_multilevel/src/stark.py) at the
 real θ=90° trap; the grey dotted/dashed lines mark the bare and scalar-only positions, so the tensor shift is
 visible). **|F′2,0⟩ is flat at +38 (tensor-null)** — the clean target — while **F′1 fans to +33/+48** and
 **F′3 fans with the stretched |3,±3⟩ highest (+47) and |3,0⟩ lowest (+30)**. **Colour = comb line**, so the same
@@ -212,7 +212,7 @@ tones — repump1 σ⁻ (forward +1 sideband → F1→F′2) and repump2 σ⁺ (
 (their closer F′3/F′0 lines are ΔF=±2 dipole-forbidden). Each beam's label is the Stark decomposition
 **WW(−s−t−g=ZZ)**: WW = detuning from the bare (1064-OFF) transition; s, t = excited scalar/tensor shift;
 g = ground scalar shift; ZZ = the in-trap detuning (each shift raises the transition, so subtracts). From
-[`level_scheme.py`](02_multilevel/level_scheme.py).*
+[`level_scheme.py`](02_multilevel/src/level_scheme.py).*
 
 **(i) Manifold + recoil.** With every m-sublevel, the full recoil, and the per-(F′,m′) 1064 Stark, the clean-Λ
 floor is **0.0032** — just above the 3-level's **0.0020** of §5 (both carry the full photon recoil; the
@@ -249,7 +249,7 @@ f_mod and the tag shift 2f_A, and *one* AOM moves repump1 (F=1) and repump2 (F=2
 so you cannot pull both onto a useful line. Worse, every leftover tone lives near the **cooling F′2 manifold**,
 and a tone close to F′2 scatters the EIT dark state — a rate estimate puts that scatter at the cooling rate itself
 once a tone comes within ≈ 200 MHz of F′2. So the repumpers *must* sit ≳ 200 MHz off F′2 — the large detunings are
-that protection. A configuration sweep ([`explore_configs.py`](02_multilevel/explore_configs.py)) confirms the
+that protection. A configuration sweep ([`explore_configs.py`](02_multilevel/src/explore_configs.py)) confirms the
 current choice is the best of the reachable comb geometries, **capping the single-EOM chain near ~0.1**. (This cap
 is a rate argument plus the reachable-geometry sweep, not a fully computed optimum: the incoherent-rate model is by
 construction invalid *within* ≈ 200 MHz of F′2 — where the dark-state spoiling would have to be treated
@@ -275,7 +275,7 @@ one extra repumper (≈ 0.082) both sit above the 0.0032 limit by the **F′1 le
 drops to ≈ 0.029, so the ≈ 0.05 that remains is the leak, and no repumper reaches it. Right: the leak is a coherent
 coupling, so scaling the probe's |1,−1⟩→|F′1,0⟩ edge down would recover the floor toward the no-leak ideal — but
 that scale is not a knob you have (R_c, R_p are atomic constants). From
-[`03_dark_vertex/make_figure.py`](03_dark_vertex/make_figure.py).*
+[`03_dark_vertex/make_figure.py`](03_dark_vertex/src/make_figure.py).*
 
 **How cold can the chain go with no extra hardware?** The leak's scatter ∝ Δ/(Δ+157)² *grows* with Δ, so — once
 the leak is the limit — the cold operating point wants *smaller* Δ, the opposite of the usual detune-harder
@@ -298,13 +298,13 @@ dedicated repumper on F′1.** Nothing else changes — same fibre, same single-
 dark state, and it clears **|2,−2⟩** (the one F=2 sublevel the σ⁻ control cannot reach). With the comb scatter
 gone, the chain can now be run at the leak-favoured **small Δ ≈ 25**.
 
-![the master upgrade level scheme on the 1064-shifted manifold](04_master/images/level_scheme_dedicated.png)
+![the master upgrade level scheme on the 1064-shifted manifold](02_multilevel/images/level_scheme_dedicated.png)
 
 *The chapter-02 delivery with the master folded in, on the 1064-shifted manifold (every level from
-[`stark.py`](02_multilevel/stark.py)): the cooling Λ and the leftover comb repumpers as in §6, **plus the master
+[`stark.py`](02_multilevel/src/stark.py)): the cooling Λ and the leftover comb repumpers as in §6, **plus the master
 forward σ⁺ resonant on F′1**, whose job is to clear |2,−2⟩ (its down-shifted retro lands 400 MHz off F′1 — a benign
 byproduct). Colour = comb line (master = purple), solid = forward, dashed = retro. From
-[`02_multilevel/level_scheme.py`](02_multilevel/level_scheme.py).*
+[`02_multilevel/level_scheme.py`](02_multilevel/src/level_scheme.py).*
 
 **Is it a game-changer? — the honest comparison.** Each configuration optimised over Δ, with the leak folded in:
 
@@ -351,26 +351,26 @@ leak-free but field-sensitive stretched scheme; and the full menu of alternative
 pip install -r requirements.txt        # numpy, scipy, qutip, sympy, matplotlib
 
 cd 01_three_level
-python stark.py            # trap depth + the 5P3/2 Stark shifts (closed form)
-python stark_validate.py   # re-derives the Wigner-6j factors and checks them
-python cooling.py          # the 3-level floor  (< 10 s)
-python plots.py            # the three figures (real solve, no drawn curves)
+python src/stark.py            # trap depth + the 5P3/2 Stark shifts (closed form)
+python src/stark_validate.py   # re-derives the Wigner-6j factors and checks them
+python src/cooling.py          # the 3-level floor  (< 10 s)
+python src/plots.py            # the three figures (real solve, no drawn curves)
 
 cd ../02_multilevel
-python level_scheme.py        # the 24-level scheme figure (no solve)
-python cooling_multilevel.py  # the realistic floor with recoil + repumping  (~1 min)
-python explore_configs.py     # the single-EOM configuration sweep
+python src/level_scheme.py        # the 24-level scheme figure (no solve)
+python src/cooling_multilevel.py  # the realistic floor with recoil + repumping  (~1 min)
+python src/explore_configs.py     # the single-EOM configuration sweep
 
 cd ../03_dark_vertex
-python cooling_dark_vertex.py # the F′1 leak + the best no-master floor, scanned over Δ  (~minutes; qutip)
-python make_figure.py         # the chapter-03 figure (no solve)
+python src/cooling_dark_vertex.py # the F′1 leak + the best no-master floor, scanned over Δ  (~minutes; qutip)
+python src/make_figure.py         # the chapter-03 figure (no solve)
 
 cd ../04_master
-python master_figures.py     # the master-upgrade figures: floor ladder + benches (no solve)
+python src/master_figures.py     # the master-upgrade figures: floor ladder + benches (no solve)
 
 cd ../appendix
-python cancellation_floquet.py # the leak-cancellation Floquet test  (~minutes; qutip)
-python make_figure.py          # the appendix figure (no solve)
+python src/cancellation_floquet.py # the leak-cancellation Floquet test  (~minutes; qutip)
+python src/make_figure.py          # the appendix figure (no solve)
 ```
 
 There is no separate test runner: each script prints its own self-check, and the headline floor in §4–§5 is a

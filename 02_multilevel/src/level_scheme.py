@@ -3,7 +3,7 @@ level_scheme.py -- the delivered tones on the 1064-shifted 87Rb 5P3/2 manifold, 
 
 Generates TWO figures (one script so the two stay consistent):
   level_scheme.png                          (here, 02_multilevel/) -- the BASELINE: 4 comb tones, no master
-  ../04_master/images/level_scheme_dedicated.png                            -- the MASTER upgrade: + the master F'1 repumper
+  level_scheme_dedicated.png               (here too, 02_multilevel/) -- the MASTER upgrade: + the master F'1 repumper
 
 Colour = comb line (same beam forward AND retro share a colour): carrier = blue, +1 sideband = green,
 780 master = purple.  SOLID = forward pass, DASHED = backward (retro) pass.
@@ -27,7 +27,7 @@ import stark
 import config as c
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-UPG  = os.path.join(os.path.dirname(HERE), "04_master", "images")
+IMAGES = os.path.join(os.path.dirname(HERE), "images")   # figures -> the chapter's images/ (this file lives in src/)
 plt.rcParams.update({"font.size": 11, "font.family": "DejaVu Sans"})
 
 # ---- 1064 light shifts from stark.py (theta = the real transverse-lattice angle) ----
@@ -254,14 +254,14 @@ def draw(with_master, outpath, title):
     fig.tight_layout()
     fig.savefig(outpath, dpi=150, bbox_inches="tight")
     plt.close(fig)
-    print("wrote", os.path.relpath(outpath, os.path.dirname(HERE)))
+    print("wrote", os.path.relpath(outpath, os.path.dirname(os.path.dirname(HERE))))
 
 
 if __name__ == "__main__":
     print("1064 (theta=%.0f): scalar +%.1f, ground -%.1f" % (theta, scalar_shift, trap_depth))
     for k in ("control", "probe", "rep1", "rep2", "mfwd", "mret"):
         print("  %-8s %s" % (k, label(k)))
-    draw(False, os.path.join(HERE, "images", "level_scheme.png"),
+    draw(False, os.path.join(IMAGES, "level_scheme.png"),
          r"$^{87}$Rb D2 clock-EIT — delivered tones (no master): the EIT $\Lambda$ + two comb repumpers")
-    draw(True, os.path.join(UPG, "level_scheme_dedicated.png"),
+    draw(True, os.path.join(IMAGES, "level_scheme_dedicated.png"),
          r"$^{87}$Rb D2 clock-EIT — the master upgrade: + a dedicated F'1 repumper (master fwd $\sigma^+$, retro benign)")

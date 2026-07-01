@@ -15,6 +15,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+IMAGES = os.path.join(os.path.dirname(HERE), "images")   # figures -> the chapter's images/ (this file lives in src/)
 Om_p, R_c, R_p = 2.0, -0.346, 1.732
 g_null = Om_p * (R_c - R_p)          # = -4.16, where the static proxy nulls the leak
 BASE = 1.64e-4                       # no-canceller scatter (cancellation_floquet.py)
@@ -69,5 +70,5 @@ axB.grid(alpha=0.25)
 
 fig.suptitle("The leak frontier — cancellation fails; the D2 scheme bottoms out near 0.055", fontsize=13.5, y=1.02)
 fig.tight_layout()
-fig.savefig(os.path.join(HERE, "images", "cancellation_verdict.png"), dpi=140, bbox_inches="tight")
+fig.savefig(os.path.join(IMAGES, "cancellation_verdict.png"), dpi=140, bbox_inches="tight")
 print("wrote cancellation_verdict.png")

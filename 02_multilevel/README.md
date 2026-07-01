@@ -25,8 +25,8 @@ dedicated F′1 repumpers — see [`../04_master/`](../04_master/README.md).
 | `explore_configs.py` | the single-EOM / one-AOM configuration sweep (why the current placement wins) |
 | `level_scheme.py` | the 24-level scheme figures on the 1064-shifted manifold — the baseline (no master) here, **and** the chapter-04 variant (written into `../04_master/`); colour = comb line, solid/dashed = forward/retro, each beam's label is the Stark decomposition `WW(−s−t−g=ZZ)` (bare detuning → in-trap) |
 
-**Run:** `python level_scheme.py` (no solve) · `python cooling_multilevel.py` (~1 min) ·
-`python clebsch_gordan_checks.py` · `python explore_configs.py`.
+**Run:** `python src/level_scheme.py` (no solve) · `python src/cooling_multilevel.py` (~1 min) ·
+`python src/clebsch_gordan_checks.py` · `python src/explore_configs.py`.
 
 *Validity note:* the off-resonant repumpers are incoherent low-saturation rates — trust the natural-power point,
 not the high-power trend (the rate omits saturation and the a.c.-Stark shift above ~natural power).

@@ -16,6 +16,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+IMAGES = os.path.join(os.path.dirname(HERE), "images")   # figures -> the chapter's images/ (this file lives in src/)
 R_c, R_p = -0.35, 1.73          # the atomic F'1/F'2 coupling ratios (from cooling_dark_vertex.py)
 
 # --- floors from cooling_dark_vertex.py (a few x 10^-2). Panel (a) compares at a FIXED Delta=45 so the
@@ -84,5 +85,5 @@ for s in ("top", "right"):
 fig.suptitle(r"Chapter 04 — the second dark vertex: $|D_2\rangle$ is not dark on $|F'1,0\rangle$  "
              r"($R_c=%.2f,\ R_p=%+.2f$)" % (R_c, R_p), fontsize=13.5, y=1.02)
 fig.tight_layout()
-fig.savefig(os.path.join(HERE, "images", "dark_vertex_floor.png"), dpi=140, bbox_inches="tight")
+fig.savefig(os.path.join(IMAGES, "dark_vertex_floor.png"), dpi=140, bbox_inches="tight")
 print("wrote dark_vertex_floor.png")

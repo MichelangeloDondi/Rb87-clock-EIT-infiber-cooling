@@ -33,7 +33,7 @@ Run `python cooling_dark_vertex.py` to reproduce the chapter numbers (needs nump
 
 import os, sys, numpy as np, warnings
 warnings.simplefilter("ignore")
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "02_multilevel"))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "02_multilevel", "src"))
 import cooling_multilevel as m            # the chapter-02 solver, untouched
 import config as c
 from sympy import S

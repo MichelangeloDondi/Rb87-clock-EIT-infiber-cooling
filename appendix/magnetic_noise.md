@@ -24,7 +24,7 @@ vertex — but the clean candidate is **field-sensitive**, so the choice becomes
 | field sensitivity | 0 (immune) | 1.4 MHz/G (2.10 if B is tilted → π) |
 | limited by | the leak | magnetic noise |
 
-(The 0, 1.4, and 2.10 MHz/G slopes are verified in [`verify_atomic_claims.py`](verify_atomic_claims.py); the
+(The 0, 1.4, and 2.10 MHz/G slopes are verified in [`verify_atomic_claims.py`](src/verify_atomic_claims.py); the
 ≈ 0.086 / ≈ 0.041 anchors are chapter-02 leak-on / leak-off floors, used as best-case proxies.)
 
 ## 2. The crossover  *(model-dependent — a precise value needs the σ-only stretched solve)*

@@ -85,7 +85,7 @@ real frontier past the ≈ 0.06 floor.
 | `cooling_dark_vertex.py` | the solver — reuses `02_multilevel/cooling_multilevel.py` verbatim, adds the detuned master and the cancellation knob; prints the numbers above (needs qutip) |
 | `make_figure.py` | the figure (matplotlib only; plots the solver's output, regenerates without a solve) |
 
-**Run:** `python cooling_dark_vertex.py` (a few minutes) · `python make_figure.py` (instant).
+**Run:** `python src/cooling_dark_vertex.py` (a few minutes) · `python src/make_figure.py` (instant).
 
 *Caveats (chapter 02's, restated): all floors are single-atom, on-axis, radially-localized best cases;
 the incoherent-repumper model requires every repumper (master included) to sit ≫ 3Γ off resonance; the

@@ -2,7 +2,7 @@
 
 The F′1 leak ([cancellation.md](cancellation.md)) is set by the atomic ratio R_c − R_p and the F′1–F′2 detuning.
 Both differ between transitions, so the obvious lever is the **D1 line** (5P₁/₂). This note computes the leak on
-both lines from Clebsch–Gordan × signed hyperfine-6j ([`verify_atomic_claims.py`](verify_atomic_claims.py)
+both lines from Clebsch–Gordan × signed hyperfine-6j ([`verify_atomic_claims.py`](src/verify_atomic_claims.py)
 reproduces every number) and pins down *why* D1 wins. The headline correction: it is the **detuning**, not the
 branching.
 
@@ -46,5 +46,5 @@ recoil/repump floor, leaving D1 **repump-limited near n̄_z ~ 0.02**, no longer 
 chapter; the result would only *improve* on the D2 floor, since it removes a present-but-weaker leak). The price,
 either way, is hardware: D1 is **795 nm**, off the experiment's 780.
 
-**Verify:** `python verify_atomic_claims.py` reproduces R_c/R_p on both lines, the 156.9/816.7 MHz splittings,
+**Verify:** `python src/verify_atomic_claims.py` reproduces R_c/R_p on both lines, the 156.9/816.7 MHz splittings,
 |R_c−R_p|, and the 41×/51× leak suppression with its 27×-detuning × 1.8×-amplitude decomposition.

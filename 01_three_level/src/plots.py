@@ -18,6 +18,7 @@ import config as c
 import stark
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+IMAGES = os.path.join(os.path.dirname(HERE), "images")   # figures -> the chapter's images/ (this file lives in src/)
 BLUE, RED, GREY, GREEN = "#1565c0", "#c0392b", "#7f8c8d", "#2e7d32"
 
 
@@ -50,7 +51,7 @@ def eit_spectrum():
     for s in ("top", "right"):
         ax.spines[s].set_visible(False)
     fig.tight_layout()
-    fig.savefig(os.path.join(HERE, "images", "eit_spectrum.png"), dpi=150)
+    fig.savefig(os.path.join(IMAGES, "eit_spectrum.png"), dpi=150)
     print("wrote eit_spectrum.png")
 
 
@@ -104,7 +105,7 @@ def cooling_curve(n_init=3.0, N=16):
         for s in ("top", "right"):
             ax.spines[s].set_visible(False)
     fig.tight_layout()
-    fig.savefig(os.path.join(HERE, "images", "cooling_curve.png"), dpi=150)
+    fig.savefig(os.path.join(IMAGES, "cooling_curve.png"), dpi=150)
     print("wrote cooling_curve.png")
 
 
@@ -139,7 +140,7 @@ def stark_manifold():
     for s in ("top", "right", "bottom"):
         ax.spines[s].set_visible(False)
     fig.tight_layout()
-    fig.savefig(os.path.join(HERE, "images", "stark_manifold.png"), dpi=150)
+    fig.savefig(os.path.join(IMAGES, "stark_manifold.png"), dpi=150)
     print("wrote stark_manifold.png")
 
 
@@ -194,7 +195,7 @@ def lambda_scheme():
     for s in ax.spines.values():
         s.set_visible(False)
     fig.tight_layout()
-    fig.savefig(os.path.join(HERE, "images", "lambda_scheme.png"), dpi=150, bbox_inches="tight")
+    fig.savefig(os.path.join(IMAGES, "lambda_scheme.png"), dpi=150, bbox_inches="tight")
     print("wrote lambda_scheme.png")
 
 

@@ -21,7 +21,8 @@ from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
 
 BLUE, GREEN, RED, ORANGE, GREY = "#1565c0", "#2e7d32", "#c0392b", "#e67e22", "#7f8c8d"
 HERE = os.path.dirname(os.path.abspath(__file__))
-MORE = os.path.join(HERE, "more_hardware_demanding_schemes", "images")   # the curiosities subfolder
+IMAGES = os.path.join(os.path.dirname(HERE), "images")   # figures -> the chapter's images/ (this file lives in src/)
+MORE = os.path.join(os.path.dirname(HERE), "more_hardware_demanding_schemes", "images")   # the curiosities subfolder
 
 
 # ---------------------------------------------------------------- 1. the floor ladder
@@ -54,7 +55,7 @@ def floor_ladder():
     for s in ("top", "right"):
         ax.spines[s].set_visible(False)
     fig.tight_layout()
-    fig.savefig(os.path.join(HERE, "images", "floor_ladder.png"), dpi=150, bbox_inches="tight")
+    fig.savefig(os.path.join(IMAGES, "floor_ladder.png"), dpi=150, bbox_inches="tight")
     print("wrote floor_ladder.png")
 
 
@@ -126,7 +127,7 @@ def bench_single_end():
             ha="center", va="bottom", fontsize=8.6, color="#333")
     ax.set_title("The master upgrade — single-end tagged retro  +  the dedicated F'1 repumper   ($\\bar n_z\\approx$ 0.055, leak-limited)", fontsize=12.5, pad=10)
     fig.tight_layout()
-    fig.savefig(os.path.join(HERE, "images", "bench_single_end.png"), dpi=150, bbox_inches="tight")
+    fig.savefig(os.path.join(IMAGES, "bench_single_end.png"), dpi=150, bbox_inches="tight")
     print("wrote bench_single_end.png")
 
 

@@ -3,7 +3,7 @@
 Cancellation fails ([cancellation.md](cancellation.md)) and D1 is the clean exit
 ([d1_comparison.md](d1_comparison.md)). For completeness, here are the other routes that were considered on D2,
 each with a verdict. The selection-rule claims are reproduced in
-[`verify_atomic_claims.py`](verify_atomic_claims.py); floor numbers that need the full solver are flagged.
+[`verify_atomic_claims.py`](src/verify_atomic_claims.py); floor numbers that need the full solver are flagged.
 
 ## W1 — a pure m=0 (π) pair: no Λ exists
 

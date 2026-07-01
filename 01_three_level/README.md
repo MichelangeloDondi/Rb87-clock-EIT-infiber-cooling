@@ -25,4 +25,4 @@ limit, with the full ⁸⁷Rb decay branching, is 0.0032 — see [`../02_multile
 | `cooling.py` | the 3-level cooling floor (one `qutip` master equation, ~60 lines) |
 | `plots.py` | the three figures (`eit_spectrum`, `cooling_curve`, `stark_manifold`) |
 
-**Run** (seconds): `python stark.py` · `python stark_validate.py` · `python cooling.py` · `python plots.py`.
+**Run** (seconds): `python src/stark.py` · `python src/stark_validate.py` · `python src/cooling.py` · `python src/plots.py`.

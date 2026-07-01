@@ -17,7 +17,7 @@ onto |F′1,0⟩ does not stand still — it **beats**. A static leak cannot be 
 
 ## 2. The Floquet test — principle vs physical tone
 
-[`cancellation_floquet.py`](cancellation_floquet.py) builds the minimal internal model (the two dark-state legs,
+[`cancellation_floquet.py`](src/cancellation_floquet.py) builds the minimal internal model (the two dark-state legs,
 the two excited states, the atomic ratios) and compares two cancellers of the same amplitude g_X on
 |1,−1⟩→|F′1,0⟩: a **static, in-frame** one (chapter 03's knob, made literal) and the **resonant** one (the real
 F1→F′1 tone, carrying its true e^{−i(Δ+157)t} beat). Reading off the total scatter — a perfect dark state
@@ -43,7 +43,7 @@ ratio, and it is exactly that ratio (R_p ≠ R_c) that makes the leak. m-selecti
 ## 4. The leak-aware operating point
 
 If the leak can't be removed, the honest task is to find where it hurts least. Scanning Δ with the leak kept
-(right panel above; from [chapter 03](../03_dark_vertex/cooling_dark_vertex.py)'s `floor`): the leak penalty
+(right panel above; from [chapter 03](../03_dark_vertex/src/cooling_dark_vertex.py)'s `floor`): the leak penalty
 grows monotonically with Δ — it scales as Δ/(Δ+157)² — so the usual instinct to detune harder is backwards here.
 Working against it, the EIT cooling weakens as Δ → Γ. The two balance in a shallow basin at **Δ ≈ 25, where the
 floor bottoms at n̄_z ≈ 0.055** (P(n=0) ≈ 95%). This refines chapter 03's ≈ 0.06 to the leak-aware optimum; it is
@@ -65,7 +65,7 @@ canceller (§2–3), far-detuning (§4), or squeezing the anti-trap (negligible,
 | `cancellation_floquet.py` | the minimal internal model + the Floquet test (static proxy vs the real resonant tone); prints the scatter table (needs qutip) |
 | `make_figure.py` | the figure (matplotlib only; plots the solver outputs, regenerates without a solve) |
 
-**Run:** `python cancellation_floquet.py` · `python make_figure.py`.
+**Run:** `python src/cancellation_floquet.py` · `python src/make_figure.py`.
 
 *Caveats: the Floquet test is an internal-level model (motion dropped) — appropriate, since the leak and its
 cancellation are internal-coherence effects; the ≈ 0.055 floor of §4 is the full multilevel-plus-motion number
