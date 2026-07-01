@@ -23,9 +23,9 @@ eta   = 0.094         # axial Lamb-Dicke parameter
 
 # --- operating point ---
 Delta = 45.0          # single-photon detuning, blue of |F'2,0>  (2pi*MHz)
-OmR   = 0.12          # probe/control Rabi ratio
+probe_control_ratio   = 0.12          # probe/control Rabi ratio
 Omega_c = np.sqrt(4.0 * Delta * nu_z)   # EIT-cooling condition (README) -> ~8.8
-Omega_p = OmR * Omega_c
+Omega_p = probe_control_ratio * Omega_c
 # NB the 3-level pins Om_c; the multilevel (02_multilevel) pins the TOTAL drive Om_tot^2 = Om_c^2 + Om_p^2 -- the
 # physical convention (the a.c.-Stark shift goes as Om_tot^2). With Om_p = 0.12 Om_c the two differ by 0.7%, negligible for the floor.
 

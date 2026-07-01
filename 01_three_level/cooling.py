@@ -37,9 +37,9 @@ def nbar(delta2):
 
     # the two cooling legs counter-propagate along the trap axis -> opposite absorption recoil
     # (probe kdir -1, control kdir +1). Exact displacement, the same treatment as the multilevel solver.
-    Dsp = lambda s: tensor(qeye(3), displace(N, 1j * c.eta * s))
-    probe   = tensor(e * g1.dag(), qeye(N)) * Dsp(-1)     # |e><g1| * recoil  (probe leg)
-    control = tensor(e * g2.dag(), qeye(N)) * Dsp(+1)     # |e><g2| * recoil  (control leg)
+    displacement = lambda s: tensor(qeye(3), displace(N, 1j * c.eta * s))
+    probe   = tensor(e * g1.dag(), qeye(N)) * displacement(-1)     # |e><g1| * recoil  (probe leg)
+    control = tensor(e * g2.dag(), qeye(N)) * displacement(+1)     # |e><g2| * recoil  (control leg)
 
     # rotating frame: ground states carry the laser detunings; |e> at 0.
     H = ((c.Delta + delta2) * P_g1 + c.Delta * P_g2 + c.nu_z * n
@@ -47,9 +47,9 @@ def nbar(delta2):
          + (c.Omega_p / 2.0) * (probe + probe.dag()))
 
     # spontaneous emission |e> -> |g1>,|g2>, each carrying the three-point axial emission recoil
-    EM = [(-1, 1 / 6), (0, 2 / 3), (1, 1 / 6)]
-    c_ops = [np.sqrt(c.Gamma / 2.0 * w) * tensor(gk * e.dag(), qeye(N)) * Dsp(u)
-             for gk in (g1, g2) for (u, w) in EM]
+    emission_recoil = [(-1, 1 / 6), (0, 2 / 3), (1, 1 / 6)]
+    c_ops = [np.sqrt(c.Gamma / 2.0 * w) * tensor(gk * e.dag(), qeye(N)) * displacement(u)
+             for gk in (g1, g2) for (u, w) in emission_recoil]
 
     return float(expect(n, steadystate(H, c_ops)))
 

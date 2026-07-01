@@ -63,8 +63,8 @@ def cooling_curve(n_init=3.0, N=16):
     touches). [A direct mesolve gives the same curve; it is just slow here because of the Delta=45 stiffness.]"""
     a = tensor(qeye(3), destroy(N)); n = a.dag() * a
     g1, g2, e = basis(3, 0), basis(3, 1), basis(3, 2)
-    LD = tensor(qeye(3), qeye(N)) + 1j * c.eta * (a + a.dag())
-    probe = tensor(e * g1.dag(), qeye(N)) * LD
+    recoil_op = tensor(qeye(3), qeye(N)) + 1j * c.eta * (a + a.dag())
+    probe = tensor(e * g1.dag(), qeye(N)) * recoil_op
     H = (c.Delta * tensor(g1 * g1.dag(), qeye(N)) + c.Delta * tensor(g2 * g2.dag(), qeye(N))
          + c.nu_z * n
          + (c.Omega_c / 2) * (tensor(e * g2.dag(), qeye(N)) + tensor(g2 * e.dag(), qeye(N)))
