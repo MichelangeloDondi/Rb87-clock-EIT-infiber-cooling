@@ -180,7 +180,7 @@ essentially all the population is in the motional ground state, P(n=0) ≈ 0.999
 The clean 3-level Λ idealises two things; this layer puts them back — the full ⁸⁷Rb D2 manifold (8 ground
 sublevels + the 5P₃/₂ levels), real Clebsch–Gordan couplings and photon recoil. It is a standard multilevel
 Lindblad solve; the CG / line-strength conventions are checked against the known D2 branching by
-[`cg_validate.py`](02_multilevel/cg_validate.py), and the per-(F′,m′) 1064 Stark comes from the same
+[`clebsch_gordan_checks.py`](02_multilevel/clebsch_gordan_checks.py), and the per-(F′,m′) 1064 Stark comes from the same
 [`stark.py`](02_multilevel/stark.py) as §1. The tones are made and delivered by the finalised chain
 
 ```

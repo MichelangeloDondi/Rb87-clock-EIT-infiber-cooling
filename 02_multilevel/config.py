@@ -24,7 +24,7 @@ eta   = 0.094         # axial Lamb-Dicke parameter
 
 # --- operating point ---
 Delta = 45.0          # single-photon detuning, blue of |F'2,0>  (2pi*MHz)
-OmR   = 0.12          # probe/control Rabi ratio
+probe_control_ratio   = 0.12          # probe/control Rabi ratio
 
 # --- the FULL multilevel solve (cooling_multilevel.py): real 87Rb D2 manifold + repumpers ---
 #   8 ground sublevels (F=1: m=-1..1; F=2: m=-2..2) + 5P3/2 F'=1,2(,3); the same Lambda,
@@ -39,12 +39,12 @@ theta_trap   = 90.0   # trap linear-pol angle to the axial B (deg). 90 = transve
 #             -> drives F=1->F'2, 445 MHz off. (F'3 sits 178 MHz away, but F=1->F'3 is dF=2 FORBIDDEN.)
 #   repump2 = retro carrier           (sigma+, F=2) at control - 2f_A
 #             -> drives F=2->F'1, 198 MHz off. (F'0 sits 126 MHz away, but F=2->F'0 is dF=2 FORBIDDEN.)
-twofA        = 400.0  # double-passed tag-AOM total shift 2*f_A (2pi MHz) = 200 MHz AOM, x2
-eta_dp       = 0.30   # retro double-pass power efficiency (sets the repumper field amplitudes)
-rep_scale    = 1.0    # multiply the chain-natural repumper Rabis -- raise it to repump FASTER
+tag_shift        = 400.0  # double-passed tag-AOM total shift 2*f_A (2pi MHz) = 200 MHz AOM, x2
+retro_efficiency       = 0.30   # retro double-pass power efficiency (sets the repumper field amplitudes)
+repump_scale    = 1.0    # multiply the chain-natural repumper Rabis -- raise it to repump FASTER
                       #   (off-resonant repumping is slow; more power/depth speeds it up)
-Nf_multi     = 5      # Fock cutoff for the multilevel solve (kept small; the cold floor is low-n). The cooled
-                      #   floor is Nf-converged (it changes by <~4% up to Nf=13); explore_configs / chapter 03 use Nf=6.
+N_fock     = 5      # Fock cutoff for the multilevel solve (kept small; the cold floor is low-n). The cooled
+                      #   floor is N_fock-converged (it changes by <~4% up to N_fock=13); explore_configs / chapter 03 use N_fock=6.
 
 # The master laser (chapter 04) is a DESIGN, not a number computed here: it sits on the F'1 resonance, where the
 # off-resonant (incoherent) repumper model below breaks down. Pinning its floor needs the F'1 vertex treated

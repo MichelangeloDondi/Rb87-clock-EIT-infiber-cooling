@@ -21,12 +21,12 @@ dedicated F′1 repumpers — see [`../04_master/`](../04_master/README.md).
 | `config.py` | every physical number (manifold + delivery: B, θ, 2f_A, …) |
 | `stark.py` | the per-(F′,m′) 1064 Stark shifts (same closed form as 01; validated there) |
 | `cooling_multilevel.py` | the multilevel Lindblad floor, repumpers in the computation (~1 min) |
-| `cg_validate.py` | reconstructs known ⁸⁷Rb D2 facts from raw Clebsch–Gordan (checks the conventions) |
+| `clebsch_gordan_checks.py` | reconstructs known ⁸⁷Rb D2 facts from raw Clebsch–Gordan (checks the conventions) |
 | `explore_configs.py` | the single-EOM / one-AOM configuration sweep (why the current placement wins) |
 | `level_scheme.py` | the 24-level scheme figures on the 1064-shifted manifold — the baseline (no master) here, **and** the chapter-04 variant (written into `../04_master/`); colour = comb line, solid/dashed = forward/retro, each beam's label is the Stark decomposition `WW(−s−t−g=ZZ)` (bare detuning → in-trap) |
 
 **Run:** `python level_scheme.py` (no solve) · `python cooling_multilevel.py` (~1 min) ·
-`python cg_validate.py` · `python explore_configs.py`.
+`python clebsch_gordan_checks.py` · `python explore_configs.py`.
 
 *Validity note:* the off-resonant repumpers are incoherent low-saturation rates — trust the natural-power point,
 not the high-power trend (the rate omits saturation and the a.c.-Stark shift above ~natural power).

@@ -40,7 +40,7 @@ def lt(Fp, mp): return BARE[Fp] + shift(Fp, mp)            # in-trap (Stark-shif
 def yE(Fp, mp): return yc(lt(Fp, mp))
 SCAL = shift(2, 0)                                         # +38 scalar (F'2 tensor-null)
 U0   = -stark.shift(c.alpha0_5S)                           # +22.7 ground scalar DOWN-shift (both F)
-Oc = np.sqrt(4.0 * c.Delta * c.nu_z); Op = c.OmR * Oc      # control / probe Rabis (~8.8 / 1.1)
+Oc = np.sqrt(4.0 * c.Delta * c.nu_z); Op = c.probe_control_ratio * Oc      # control / probe Rabis (~8.8 / 1.1)
 
 em = {0: [0], 1: [-1, 0, 1], 2: [-2, -1, 0, 1, 2], 3: [-3, -2, -1, 0, 1, 2, 3]}
 gm = {1: [-1, 0, 1], 2: [-2, -1, 0, 1, 2]}

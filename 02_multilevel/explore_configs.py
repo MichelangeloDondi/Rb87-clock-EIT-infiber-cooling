@@ -20,7 +20,7 @@ import cooling_multilevel as m
 import config as c
 
 A_HFS = m.A_HFS
-d2, NF = -0.10, 6
+d2, N_fock = -0.10, 6
 
 # (label, AOM order shift, 2f_A)   -- f_mod = A_HFS - shift*2f_A is the implied EOM frequency
 CONFIGS = [
@@ -37,8 +37,8 @@ def out(s):
 
 if __name__ == "__main__":
     out("settled multilevel solve, INCOHERENT off-resonant repumpers (frame-consistent at any power).")
-    out(f"  d2={d2:+.2f}, rep_scale=1 (chain-natural power), Nf={NF}")
-    out(f"  clean 3-level Lambda floor = {m.solve(clean=True, Nf=NF):.4f}\n")
+    out(f"  d2={d2:+.2f}, repump_scale=1 (chain-natural power), N_fock={N_fock}")
+    out(f"  clean 3-level Lambda floor = {m.solve(clean=True, N_fock=N_fock):.4f}\n")
     out("  rep1 = fwd sideband (F=1, sigma-): useful via F'1 (1/6->F2) or F'2 (1/2->F2); F'0 decays F1-only.")
     out("  rep2 = retro carrier (F=2, sigma+): useful via F'1 (5/6->F1) or F'2 (1/2); F'3 decays F2-only.\n")
     hdr = "%-42s f_mod   rep1: F'2/F'1/F'0    rep2: F'2/F'1/F'3    floor    dark  P(n=0)"
@@ -47,7 +47,7 @@ if __name__ == "__main__":
         fmod = A_HFS - s * tfa
         r1 = c.Delta + d2 - s * tfa            # rep1 detuning from F=1->F'2
         r2 = c.Delta + s * tfa                 # rep2 detuning from F=2->F'2
-        R = m.solve(d2=d2, rep_scale=1.0, shift=s, twofA=tfa, Nf=NF, want=True)
+        R = m.solve(d2=d2, repump_scale=1.0, shift=s, tag_shift=tfa, N_fock=N_fock, want=True)
         dark = sum(w for g, w in R['pops'].items() if g not in ((1, -1), (2, 1)))
         # a tone within ~3*Gamma of any line breaks the incoherent-rate model -> this row's floor is NOT trustworthy
         mind = min(abs(x) for x in (r1, r1 + 157, r1 + 229, r2, r2 + 157, r2 - 267))

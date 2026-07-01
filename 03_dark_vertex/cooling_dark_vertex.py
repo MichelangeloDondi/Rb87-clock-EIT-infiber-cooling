@@ -15,7 +15,7 @@ called it a target; here it is computed).
 
 This module reuses 02_multilevel/cooling_multilevel.py verbatim. Its `with_e1` already carries the
 F'1 spoiler edges COHERENTLY at the cooling-Lambda frequency (so the rotating frame still closes,
-conf=0) -- which is why chapter 02's headline was ~0.10 and not ~0.003. This module adds two things:
+frame_conflict=0) -- which is why chapter 02's headline was ~0.10 and not ~0.003. This module adds two things:
 
   (1) a DEDICATED master, a detuned F2->F'1 sigma+ repumper. Detuned (not parked on F'1) so the
       incoherent-rate model stays valid (det >> 3*Gamma, outside the engine's near-resonance guard) --
@@ -80,13 +80,13 @@ def _beams(Oc, Op, d2, with_e1, with_e3):
                               for (g, e, cc) in b["edges"]]
     return bm
 
-def _repump(Oc, Op, d2, rep_scale, shift=-1, twofA=None):
-    bm = _orig_repump(Oc, Op, d2, rep_scale, shift, twofA)
+def _repump(Oc, Op, d2, repump_scale, shift=-1, tag_shift=None):
+    bm = _orig_repump(Oc, Op, d2, repump_scale, shift, tag_shift)
     M = CFG["master"]
     if M is not None:
         # dedicated master: sigma+ on F=2->F'1 (the ladder also picks up the far-off F'2,F'3),
         # referenced to F2->F'1 so `det` is the master's red detuning from that line.
-        bm.append(dict(edges=m._ladder(2, +1, [1, 2, 3]), named=((2, 0), (1, 1)),
+        bm.append(dict(edges=m.dipole_edges(2, +1, [1, 2, 3]), named=((2, 0), (1, 1)),
                        det=M["det"], Rabi=M["rabi"], kdir=+1, tag="master"))
     return bm
 
@@ -99,7 +99,7 @@ m.repump_beams = _repump
 #     -nu_z; the multilevel a.c. shift pulls the exact spot).
 # ----------------------------------------------------------------------------------
 def floor(Delta=45.0, with_leak=True, comb=0.0, master=None, fscale=1.0,
-          Nf=6, d2s=(-0.16, -0.10, -0.04, 0.0)):
+          N_fock=6, d2s=(-0.16, -0.10, -0.04, 0.0)):
     """
     Delta     : control detuning above |F'2,0> (in-trap), 2pi*MHz
     with_leak : keep the F'1/F'3 spoiler edges (the honest model).  False = the old 'perfect dark'.
@@ -110,7 +110,7 @@ def floor(Delta=45.0, with_leak=True, comb=0.0, master=None, fscale=1.0,
     c.Delta = float(Delta)
     CFG["master"] = master
     CFG["fscale"] = fscale
-    return min(m.solve(d2=d, rep_scale=comb, with_e1=with_leak, with_e3=with_leak, Nf=Nf)
+    return min(m.solve(d2=d, repump_scale=comb, with_e1=with_leak, with_e3=with_leak, N_fock=N_fock)
                for d in d2s)
 
 
