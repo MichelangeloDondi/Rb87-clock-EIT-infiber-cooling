@@ -82,4 +82,4 @@ are reference curiosities, not the recommended path.
 
 The intrinsic cooling limit all of these chase is **0.0032** (full manifold) / 0.0020 (3-level, full recoil) /
 0.0011 (recoil-free mechanism), all computed in this repo; reaching it means beating the F′1 leak (chapter 03). Regenerate every figure here (and the subfolder's)
-with `python upgrade_figures.py` (matplotlib only, no solves).
+with `python master_figures.py` (matplotlib only, no solves).

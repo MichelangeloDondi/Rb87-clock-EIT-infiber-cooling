@@ -31,20 +31,20 @@ Run `python cancellation_floquet.py` (needs numpy, qutip).
 
 import numpy as np, qutip as qt
 
-Delta, S, Gam = 45.0, 157.0, 6.07          # detuning, F'2-F'1 spacing, linewidth (2pi MHz)
+Delta, split, Gamma = 45.0, 157.0, 6.07          # detuning, F'2-F'1 spacing, linewidth (2pi MHz)
 Om_c, Om_p = 4.0, 2.0                       # representative dark-state Rabis
 R_c, R_p = -0.346, 1.732                    # the atomic F'1/F'2 coupling ratios (from chapter 03)
 
 _k = lambda i: qt.basis(4, i)
 _op = lambda i, j: _k(i) * _k(j).dag()
-_H0 = (Delta*_op(2, 2) + (Delta+S)*_op(3, 3)
+_H0 = (Delta*_op(2, 2) + (Delta+split)*_op(3, 3)
        + Om_c*_op(2, 0) + Om_c*R_c*_op(3, 0)        # control: ->F'2 and ->F'1
        + Om_p*_op(2, 1) + Om_p*R_p*_op(3, 1))       # probe:   ->F'2 and ->F'1
 _H0 = _H0 + _H0.dag()
-_cops = [np.sqrt(Gam/2)*_op(0, 2), np.sqrt(Gam/2)*_op(1, 2),
-         np.sqrt(Gam/2)*_op(0, 3), np.sqrt(Gam/2)*_op(1, 3)]
+_cops = [np.sqrt(Gamma/2)*_op(0, 2), np.sqrt(Gamma/2)*_op(1, 2),
+         np.sqrt(Gamma/2)*_op(0, 3), np.sqrt(Gamma/2)*_op(1, 3)]
 _Pe1, _Pe2 = _op(3, 3), _op(2, 2)
-_W = Delta + S                                       # the beat frequency of the real tone
+_W = Delta + split                                       # the beat frequency of the real tone
 
 
 def scatter(g_X=0.0, resonant=True):

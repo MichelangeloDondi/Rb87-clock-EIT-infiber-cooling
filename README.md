@@ -356,7 +356,7 @@ python cooling_dark_vertex.py # the F′1 leak + the best no-master floor, scann
 python make_figure.py         # the chapter-03 figure (no solve)
 
 cd ../04_master
-python upgrade_figures.py     # the master-upgrade figures: floor ladder + benches (no solve)
+python master_figures.py     # the master-upgrade figures: floor ladder + benches (no solve)
 
 cd ../appendix
 python cancellation_floquet.py # the leak-cancellation Floquet test  (~minutes; qutip)

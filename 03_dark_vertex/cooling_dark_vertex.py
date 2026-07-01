@@ -44,22 +44,22 @@ from sympy.physics.wigner import wigner_6j, clebsch_gordan
 # 1.  The atomic ratios that set the leak.   <F||d||F'1> / <F||d||F'2>  (signed),
 #     then the per-leg F'1/F'2 coupling ratio R = (reduced ratio)*(CG ratio).
 # ----------------------------------------------------------------------------------
-def _CG(F, mq, q, Fp, mp):
+def clebsch(F, mq, q, Fp, mp):
     return float(clebsch_gordan(S(F), 1, S(Fp), S(mq), S(q), S(mp)))
 
-def _6j(F, Fp):
+def wigner6j(F, Fp):
     # {1/2 3/2 1 ; F' F 3/2}  -- the D2 hyperfine 6j (J=3/2 excited, J=1/2 ground, I=3/2)
     return float(wigner_6j(S(1)/2, S(3)/2, 1, S(Fp), S(F), S(3)/2))
 
 def reduced_ratio(F):
     """<F||d||F'=1> / <F||d||F'=2>, SIGNED (the 6j sign is physical: the two legs interfere)."""
-    num = np.sqrt((2*1 + 1)) * _6j(F, 1)
-    den = np.sqrt((2*2 + 1)) * _6j(F, 2)
+    num = np.sqrt((2*1 + 1)) * wigner6j(F, 1)
+    den = np.sqrt((2*2 + 1)) * wigner6j(F, 2)
     return num / den
 
 # control sigma- leg |2,+1>->F'(m'=0); probe sigma+ leg |1,-1>->F'(m'=0)
-R_c = reduced_ratio(2) * (_CG(2, 1, -1, 1, 0) / _CG(2, 1, -1, 2, 0))   # ~ -0.346
-R_p = reduced_ratio(1) * (_CG(1, -1, 1, 1, 0) / _CG(1, -1, 1, 2, 0))   # ~ +1.732
+R_c = reduced_ratio(2) * (clebsch(2, 1, -1, 1, 0) / clebsch(2, 1, -1, 2, 0))   # ~ -0.346
+R_p = reduced_ratio(1) * (clebsch(1, -1, 1, 1, 0) / clebsch(1, -1, 1, 2, 0))   # ~ +1.732
 F_NULL = R_c / R_p                                                     # probe scale that nulls the residual
 
 

@@ -2,7 +2,7 @@
 make_figure.py -- the chapter-03 figure: (left) the floor ladder with the F'1 leak folded in,
 (right) the leak-cancellation curve.
 
-Pure matplotlib (no solve), like 04_master/upgrade_figures.py. The plotted floors are the output
+Pure matplotlib (no solve), like 04_master/master_figures.py. The plotted floors are the output
 of cooling_dark_vertex.py (run it to reproduce them); they are written here as constants so the
 figure regenerates without qutip. All values are ~10% Delta-/run-dependent -- read them as "a few
 x 10^-2", not to the last digit.
