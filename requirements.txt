@@ -1,5 +1,13 @@
-numpy
-scipy
-qutip
-sympy
-matplotlib
+# Python 3 (tested on 3.9). Create an isolated environment, then install:
+#     python3 -m venv .venv
+#     source .venv/bin/activate        # Windows: .venv\Scripts\activate
+#     pip install -r requirements.txt
+#
+# numpy is pinned < 2 ON PURPOSE: on macOS the numpy-2 + Accelerate BLAS backend makes the
+# qutip steady-state solves pathologically slow (tens of minutes each). numpy 1.26 is fast.
+# The versions below are the tested set; loosen them only if you know why.
+numpy==1.26.4
+scipy==1.13.1
+qutip==5.0.4
+sympy==1.14.0
+matplotlib==3.9.4

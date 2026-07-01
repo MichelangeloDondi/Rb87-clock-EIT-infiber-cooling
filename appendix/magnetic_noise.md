@@ -8,39 +8,41 @@ vertex — but the clean candidate is **field-sensitive**, so the choice becomes
 
 - **Clock pair** (this repo): |1,−1⟩(σ⁻) + |2,+1⟩(σ⁻… σ⁺) → |F′2,0⟩. Both legs have g_F·m_F = +½, so the
   two-photon resonance is **first-order field-insensitive** (slope 0, exact). It pays the F′1 leak — floor
-  ≈ 0.055–0.086 (chapters 04–05 / [cancellation.md](cancellation.md)).
-- **Stretched** ([colleague's scheme](https://github.com/valepioli/EIT_cooling_simulation), build
-  `EIT_cooling_Rb_F1_axial`): |1,−1⟩(σ⁻) + |2,−2⟩(π) → |F′2,−2⟩, the dark state at the edge m′=−2. F′=1 has no
-  m′=−2 sublevel (max |m′|=1), so neither leg can reach it — **no second dark vertex, no leak**. But the legs
-  have g_F·m_F = +½ and −1, a differential of **+3/2 → 2.10 MHz/G**: strongly **field-sensitive** (run at B = 4 G;
-  the static offset is compensated, field *noise* jitters the dark resonance).
+  ≈ 0.055–0.086 (chapter 03 / [cancellation.md](cancellation.md)).
+- **Stretched** ([colleague's scheme](https://github.com/valepioli/EIT_cooling_simulation),
+  `EIT_cooling_Rb_F1_axial`): with **B along the fibre axis** the axial beams drive only σ (π would need a field
+  component along the beams, which the axial geometry lacks), so both legs are σ⁻ at m_F = −1 —
+  |1,−1⟩(σ⁻) + |2,−1⟩(σ⁻) → |F′2,−2⟩, the dark state at the edge m′=−2. F′=1 has no m′=−2 sublevel (max |m′|=1),
+  so neither leg can reach it — **no second dark vertex, no leak**. The legs have g_F·m_F = +½ and −½, a
+  differential of **1 → 1.4 MHz/G**: **field-sensitive** (run at a fixed bias B; the static offset is
+  compensated, field *noise* jitters the dark resonance). *(Tilting B off the axis re-enables π and the colder,
+  more field-sensitive |2,−2⟩ variant — differential 3/2 → 2.10 MHz/G — a wildcard, not the axial baseline.)*
 
-| | clock pair | stretched |
+| | clock pair | stretched (axial, σ-only) |
 |---|---|---|
 | F′1 leak | yes (157 MHz) → ≈ 0.055–0.086 | none (edge m′=−2) → ≈ 0.041 |
-| field sensitivity | 0 (immune) | 2.10 MHz/G |
+| field sensitivity | 0 (immune) | 1.4 MHz/G (2.10 if B is tilted → π) |
 | limited by | the leak | magnetic noise |
 
-(The 0 and 2.10 MHz/G slopes are verified in [`verify_atomic_claims.py`](verify_atomic_claims.py); the ≈ 0.086 /
-≈ 0.041 anchors are the chapter-02 leak-on / leak-off floors.)
+(The 0, 1.4, and 2.10 MHz/G slopes are verified in [`verify_atomic_claims.py`](src/verify_atomic_claims.py); the
+≈ 0.086 / ≈ 0.041 anchors are chapter-02 leak-on / leak-off floors, used as best-case proxies.)
 
-## 2. The crossover: σ_B ≈ 40 mG  *(model-dependent)*
+## 2. The crossover  *(model-dependent — a precise value needs the σ-only stretched solve)*
 
 The clock floor is flat in field noise (field-insensitive); the stretched floor is the leak-free EIT floor with
-its two-photon detuning jittered by σ_δ = 2.10 MHz/G · σ_B, averaged over a quasi-static Gaussian. The two cross
-where the stretched scheme's noise penalty overtakes the clock pair's leak penalty:
+its two-photon detuning jittered by σ_δ = 1.4 MHz/G · σ_B (the axial-baseline slope; 2.10 MHz/G if B is tilted to
+enable the π variant), averaged over a quasi-static Gaussian. The two cross where the stretched scheme's noise
+penalty overtakes the clock pair's leak penalty. That crossover moves with **both** inputs, in opposite
+directions: the smaller axial slope (1.4 vs 2.10 MHz/G) pushes it **higher**, while anchoring the clock pair at
+its leak-aware optimum **≈ 0.055** ([cancellation.md](cancellation.md)) rather than the Δ = 45 value 0.086 pulls
+it **lower**. A precise number therefore needs a faithful σ-only stretched-scheme solve (the sibling stretched
+study), not the proxy floors used here.
 
-```
-  clock pair (flat)                    n_z ≈ 0.086
-  stretched, on resonance              n_z ≈ 0.041
-  stretched, sigma_B = 40 mG           n_z ≈ 0.090   <- crosses the clock pair
-```
-
-**σ_B\* ≈ 39 mG (1σ)** ≈ 0.2 ν_z of two-photon jitter. Below it the stretched scheme is colder; above it the
-field-insensitive clock pair wins. In a typical shielded lab (σ_B ~ few–tens of mG), that puts the *cooling*
-advantage with the stretched scheme. **This crossover is a noise-model result, not a selection rule** — it
-depends on the quasi-static-Gaussian averaging and on the stretched scheme realizing its full leak-free floor —
-so read 39 mG as an **upper bound**; the honest range is ~25–40 mG.
+Qualitatively the crossover sits at **a few tens of mG** of quasi-static field noise: below it the stretched
+scheme is the colder *cooler*; above it the field-insensitive clock pair wins. In a typical shielded lab
+(σ_B ~ few–tens of mG) the two are comparable on the cooling floor — so the D2 case for the clock pair rests on
+the *interrogation* needing field-insensitive states, not on a decisive cooling-floor margin. **This is a
+noise-model conclusion, not a selection rule.**
 
 ## 3. Caveats that decide the call
 

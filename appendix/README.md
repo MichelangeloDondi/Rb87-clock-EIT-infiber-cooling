@@ -1,7 +1,7 @@
 # Appendix — the leak frontier
 
 This appendix sits **outside the numbered 01–08 chapters**. Those build the model up in realism; this is a set of
-focused deep-dives on the question chapter 04 raised — the **F′1 leak** that caps the D2 master floor at ≈ 0.06 —
+focused deep-dives on the question chapter 03 raised — the **F′1 leak** that caps the D2 master floor at ≈ 0.055 —
 and on what, if anything, beats it.
 
 | note | question | verdict |
@@ -12,8 +12,8 @@ and on what, if anything, beats it.
 | [`options.md`](options.md) | What else was considered? | W1–W4 + a dRSC pivot, each with a verdict; the clean exits are D1-EIT and dRSC. |
 
 The atomic facts these rest on (R_c/R_p on both lines, the splittings, the no-Λ and GEM selection rules, the
-field slopes) are recomputed from first principles in [`verify_atomic_claims.py`](verify_atomic_claims.py) —
-`python verify_atomic_claims.py` prints them against the quoted values.
+field slopes) are recomputed from first principles in [`verify_atomic_claims.py`](src/verify_atomic_claims.py) —
+`python src/verify_atomic_claims.py` prints them against the quoted values.
 
 **Bottom line.** On D2 the leak is irreducible: the clock pair delivers ≈ 0.055 (field-insensitive) and the only
 colder D2 option is the colleague's field-sensitive stretched scheme (≈ 0.041 below ~40 mG noise). The clean way
