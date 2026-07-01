@@ -43,7 +43,8 @@ twofA        = 400.0  # double-passed tag-AOM total shift 2*f_A (2pi MHz) = 200 
 eta_dp       = 0.30   # retro double-pass power efficiency (sets the repumper field amplitudes)
 rep_scale    = 1.0    # multiply the chain-natural repumper Rabis -- raise it to repump FASTER
                       #   (off-resonant repumping is slow; more power/depth speeds it up)
-Nf_multi     = 5      # Fock cutoff for the multilevel solve (kept small; the cold floor is low-n)
+Nf_multi     = 5      # Fock cutoff for the multilevel solve (kept small; the cold floor is low-n). The cooled
+                      #   floor is Nf-converged (it changes by <~4% up to Nf=13); explore_configs / chapter 04 use Nf=6.
 
 # The master laser (chapter 03) is a DESIGN, not a number computed here: it sits on the F'1 resonance, where the
 # off-resonant (incoherent) repumper model below breaks down. Pinning its floor needs the F'1 vertex treated

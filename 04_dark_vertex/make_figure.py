@@ -18,26 +18,30 @@ import matplotlib.pyplot as plt
 HERE = os.path.dirname(os.path.abspath(__file__))
 R_c, R_p = -0.35, 1.73          # the atomic F'1/F'2 coupling ratios (from cooling_dark_vertex.py)
 
-# --- floors from cooling_dark_vertex.py (a few x 10^-2; Delta=30 leak-aware optimum for the master) ---
-CHAIN   = 0.088     # minimal single-EOM chain (comb), leak ON       (chapter 02's ~0.10)
-MASTER  = 0.061     # + dedicated master, comb off, leak ON, Delta=30 (the leak-aware optimum)
-CANCEL  = 0.043     # if the probe's F'1 coupling were nulled (leak cancelled)
-RECOIL  = 0.0032    # intrinsic recoil limit (chapter 01)
+# --- floors from cooling_dark_vertex.py (a few x 10^-2). Panel (a) compares at a FIXED Delta=45 so the
+#     master's effect and the F'1 leak are not confounded with the Delta change; MASTER_OPT notes the
+#     leak-aware Delta=30 optimum (the headline). ---
+CHAIN      = 0.088  # minimal single-EOM chain (comb), leak ON, Delta=45   (chapter 02's ~0.10)
+MASTER     = 0.082  # + dedicated master, comb off, leak ON, Delta=45      (same Delta as the chain)
+MASTER_OPT = 0.058  # the master re-optimised to the leak-aware Delta=30   (the ~0.06 headline)
+IDEAL      = 0.029  # the no-leak ideal (F'1 leak cancelled), Delta=45
+RECOIL     = 0.0032 # intrinsic recoil limit (chapter 01)
 
 fig, (axL, axR) = plt.subplots(1, 2, figsize=(13.6, 5.0), gridspec_kw=dict(width_ratios=[1.32, 1]))
 
 # ---------- panel (a): the floor ladder ----------
 rungs = [
-    ("minimal single-EOM chain\n(comb repumpers + F'1 leak)",   CHAIN,  "#c0392b", "o", "computed"),
-    ("+ dedicated master\n(clears |2,-2>, kills comb scatter)",  MASTER, "#e67e22", "o", "computed"),
-    ("if the F'1 leak were cancelled\n(constructive dark state)", CANCEL, "#2980b9", "o", "computed"),
-    ("intrinsic recoil limit (ch. 01)",                          RECOIL, "#2e7d32", "X", "limit"),
+    ("minimal single-EOM chain\n(comb repumpers + F'1 leak), Δ=45",   CHAIN,  "#c0392b", "o", "computed"),
+    ("+ dedicated master, Δ=45  (Δ≈30 optimum: %.3f)\n(clears |2,-2>, kills comb scatter)" % MASTER_OPT,
+                                                                      MASTER, "#e67e22", "o", "computed"),
+    ("if the F'1 leak were cancelled\n(no-leak ideal), Δ=45",          IDEAL,  "#2980b9", "o", "computed"),
+    ("intrinsic recoil limit (ch. 01)",                               RECOIL, "#2e7d32", "X", "limit"),
 ]
 y = np.arange(len(rungs))[::-1]
-# the leak-limited band: the master is stuck above the limit by the F'1 leak (no repumper reaches below)
-axL.axvspan(CANCEL, MASTER, color="#e67e22", alpha=0.07, zorder=0)
-axL.text(np.sqrt(CANCEL * MASTER), y.max() + 0.5,
-         "the F'1 leak lives in this gap —\nno repumper reaches below it",
+# the leak-limited band (at a FIXED Delta=45): the master is stuck above the no-leak ideal by the F'1 leak
+axL.axvspan(IDEAL, MASTER, color="#e67e22", alpha=0.07, zorder=0)
+axL.text(np.sqrt(IDEAL * MASTER), y.max() + 0.5,
+         "the F'1 leak lives in this gap (Δ=45) —\nno repumper reaches below it",
          ha="center", va="bottom", fontsize=8.6, color="#a0610a", style="italic")
 for yi, (label, val, col, mk, kind) in zip(y, rungs):
     axL.plot([RECOIL * 0.8, val], [yi, yi], color=col, lw=2.4, zorder=1, alpha=0.95)

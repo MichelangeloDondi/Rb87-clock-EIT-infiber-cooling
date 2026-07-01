@@ -16,11 +16,11 @@ resonance (§2). **The question: how low does this model predict the axial motio
 
 | model | floor n̄_z | what it includes | where |
 |---|---|---|---|
-| 3-level Λ (idealized) | **0.0013** | recoil-free lower bound; perfect repumping | [`01_three_level/`](01_three_level/) |
+| 3-level Λ (idealized) | **0.0013** | recoil-*light* lower bound (first-order recoil, probe leg only); perfect repumping | [`01_three_level/`](01_three_level/) |
 | multilevel, clean Λ | **0.0032** | full ⁸⁷Rb manifold **+ photon recoil** — the realistic intrinsic cooling limit | [`02_multilevel/`](02_multilevel/) |
-| multilevel, real delivery | **≈ 0.10** | **+ the real off-resonant repumping** (≈ 40 % stuck in dark sublevels) | [`02_multilevel/`](02_multilevel/) |
+| multilevel, real delivery | **≈ 0.09** | **+ the real off-resonant repumping**, at the servoed δ₂-optimum (≈ 40 % stuck in dark sublevels) | [`02_multilevel/`](02_multilevel/) |
 
-Quote **0.0032** as the intrinsic cooling limit and **≈ 0.10** as what the minimal single-EOM chain delivers. For this
+Quote **0.0032** as the intrinsic cooling limit and **≈ 0.09** as what the minimal single-EOM chain delivers. For this
 chain the **repumping**, not the EIT mechanism, sets the floor — [`03_master/`](03_master/README.md) shows how
 a dedicated repumper recovers it. The 0.0013 is the idealized 3-level number: a lower bound, not a result.
 
@@ -97,8 +97,9 @@ A Λ on the D2 line, both legs to **one** excited state:
 
 ![the clock-EIT Λ scheme](01_three_level/lambda_scheme.png)
 
-*Both legs are blue-detuned by Δ = +45 MHz; the two-photon detuning δ₂ = (probe − control) is servoed to zero.
-Both ground states have g_F·m_F = +½, so their linear Zeeman shifts are **equal** and the two-photon resonance
+*Both legs are blue-detuned by Δ = +45 MHz; the two-photon detuning δ₂ = (probe − control) is servoed to the
+**dark resonance** — which lies at δ₂ = 0 in this idealized 3-level Λ, but is shifted by the real manifold's light
+shifts (§6). Both ground states have g_F·m_F = +½, so their linear Zeeman shifts are **equal** and the two-photon resonance
 is **first-order field-insensitive at any field** — the "clock" property (m_F=0 clock states, by contrast, are
 insensitive only near B=0). A residual **second-order (quadratic) Zeeman** differential remains; the δ₂ servo
 absorbs it, and the cooling floor itself is field-insensitive. From [`plots.py`](01_three_level/plots.py).*
@@ -135,7 +136,9 @@ The bright peak lands on the cooling sideband when its AC-Stark displacement equ
 
 $$\frac{\Omega_c^2}{4\Delta} = \nu_z \;\Rightarrow\; \Omega_c = \sqrt{4\,\Delta\,\nu_z} \approx 8.8 \text{ (2π·MHz)},$$
 
-with the probe kept weak (Ω_p = 0.12 Ω_c). The motion then obeys a rate balance — cooling rate A₋, heating
+with the probe kept weak (Ω_p = 0.12 Ω_c). (More precisely it is the *total* drive Ω² = Ω_c² + Ω_p² that sets the
+AC-Stark shift; with Ω_p = 0.12 Ω_c the two differ by 0.7 %, so this idealised formula keeps Ω_c for clarity while
+the multilevel solver of §6 pins Ω_tot exactly.) The motion then obeys a rate balance — cooling rate A₋, heating
 rate A₊ — with steady state n̄_z = A₊ / (A₋ − A₊). With the cooling sideband on the bright peak, the leftover
 heating is the natural-linewidth tail reaching back to the carrier, scaling as (Γ/4Δ)². So
 
@@ -159,7 +162,8 @@ ground-state population P(n=0) ~ 0.999
 ```
 
 0.0013 sits just above the formula's 0.0011, and just below the full multilevel solver's clean-Λ **0.0032**
-(§6) — the gap is the photon recoil this 3-level model leaves out.
+(§6) — the gap is the rest of the photon recoil (spontaneous-emission recoil, and the second Λ leg) that this
+3-level model, which keeps only first-order absorption recoil on the probe, leaves out.
 
 ![cooling curve from a hot start, and the final motional distribution](01_three_level/cooling_curve.png)
 
@@ -206,19 +210,37 @@ model dropped). The EIT mechanism and the (Γ/4Δ)² scaling are untouched.
 both ground hyperfines into sublevels the Λ never addresses; with the repumpers off, the atom pumps **100 %
 dark and cooling stops**. The comb-tone repumpers — modelled as **incoherent** off-resonant scattering (the
 virtual F′ adiabatically eliminated, so no rotating-frame artifact) — do clear it, but only partly: at the
-chain's **natural** power the on-axis floor settles at **≈ 0.10** (≈ 40 % of the population still in uncooled
-dark sublevels). **For this minimal chain the repumping, not the EIT mechanism, is the limit.**
+chain's **natural** power the on-axis floor settles at **≈ 0.085** (Nf = 5; ≈ 0.09 Nf-converged) at the servoed
+δ₂-optimum — ≈ 40 % of the population still in uncooled dark sublevels. **For this minimal chain the repumping,
+not the EIT mechanism, is the limit.**
 *(Scope: the rate Γ(Ω/2)²/(d²+(Γ/2)²) is the low-saturation limit — reliable only for repumper power ≲ natural.
 Above that it omits saturation and the a.c.-Stark shift ∝ Ω²/d, so the high-power rise in the script's sweep is
 the model breaking, not physics; trust only the natural-power point.)*
 
+**The operating point in δ₂ — it is not at zero.** In the clean 3-level Λ the dark resonance sits at δ₂ = 0 (§3).
+In the full manifold it does not: the repumper a.c.-Stark shifts and the coherent F′1/F′3 admixtures move the
+ground-state energies, dragging the dark resonance to **δ₂ ≈ −0.15** (2π·−150 kHz). The servo tracks it there —
+that is the operating point at which the floor above is evaluated. The dependence is sharp:
+
+| δ₂ (2π·MHz) | 0.00 | −0.10 | −0.15 | −0.20 | −0.30 |
+|---|---|---|---|---|---|
+| n̄_z | 0.25 | 0.10 | **0.085** | 0.12 | 0.59 |
+
+At the *bare* δ₂ = 0 the floor would be ≈ 0.25, not ≈ 0.10. Because it is this steep, the floor that is actually
+delivered is set by how tightly the servo holds the dark resonance — i.e. by the two-photon (Raman) coherence
+linewidth (laser phase noise, servo jitter), which the numbers here idealise to zero. This is the leading
+real-world limiter of the delivered floor, and the reason the "perfect servo" assumption below is load-bearing.
+
 **(iii) Why the detunings are large — and why one EOM can't do better.** The repumper detunings are *fixed* by
 f_mod and the tag shift 2f_A, and *one* AOM moves repump1 (F=1) and repump2 (F=2) in **opposite** directions,
 so you cannot pull both onto a useful line. Worse, every leftover tone lives near the **cooling F′2 manifold**,
-and a tone close to F′2 scatters the EIT dark state at a rate that **equals the cooling rate at δ ≈ 200 MHz off
-F′2**. So the repumpers *must* sit ≳ 200 MHz off F′2 — the large detunings are that protection. A configuration
-sweep ([`explore_configs.py`](02_multilevel/explore_configs.py)) confirms the current choice is the best of
-them, and **caps the single-EOM chain near ~0.1**. The way below it is a *separate* manifold — dedicated
+and a tone close to F′2 scatters the EIT dark state — a rate estimate puts that scatter at the cooling rate itself
+once a tone comes within ≈ 200 MHz of F′2. So the repumpers *must* sit ≳ 200 MHz off F′2 — the large detunings are
+that protection. A configuration sweep ([`explore_configs.py`](02_multilevel/explore_configs.py)) confirms the
+current choice is the best of the reachable comb geometries, **capping the single-EOM chain near ~0.1**. (This cap
+is a rate argument plus the reachable-geometry sweep, not a fully computed optimum: the incoherent-rate model is by
+construction invalid *within* ≈ 200 MHz of F′2 — where the dark-state spoiling would have to be treated
+coherently — so it marks that boundary rather than solving across it.) The way below it is a *separate* manifold — dedicated
 repumpers **on F′1** — the subject of §7, and of chapter [`03_master/`](03_master/README.md).
 
 ---
@@ -266,9 +288,11 @@ incoherent-rate model to hold — gives the honest number:
 
 ![the master floor with the F′1 leak folded in, and the leak-cancellation curve](04_dark_vertex/dark_vertex_floor.png)
 
-*Left: the floor ladder. The minimal chain (≈ 0.088) and the master config (≈ 0.06) both sit above the 0.0032
-limit by the **F′1 leak** — turn the leak off and the master drops to ≈ 0.029, so the ≈ 0.03 gap is the leak,
-and no repumper reaches it. Right: the leak is a coherent coupling, so scaling the probe's |1,−1⟩→|F′1,0⟩ edge
+*Left: the floor ladder, each configuration shown at its own cold detuning — the minimal chain at Δ = 45, the
+master at Δ ≈ 30 (where the leak-dominated floor bottoms; see below). Comparing at a *fixed* Δ = 45 separates the
+two effects: the master itself lowers 0.088 → 0.082 (clearing |2,−2⟩ and the comb scatter), and turning the F′1
+leak off then drops it to ≈ 0.029 — so the **≈ 0.05 that remains is the F′1 leak**, and no repumper reaches it
+(re-optimising to Δ ≈ 30 gives the ≈ 0.058 headline). Right: the leak is a coherent coupling, so scaling the probe's |1,−1⟩→|F′1,0⟩ edge
 down recovers the floor toward the no-leak ideal — but the scale is not a knob you have (R_c, R_p are atomic
 constants). From [`04_dark_vertex/make_figure.py`](04_dark_vertex/make_figure.py).*
 
@@ -288,10 +312,10 @@ before, and is self-contained (its own `config.py`, runnable on its own). Read t
 | # | folder | what it adds | physics in | status |
 |---|---|---|---|---|
 | **01** | [`01_three_level/`](01_three_level/) | the idealized 3-level Λ: trap, Stark shifts, the EIT mechanism, the (Γ/4Δ)² floor | §1–§5 | **built** · n̄_z = 0.0013 |
-| **02** | [`02_multilevel/`](02_multilevel/) | the real ⁸⁷Rb D2 manifold + photon recoil + the single-EOM comb delivery (probe, control, retro-reflection) | §6 | **built** · 0.0032 clean / ≈ 0.10 real |
+| **02** | [`02_multilevel/`](02_multilevel/) | the real ⁸⁷Rb D2 manifold + photon recoil + the single-EOM comb delivery (probe, control, retro-reflection) | §6 | **built** · 0.0032 clean / ≈ 0.09 real |
 | **03** | [`03_master/`](03_master/README.md) | the 780 master laser as a dedicated F′1 repumper | §7 | **built** · clears the dark sublevel + comb scatter (~0.10 → ≈ 0.06, leak-limited) |
 | **04** | [`04_dark_vertex/`](04_dark_vertex/README.md) | the second dark vertex: the cooling pair is two-photon resonant on the F′1 m′=0 state too, so the dark state isn't perfectly dark — folds that leak in and computes the master floor | §8 | **built** · ≈ 0.06 (leak-limited) |
-| 05 | *(planned)* | the anti-trapping heating from the expelled (anti-trapped) 5P₃/₂ excited state | — | planned |
+| 05 | *(planned)* | the anti-trapping heating from the expelled 5P₃/₂ excited state, computed explicitly (estimated < 2 % in the scope notes) | — | planned |
 | 06 | *(planned)* | the atom cloud (frozen atoms): a spread of ν_z and light shifts off-axis | — | planned |
 | 07 | *(planned)* | the full semiclassical Monte-Carlo simulation | — | planned |
 | 08 | *(planned)* | beam depletion along the fibre (scattering, absorption, …) | — | planned |
@@ -344,18 +368,29 @@ So the numbers above are read with the right scope:
   Off-axis the atom samples a weaker 1064 intensity, and since Ω_c² ∝ I but ν_z ∝ √I the EIT condition
   Ω_c²/4Δ = ν_z drifts, walking the bright peak off the sideband — so **every number here is a radially-localized
   best case**; a radially-hot atom cools worse (the radial layer is deliberately out of this repo).
-- **Anti-trapped excited state — checked, negligible.** The 5P₃/₂ is anti-trapped (+38), but its 26 ns lifetime
-  is ≪ the 2.3 µs trap period, so the atom is *frozen* during the excited excursion; setting the excited
-  curvature to ±ν_z moves the floor by < 2 %. The model's shared-potential approximation is therefore safe.
+- **The fibre enters as waist and delivery, not as light–matter physics.** The hollow-core fibre sets the mode
+  waist (19 µm) and carries the single-EOM delivery chain (comb, retro, tag); the cooling physics computed here is
+  that of the 1064 nm lattice and is otherwise identical in free space. Fibre-specific effects — the guided mode's
+  longitudinal (E_z) field and its vector shift, surface / Casimir–Polder forces, and propagation loss / beam
+  depletion — are out of scope (beam depletion is chapter 08).
+- **Anti-trapped excited state — estimated negligible (sudden approximation).** The 5P₃/₂ is anti-trapped (+38),
+  but its 26 ns lifetime is ≪ the 2.3 µs trap period, so the atom is *frozen* during the excited excursion; a
+  sudden-approximation estimate (setting the excited curvature to ±ν_z) moves the floor by < 2 %. The
+  shared-potential approximation the solver uses is therefore safe. (Chapter 05 is slated to compute this heating
+  explicitly rather than estimate it.)
 - **Linear polarization assumed** — the vector (circular) light shift is dropped. Along the quantization axis it
   acts like a fictitious B-field, which the g_F·m_F-matched pair cancels just like a real one (§2); the residual
   is the transverse/spatially-varying part — again a radial effect.
 - **Off-resonant tones treated incoherently** (§6) — they are in fact phase-locked to the Λ; the incoherent rate
   is valid because they sit 100s of MHz off (interference suppressed), while the near-resonant master repumper
   of chapter 03 is treated coherently.
-- **Lamb–Dicke regime, first order in η** (η = 0.094) — higher-order recoil terms dropped (the multilevel solver
-  uses the exact displacement operator; only the 3-level `cooling.py` linearizes it, harmless at this η).
-- **Perfect two-photon servo** (δ₂ held at 0) — no servo noise.
+- **Lamb–Dicke regime** (η = 0.094) — the multilevel solver uses the exact displacement operator on both
+  counter-propagating Λ legs; the 3-level `cooling.py` keeps only first-order recoil on the probe leg — harmless
+  for the floor (a rate ratio, so η² cancels), though not for the 3-level cooling *time*.
+- **Perfect two-photon servo** — the servo is taken to hold δ₂ exactly on the dark resonance (δ₂ = 0 in the
+  3-level, ≈ −0.15 in the multilevel; §6) with zero two-photon linewidth. Because the floor is steep in δ₂ (§6),
+  this is the load-bearing idealisation: in practice the Raman-coherence linewidth — laser phase noise, servo
+  jitter — sets the delivered floor.
 - **No technical noise** — no laser intensity/phase noise, no magnetic-field noise, no trap-frequency jitter.
 - **Repumper model** (§6) is a low-saturation *incoherent* rate — trustworthy only near natural power (see the §6 scope note).
 - **Detuning reference** — the per-(F′,m′) 1064 tensor Stark on F′1/F′3 *is* included (via `stark.py`); sub-MHz

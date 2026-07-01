@@ -7,7 +7,8 @@ cooling F′2 manifold, and that placement caps the floor. The one fix worth bui
 
 > **Add the 780 master laser as a dedicated F′1 repumper, and keep the existing single-end delivery.**
 > Nothing else changes — same fibre, same retro, same tag. This clears |2,−2⟩ and the off-resonant comb
-> scattering, pulling the floor below the minimal chain's ~0.10 — to **a few ×10⁻², ≈ 0.06** (leak-limited; §7).
+> scattering, pulling the floor below the minimal chain's ~0.10 — to **a few ×10⁻², ≈ 0.06** (at the leak-aware
+> Δ ≈ 30 optimum; leak-limited, computed in chapter 04 / §8).
 
 Everything heavier than this (dual-end re-plumbing of the fibre, etc.) buys little and costs a lot — those are
 parked in [`more hardware demanding schemes/`](more%20hardware%20demanding%20schemes/README.md) as curiosities,
@@ -80,6 +81,6 @@ tones, but they do **not** address the F′1 leak — which is independent of th
 **leak-limited at ≈ 0.06**, not worth the much harder build over the single-ended master for a single atom. They
 are reference curiosities, not the recommended path.
 
-The intrinsic cooling limit all of these chase is **0.0032** (with recoil) / 0.0013 (recoil-free), both computed in
-this repo; reaching it means beating the F′1 leak (chapter 04). Regenerate every figure here (and the subfolder's)
+The intrinsic cooling limit all of these chase is **0.0032** (full recoil) / 0.0013 (recoil-light: first-order,
+one leg), both computed in this repo; reaching it means beating the F′1 leak (chapter 04). Regenerate every figure here (and the subfolder's)
 with `python upgrade_figures.py` (matplotlib only, no solves).

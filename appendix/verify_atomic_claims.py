@@ -66,8 +66,9 @@ print("  GEM: |2,0>->|F'1,0> pi = %+.4f (ALLOWED, pure F'1 knob);  |2,0>->|F'2,0
 
 print("\n" + "=" * 84)
 print("4. Magnetic field slopes (g_F*m*muB)")
-gm = {(1,-1): -0.5*-1, (2,+1): 0.5*1, (2,-2): 0.5*-2, (2,0): 0.5*0}
+gm = {(1,-1): -0.5*-1, (2,+1): 0.5*1, (2,-1): 0.5*-1, (2,-2): 0.5*-2, (2,0): 0.5*0}
 chk("clock pair two-photon slope: gm(2,+1)-gm(1,-1)", (gm[(2,1)]-gm[(1,-1)])*muB, 0.0)
-chk("stretched |1,-1>+|2,-2| two-photon slope (MHz/G)", (gm[(1,-1)]-gm[(2,-2)])*muB, 2.10)
+chk("stretched axial baseline |1,-1>+|2,-1> slope (MHz/G)", (gm[(1,-1)]-gm[(2,-1)])*muB, 1.40)
+chk("stretched tilted-B (pi) |1,-1>+|2,-2| slope (MHz/G)", (gm[(1,-1)]-gm[(2,-2)])*muB, 2.10)
 chk("|2,0> knob coherence drift vs clock dark (MHz/G)", abs(gm[(2,0)] - 0.5)*muB, 0.70)
 print("\nDONE.")

@@ -49,9 +49,12 @@ if __name__ == "__main__":
         r2 = c.Delta + s * tfa                 # rep2 detuning from F=2->F'2
         R = m.solve(d2=d2, rep_scale=1.0, shift=s, twofA=tfa, Nf=NF, want=True)
         dark = sum(w for g, w in R['pops'].items() if g not in ((1, -1), (2, 1)))
+        # a tone within ~3*Gamma of any line breaks the incoherent-rate model -> this row's floor is NOT trustworthy
+        mind = min(abs(x) for x in (r1, r1 + 157, r1 + 229, r2, r2 + 157, r2 - 267))
         edge = "  (P_edge=%.0e)" % R['pn'][-1] if R['pn'][-1] > 1e-2 else ""
-        out("%-42s %5.0f  %+5.0f/%+5.0f/%+5.0f    %+5.0f/%+5.0f/%+5.0f    %.4f   %.2f  %.3f%s"
+        flag = "  << rate model INVALID: a tone sits %.0f MHz off a line (treat coherently)" % mind if mind < 3 * m.GAMMA else ""
+        out("%-42s %5.0f  %+5.0f/%+5.0f/%+5.0f    %+5.0f/%+5.0f/%+5.0f    %.4f   %.2f  %.3f%s%s"
             % (name, fmod, r1, r1 + 157, r1 + 229, r2, r2 + 157, r2 - 267,
-               R['nbar'], dark, R['pn'][0], edge))
+               R['nbar'], dark, R['pn'][0], edge, flag))
     out("\n  (detunings in 2pi*MHz, signed, from each line. 'dark' = population outside |1,-1>,|2,+1>.")
     out("   F'0/F'3 columns are the intra-F decay-back lines -- a tone sitting on them heats, does not repump.)")

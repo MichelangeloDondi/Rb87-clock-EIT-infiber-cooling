@@ -40,25 +40,28 @@ a **dedicated master**, a *detuned* F2→F′1 σ⁺ repumper (det ≫ 3Γ, so t
 valid — and the lightest touch that clears |2,−2⟩ is what the physics wants anyway).
 
 ```
-   minimal single-EOM chain (comb),  leak ON    n̄_z ≈ 0.088     (≈ chapter 02's 0.10)
-   minimal single-EOM chain (comb),  leak OFF   n̄_z ≈ 0.042
-   master config (comb suppressed),  leak ON    n̄_z ≈ 0.061     (Δ = 30, leak-aware optimum)
-   master config (comb suppressed),  leak OFF   n̄_z ≈ 0.029
+   minimal single-EOM chain (comb),  leak ON,  Δ = 45    n̄_z ≈ 0.088     (≈ chapter 02's 0.10)
+   minimal single-EOM chain (comb),  leak OFF, Δ = 45    n̄_z ≈ 0.042
+   master config (comb suppressed),  leak ON,  Δ = 45    n̄_z ≈ 0.082     (same Δ as the chain)
+   master config (comb suppressed),  leak OFF, Δ = 45    n̄_z ≈ 0.029
+   master config (comb suppressed),  leak ON,  Δ = 30    n̄_z ≈ 0.058     (leak-aware optimum → the headline)
 ```
 
 ![the master floor with the F′1 leak folded in, and the cancellation curve](dark_vertex_floor.png)
 
 Reading these:
 
-- **The master helps, modestly** — it pulls the realistic floor from ≈ 0.088 to ≈ 0.06 by clearing
-  |2,−2⟩ and removing the leftover-comb scatter. The chapter-03 motivation stands.
-- **But the floor is the leak.** Turn the leak off and the same master config drops to ≈ 0.029; turn it
-  on and it climbs back to ≈ 0.06. The gap (≈ 0.03–0.05) is the F′1 leak, and **no repumper reaches
-  into it** — it is the dark state itself scattering, not an unpumped reservoir, so the master (a
-  different transition) cannot touch it.
+- **The master helps, modestly.** Comparing at a *fixed* Δ = 45 isolates its effect: it pulls the
+  realistic floor from ≈ 0.088 to ≈ 0.082 by clearing |2,−2⟩ and removing the leftover-comb scatter.
+  Re-optimising to the leak-aware Δ ≈ 30 (next bullet) then gives the ≈ 0.058 headline. The chapter-03
+  motivation stands.
+- **But the floor is the leak.** At the *same* Δ = 45, turning the leak off drops the master config from
+  ≈ 0.082 to ≈ 0.029 — so the **≈ 0.05 gap is the F′1 leak**, and **no repumper reaches into it**: it is
+  the dark state itself scattering, not an unpumped reservoir, so the master (a different transition)
+  cannot touch it.
 - **Smaller Δ is colder once the leak dominates.** The leak's scatter ∝ Δ/(Δ+157)² *grows* with Δ in
-  the operating range, so the leak-aware optimum is at *smaller* Δ (≈ 30, not 45) — the opposite of the
-  detune-harder instinct that holds when the dark state is perfect. (The numbers are ~10% Δ-/run-
+  the operating range, so the leak-aware optimum is at *smaller* Δ (≈ 30, giving ≈ 0.058) — the opposite
+  of the detune-harder instinct that holds when the dark state is perfect. (The numbers are ~10% Δ-/run-
   dependent; read them as "a few × 10⁻²".)
 
 ## 3. Can the leak be cancelled?

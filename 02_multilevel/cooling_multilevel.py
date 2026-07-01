@@ -163,7 +163,7 @@ def repump_cops(bm_rep, gE, idx, P, If, Dsp, Gset, B, theta):
             d = nu - (Ev(*e) - gE[g])                             # this edge's detuning
             mind = min(mind, abs(d))
             R = GAMMA * (O / 2)**2 / (d**2 + (GAMMA / 2)**2)      # off-resonant scattering rate
-            acshift[g] = acshift.get(g, 0.0) + (O / 2)**2 / d
+            acshift[g] = acshift.get(g, 0.0) + (O / 2)**2 / d   # GROUND-only shift (eliminated excited's is dropped); physical as the leg DIFFERENTIAL at rep_scale<~1
             br = decay_branch_full(e[0], e[1])
             tot = sum(br.values())
             if tot <= 0:
@@ -177,7 +177,8 @@ def repump_cops(bm_rep, gE, idx, P, If, Dsp, Gset, B, theta):
     # Guard: the incoherent low-saturation rate (R, acshift) is only valid far off resonance. If a config
     # (e.g. a small 2f_A in explore_configs) lands a comb tone within a few linewidths of a line, R approaches
     # the saturation limit and the acshift ~ Omega^2/d diverges -- a near-resonant tone must be treated
-    # coherently (in the Hilbert space), not as a rate. Warn rather than feed a blown-up Liouvillian to qutip.
+    # coherently (in the Hilbert space), not as a rate. We WARN here (the solve still returns a number, but it
+    # is NOT trustworthy for such a config); a caller that sweeps configs should flag or skip the warned rows.
     if mind < 3.0 * c.Gamma:
         import warnings
         warnings.warn("a repumper tone sits %.0f MHz (< 3*Gamma) from a line: the incoherent rate model is "
@@ -365,20 +366,31 @@ if __name__ == "__main__":
     Roff = solve(d2=-0.10, with_repump=False, want=True)
     out(f"  [repump OFF]  <n_z> = {Roff['nbar']:.2f}  (Nf-limited; ~uncooled) -- 100% pumped into dark sublevels")
 
+    # 2b) The operating point in d2. The full-manifold light shifts (repumper a.c.-Stark + the coherent F'1/F'3
+    #     admixtures) move the dark resonance OFF the bare two-photon resonance d2=0. Scan d2 to see where the
+    #     servo actually sits -- it is NOT at d2=0, and the floor is a steep function of it.
+    out("\n  floor vs two-photon detuning d2 (rep_scale=1; the servo tracks the dark resonance, NOT d2=0):")
+    d2scan = [(d, solve(d2=d, rep_scale=1.0)) for d in (0.0, -0.05, -0.10, -0.15, -0.20, -0.25)]
+    for d, n in d2scan:
+        out(f"    d2 = {d:+.2f}   <n_z> = {n:.4f}")
+    D2_OP = min(d2scan, key=lambda t: t[1])[0]
+    out(f"  -> operating point d2 = {D2_OP:+.2f} (dark-resonance minimum); at the bare d2=0 the floor is {d2scan[0][1]:.2f}.")
+
     # 3) repumpers ON -- INCOHERENT off-resonant rates. Low-saturation rate: TRUST rep_scale~1, NOT the
     #    high-power trend (the rate omits saturation + the a.c.-Stark shift, which break above ~natural power).
     out("\n  repumpers ON (incoherent off-resonant rates; low-saturation -> trust rep_scale~1 only) -- floor vs power:")
-    best = None
+    headline = None
     for sc in (0.3, 1.0, 3.0, 10.0, 30.0):
-        R = solve(d2=-0.10, rep_scale=sc, want=True)
+        R = solve(d2=D2_OP, rep_scale=sc, want=True)
         dark = sum(w for g, w in R['pops'].items() if g not in ((1, -1), (2, 1)))
         out(f"    rep_scale={sc:5.1f}  (rep1={sc * Op / np.sqrt(c.eta_dp):5.1f}, rep2={sc * Oc * np.sqrt(c.eta_dp):5.1f}):  "
             f"<n_z> = {R['nbar']:.4f}   dark = {dark:.2f}   P(n=0) = {R['pn'][0]:.3f}")
-        if best is None or R['nbar'] < best[0]['nbar']:
-            best = (R, sc)
-    R, sc = best
-    out(f"  -> rep_scale={sc:g} (natural power) gives the lowest, and only TRUSTWORTHY, floor: {R['nbar']:.3f}.")
-    out("     The rise at higher rep_scale is the low-saturation rate model breaking, not physics (see SCOPE).")
+        if sc == 1.0:
+            headline = R
+    R = headline
+    out(f"  -> rep_scale=1 (chain-natural power) is the physical, TRUSTWORTHY point:  <n_z> = {R['nbar']:.3f}.")
+    out("     Lower rep_scale under-repumps; the further fall at higher rep_scale is the low-saturation rate")
+    out("     model breaking (it omits saturation + the a.c.-Stark shift), not physics -- see SCOPE.")
 
     # 4) the repumper placement -- the offsets you specified (incl. Delta, 2f_A, and the F'1/F'3 Stark)
     nu = R['nu']
