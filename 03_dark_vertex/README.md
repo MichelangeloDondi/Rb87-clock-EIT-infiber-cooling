@@ -5,8 +5,8 @@ physics underneath that number — the EIT dark state is not perfectly dark** �
 **no extra hardware**. The answer: the F′1 leak sets a floor the single-EOM chain reaches at **≈ 0.087** (optimised
 over Δ); going below it needs the optional master laser (chapter 04) or leak cancellation (appendix).
 
-> The physics is in §7–§8 of the [main README](../README.md). This folder is the solver, the figure,
-> and the numbers.
+> This chapter is self-contained: it follows chapter 02 (the repump-limited ≈ 0.09) and motivates chapter 04
+> (the master upgrade). All floors are single-atom and on-axis.
 
 ## 1. The cooling pair is two-photon resonant on F′1 as well as F′2
 
