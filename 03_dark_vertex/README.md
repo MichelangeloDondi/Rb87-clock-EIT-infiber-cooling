@@ -76,7 +76,7 @@ The catch is hardware. **f is not a knob you have** (R_c, R_p are atomic constan
 canceller would put a third laser frequency on |F′1,0⟩ and break the static rotating frame; and a
 co-propagating tone at the probe frequency only rescales Ω_p, not the F′1/F′2 ratio. Genuine
 cancellation needs a **time-dependent (Floquet) co-propagating tone** — a different solver, and the
-real frontier past the ≈ 0.06 floor.
+real frontier past the ≈ 0.055 floor.
 
 ## Files
 
@@ -90,5 +90,5 @@ real frontier past the ≈ 0.06 floor.
 
 *Caveats (chapter 02's, restated): all floors are single-atom, on-axis, radially-localized best cases;
 the incoherent-repumper model requires every repumper (master included) to sit ≫ 3Γ off resonance; the
-Floquet cancellation of §3 is outside this static-frame solver; and ≈ 0.06 is a steady-state ground-band
+Floquet cancellation of §3 is outside this static-frame solver; and ≈ 0.055 is a steady-state ground-band
 number, not a measured n̄ — the experiment is the arbiter.*

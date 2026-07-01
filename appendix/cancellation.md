@@ -1,6 +1,6 @@
 # Can the F′1 leak be cancelled? — the Floquet verdict
 
-Chapter 04 caps the master floor at ≈ 0.06 because the EIT dark state keeps a residual coupling onto |F′1,0⟩.
+Chapter 04 caps the master floor at ≈ 0.055 because the EIT dark state keeps a residual coupling onto |F′1,0⟩.
 **Can that coupling be cancelled?** The honest answer is **no, not by a co-propagating tone** — and the D2 scheme
 bottoms out at **n̄_z ≈ 0.055**.
 
@@ -46,7 +46,7 @@ If the leak can't be removed, the honest task is to find where it hurts least. S
 (right panel above; from [chapter 03](../03_dark_vertex/src/cooling_dark_vertex.py)'s `floor`): the leak penalty
 grows monotonically with Δ — it scales as Δ/(Δ+157)² — so the usual instinct to detune harder is backwards here.
 Working against it, the EIT cooling weakens as Δ → Γ. The two balance in a shallow basin at **Δ ≈ 25, where the
-floor bottoms at n̄_z ≈ 0.055** (P(n=0) ≈ 95%). This refines chapter 03's ≈ 0.06 to the leak-aware optimum; it is
+floor bottoms at n̄_z ≈ 0.055** (P(n=0) ≈ 95%). This refines chapter 03's Δ=30 value (≈ 0.058) to the Δ ≈ 25 leak-aware optimum; it is
 the coldest the clock-EIT scheme on the ⁸⁷Rb **D2** line delivers, everything folded in.
 
 ## 5. Going colder is a redesign
