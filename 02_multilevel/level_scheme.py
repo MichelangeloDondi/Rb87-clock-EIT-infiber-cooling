@@ -36,11 +36,24 @@ def yc(f): return f * S                                    # true 2pi-MHz -> dra
 BARE = {0: -229.17, 1: -156.95, 2: 0.0, 3: 266.65}         # bare 87Rb 5P3/2 hyperfine vs F'2 (Steck)
 TH = c.theta_trap
 def shift(Fp, mp): return stark.stark_level(Fp, mp, TH)    # full excited 1064 shift = scalar + tensor
-def lt(Fp, mp): return BARE[Fp] + shift(Fp, mp)            # in-trap (Stark-shifted) excited level
+def lt(Fp, mp):                                           # in-trap excited level: Stark + Zeeman(B) + vector
+    return (BARE[Fp] + shift(Fp, mp) + zeeman(gF_excited, mp)
+            + stark.stark_vector(c.alpha1_5P32, Fp, mp, c.ellipticity))
 def yE(Fp, mp): return yc(lt(Fp, mp))
 SCAL = shift(2, 0)                                         # +38 scalar (F'2 tensor-null)
 U0   = -stark.shift(c.alpha0_5S)                           # +22.7 ground scalar DOWN-shift (both F)
 Oc = np.sqrt(4.0 * c.Delta * c.nu_z); Op = c.probe_control_ratio * Oc      # control / probe Rabis (~8.8 / 1.1)
+
+# --- Zeeman(B) + vector(ellipticity): the two live level-shift knobs (config.B_field, config.ellipticity) ---
+muB = 1.399624                                            # Bohr magneton / h (MHz/G)
+gF_ground = {1: -0.5, 2: +0.5}; gF_excited = 2.0 / 3.0    # Lande g-factors (ground pair; 5P3/2)
+def zeeman(g, m): return g * m * muB * c.B_field          # linear Zeeman shift (2pi MHz)
+# --- arrow WIDTH proportional to each tone's Rabi frequency ---
+RABI = dict(control=Oc, probe=Op,
+            rep1=c.repump_scale * Op / np.sqrt(c.retro_efficiency),   # forward +1 EOM sideband
+            rep2=c.repump_scale * Oc * np.sqrt(c.retro_efficiency),   # retro carrier
+            mfwd=1.2, mret=1.2)                                       # master (representative Rabi)
+def lw_of(key): return 1.0 + 3.4 * (RABI[key] / Oc)       # linewidth ~ Rabi (control = thickest)
 
 em = {0: [0], 1: [-1, 0, 1], 2: [-2, -1, 0, 1, 2], 3: [-3, -2, -1, 0, 1, 2, 3]}
 gm = {1: [-1, 0, 1], 2: [-2, -1, 0, 1, 2]}
@@ -77,8 +90,9 @@ def draw(with_master, outpath, title):
     HW = 0.30
     def lvl(m, y, col="#9aa0aa", lw=2.0, z=2):
         ax.plot([m - HW, m + HW], [y, y], color=col, lw=lw, solid_capstyle="round", zorder=z)
-    def beam(p0, p1, key, lw=2.8, msc=16):
-        ax.add_patch(FancyArrowPatch(p0, p1, arrowstyle="-|>", mutation_scale=msc, color=C[key], lw=lw,
+    def beam(p0, p1, key, lw=None, msc=16):
+        w = lw_of(key)          # WIDTH proportional to this tone's Rabi frequency
+        ax.add_patch(FancyArrowPatch(p0, p1, arrowstyle="-|>", mutation_scale=msc, color=C[key], lw=w,
                      zorder=5, shrinkA=6, shrinkB=5, linestyle=("-" if FWD[key] else "--")))
     def tick(m, y, col):
         ax.plot([m - 0.33, m + 0.33], [y, y], ls=(0, (3, 2)), color=col, lw=1.7, zorder=4)
@@ -106,8 +120,9 @@ def draw(with_master, outpath, title):
             lvl(mp, yE(Fp, mp), "#c62828" if hot else "#9aa0aa", 4.2 if hot else 2.0, 4 if hot else 2)
     for F, ms in gm.items():
         yg = yG2 if F == 2 else yG1
-        for m in ms:
-            lvl(m, yg, "#2b2b2b", 2.6)
+        for m in ms:                     # fan the ground sublevels by Zeeman(B) + vector(ellipticity)
+            dy = yc(zeeman(gF_ground[F], m) + stark.stark_vector(c.alpha1_5S, F, m, c.ellipticity))
+            lvl(m, yg + dy, "#2b2b2b", 2.6)
     ax.plot(-1, yG1, "o", color=C["probe"], ms=11, zorder=6, mec="white", mew=1.1)     # |1,-1>
     ax.plot(+1, yG2, "o", color=C["control"], ms=11, zorder=6, mec="white", mew=1.1)   # |2,+1>
 
@@ -192,7 +207,8 @@ def draw(with_master, outpath, title):
             Line2D([0], [0], color=MASTER, lw=2.7, ls="-",  label=leglab("master (fwd)", "\\sigma^+", "F2$\\to$F'1", "mfwd")),
             Line2D([0], [0], color=MASTER, lw=2.3, ls="--", label=leglab("master (retro)", "\\sigma^-", "F2$\\to$F'1", "mret")),
         ]
-    ttl = ("beams: colour = comb line (carrier blue, +1 sideband green, master purple); SOLID = forward, DASHED = retro.\n"
+    ttl = ("beams: colour = comb line (carrier blue, +1 sideband green, master purple); SOLID = forward, DASHED = retro;\n"
+           "   arrow WIDTH $\\propto$ Rabi frequency (control thickest). Levels = Stark + Zeeman($B$) + vector(ellipticity).\n"
            "detuning label  $WW(-s-t-g=ZZ)$:  WW = $\\Delta$ from the BARE (1064-OFF) transition; s,t = excited scalar/tensor\n"
            "shift; g = ground scalar shift; ZZ = the in-trap $\\Delta$.  Each shift raises the transition, so subtracts: ZZ = WW$-$s$-$t$-$g.")
     bl = ax.legend(handles=leg, loc="upper left", bbox_to_anchor=(0.520, 0.998), frameon=True, fontsize=8.4,
@@ -231,6 +247,10 @@ def draw(with_master, outpath, title):
     ax.set_yticks([]); ax.tick_params(length=0)
     for s in ax.spines.values():
         s.set_visible(False)
+    ax.text(0.985, 0.985, "config:  $B=%.1f$ G   ellipticity $=%.2f$   $\\theta=%.0f°$   $\\Omega_c=%.1f$"
+            % (c.B_field, c.ellipticity, c.theta_trap, Oc),
+            transform=ax.transAxes, ha="right", va="top", fontsize=8.8, color="#333",
+            bbox=dict(boxstyle="round,pad=0.4", fc="#fffbe6", ec="#ccc", lw=0.8))
     fig.tight_layout()
     fig.savefig(outpath, dpi=150, bbox_inches="tight")
     plt.close(fig)

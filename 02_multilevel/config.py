@@ -16,6 +16,9 @@ w0     = 19e-6        # 1/e^2 intensity waist (m) -- the kagome HCPCF mode at 10
 alpha0_5S   =  687.3  # ground 5S_1/2 scalar   (>0 -> trapped)
 alpha0_5P32 = -1149.0 # excited 5P_3/2 scalar  (<0 -> anti-trapped)
 alpha2_5P32 =  563.0  # excited 5P_3/2 tensor
+alpha1_5S   =    0.0  # ground  5S_1/2 VECTOR (rank-1) polarizability (a.u.) -- PLACEHOLDER
+alpha1_5P32 =  200.0  # excited 5P_3/2 VECTOR polarizability (a.u.) -- order-of-magnitude PLACEHOLDER
+                      #   (only used when ellipticity != 0; set from a vector-polarizability reference to trust it)
 
 # --- the atom / cooling transition (87Rb D2; clock-EIT Lambda |1,-1>,|2,+1> -> |F'2,0>) ---
 Gamma = 6.07          # 5P_3/2 natural linewidth (2pi*MHz)
@@ -32,6 +35,9 @@ probe_control_ratio   = 0.12          # probe/control Rabi ratio
 B_field      = 1.0    # magnetic field (G); cooling field, axial. Floor is B-insensitive (clock pair).
 theta_trap   = 90.0   # trap linear-pol angle to the axial B (deg). 90 = transverse lattice (real);
                       #   0 = pol||B (reproduces the polarizability-authority F' Stark shifts).
+ellipticity  = 0.0    # degree of circular polarization in [-1,+1]; 0 = LINEAR trap -> vector shift = 0.
+                      #   a knob for level_scheme.py: nonzero adds the rank-1 VECTOR light shift (a fictitious
+                      #   B ~ ellipticity*m_F). The floor solve assumes linear pol, so it ignores this.
 # Single-EOM tagged-retro delivery: ONE seed -> EOM (f_mod = A_HFS + 2f_A = 6.83 + 0.40 = 7.23 GHz)
 # -> ... -> tag AOM (2f_A, DOWN-shifts the retro) -> retro. The repumpers are NOT separate lasers --
 # they are the leftover tones of the SAME comb, deliberately left OFF-RESONANCE:

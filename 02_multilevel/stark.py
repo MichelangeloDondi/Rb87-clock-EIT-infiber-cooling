@@ -33,10 +33,10 @@ def shift(alpha_au):
 #   {2 2 2; 3/2 3/2 3/2} = 0          -> F'=2 tensor NULL: the EIT target is pure scalar (any geometry)
 #   {1 2 1; 3/2 3/2 3/2} = -0.16330 ; {3 2 3; 3/2 3/2 3/2} = +0.13093
 #   -> F'-prefactor ratios (relative to F'=3): F'=0: 0, F'=1: -0.5345, F'=2: 0, F'=3: +1.
-_FPREF = {0: 0.0, 1: -0.534522, 2: 0.0, 3: 1.0}    # (2F'+1){F' 2 F';3/2..}/(7{3 2 3;3/2..})
+tensor_F_prefactor = {0: 0.0, 1: -0.534522, 2: 0.0, 3: 1.0}    # (2F'+1){F' 2 F';3/2..}/(7{3 2 3;3/2..})
 
 
-def _mfac(Fp, mp):
+def tensor_m_factor(Fp, mp):
     return (3 * mp**2 - Fp * (Fp + 1)) / (Fp * (2 * Fp - 1)) if Fp >= 1 else 0.0
 
 
@@ -46,12 +46,21 @@ def stark_tensor(Fp, mp, theta_deg=90.0):
        The axial lattice is transverse-polarized about the axial B, so theta=90 deg (default);
        theta=0 (pol || B) reproduces the polarizability-authority +19.4 (F'=3 stretched) etc."""
     ang = (3 * np.cos(np.deg2rad(theta_deg))**2 - 1) / 2.0     # +1 at 0 deg, -1/2 at 90 deg
-    return shift(c.alpha2_5P32) * _FPREF[Fp] * _mfac(Fp, mp) * ang
+    return shift(c.alpha2_5P32) * tensor_F_prefactor[Fp] * tensor_m_factor(Fp, mp) * ang
 
 
 def stark_level(Fp, mp, theta_deg=90.0):
     """Total 1064 shift of |5P3/2 F',m'> = common scalar + tensor(F',m') (2pi*MHz)."""
     return shift(c.alpha0_5P32) + stark_tensor(Fp, mp, theta_deg)
+
+
+def stark_vector(alpha1_au, F, m, ellipticity):
+    """Rank-1 (VECTOR) 1064 light shift (2pi*MHz): a fictitious B ~ ellipticity * m_F, ZERO for a linear
+       trap (ellipticity=0). alpha1_au is the vector polarizability; the linear-in-m form
+       U_vec = shift(alpha1) * ellipticity * (m/F) is illustrative (the exact prefactor needs a reference)."""
+    if F == 0 or ellipticity == 0.0:
+        return 0.0
+    return shift(alpha1_au) * ellipticity * (m / F)
 
 
 if __name__ == "__main__":
