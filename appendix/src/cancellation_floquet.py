@@ -1,8 +1,8 @@
 """
 cancellation_floquet.py -- can the F'1 leak (chapter 03) be cancelled?  The Floquet verdict.
 
-Chapter 04 showed that *if* the dark state's residual coupling onto |F'1,0> could be removed, the floor
-would recover from ~0.06 toward the ~0.03 no-leak ideal -- but it tested this by SCALING the probe's
+Chapter 03 showed that *if* the dark state's residual coupling onto |F'1,0> could be removed, the floor
+would recover from ~0.055 toward the ~0.03 no-leak ideal -- but it tested this by SCALING the probe's
 coherent F'1 edge, a proxy that quietly assumed a knob you do not physically have. This module asks the
 question honestly, with a real cancellation tone at its real frequency, and finds the answer is NO: a
 single co-propagating tone cannot cancel the leak.

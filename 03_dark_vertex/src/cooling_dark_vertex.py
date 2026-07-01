@@ -10,7 +10,7 @@ between. So the EIT dark state
 
 is NOT dark on F'1: it keeps a residual coupling onto |F'1,0>, which decays 5/6 to F=1 and loads the
 F=1 dark states. That leak -- not repumper inefficiency, not the master placement -- is the dominant,
-master-proof floor term, and it is what sets the master floor at ~0.06 (chapter 04's design only
+master-proof floor term, and it is what sets the master floor at ~0.055 (chapter 04's design only
 called it a target; here it is computed).
 
 This module reuses 02_multilevel/cooling_multilevel.py verbatim. Its `with_e1` already carries the

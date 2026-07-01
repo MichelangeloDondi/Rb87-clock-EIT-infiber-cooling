@@ -22,6 +22,18 @@ IMAGES = os.path.join(os.path.dirname(HERE), "images")   # figures -> the chapte
 BLUE, RED, GREY, GREEN = "#1565c0", "#c0392b", "#7f8c8d", "#2e7d32"
 TIME_UNIT_US = 0.159        # 1/(2pi*nu_z) in us -- converts the dimensionless (2pi*MHz) time axis to microseconds
 
+# Uniform readability floor for every figure (embedded in READMEs at ~700-900 px):
+# ticks >= 11pt, axis labels >= 12.5pt, titles >= 14pt, inline text >= 10pt.
+plt.rcParams.update({
+    "font.size": 11,
+    "axes.titlesize": 14,
+    "axes.labelsize": 12.5,
+    "xtick.labelsize": 11,
+    "ytick.labelsize": 11,
+    "legend.fontsize": 11,
+    "figure.dpi": 150,
+})
+
 
 # ---------------------------------------------------------------- 1. EIT spectrum
 def eit_spectrum():
@@ -38,13 +50,19 @@ def eit_spectrum():
         excited_pop.append(expect(excited_proj, steadystate(H, cops)))
     excited_pop = np.array(excited_pop)
 
-    fig, ax = plt.subplots(figsize=(7.2, 4.4))
+    fig, ax = plt.subplots(figsize=(7.6, 4.6))
     ax.plot(detunings, excited_pop, color=BLUE, lw=2.2)
-    for x, col, lab, ha in [(0.0, GREY, "carrier\n(dark — no heating)", "center"),
-                            (+c.nu_z, RED, "cooling sideband\n(on the bright peak)", "left"),
-                            (-c.nu_z, GREEN, "heating sideband\n(suppressed)", "right")]:
+    peak = excited_pop.max()
+    # dedicated headroom so no annotation sits on top of the curve peak; the three labels
+    # are staggered in height so the (closely spaced) heating/carrier labels do not collide
+    ax.set_ylim(-0.03 * peak, peak * 1.42)
+    # each label fans out from its OWN line (heating -> left, carrier centred, cooling -> right) so they never collide
+    for x, col, lab, ha, dx in [(-c.nu_z, GREEN, "heating sideband\n(suppressed)", "right", -0.04),
+                                 (0.0, GREY, "carrier\n(dark — no heating)", "center", 0.0),
+                                 (+c.nu_z, RED, "cooling sideband\n(on the bright peak)", "left", 0.04)]:
         ax.axvline(x, color=col, ls="--", lw=1.2, alpha=0.8)
-        ax.annotate(lab, xy=(x, excited_pop.max() * 0.92), fontsize=8.5, color=col, ha=ha)
+        ax.annotate(lab, xy=(x + dx, peak * 1.28), fontsize=11, color=col, ha=ha, va="center")
+    ax.set_xlim(-1.05, 1.5)   # trim the flat left region + long right tail, with room for the side labels
     ax.set_xlabel(r"probe two-photon detuning  $\delta_2$  (2$\pi$·MHz)")
     ax.set_ylabel(r"excited population $P_e$  ($\propto$ absorption)")
     ax.set_title("EIT spectrum: dark carrier, bright cooling sideband, suppressed heating\n"
@@ -52,7 +70,7 @@ def eit_spectrum():
     for s in ("top", "right"):
         ax.spines[s].set_visible(False)
     fig.tight_layout()
-    fig.savefig(os.path.join(IMAGES, "eit_spectrum.png"), dpi=150)
+    fig.savefig(os.path.join(IMAGES, "eit_spectrum.png"), dpi=150, bbox_inches="tight")
     print("wrote eit_spectrum.png")
 
 
@@ -98,26 +116,34 @@ def cooling_curve(n_init=3.0, N=16):
     pn = np.real(rho_ss.ptrace(1).diag())
     t_us, n_of_t, tau_cool, n_steady = cooling_trajectory(L, n, rho_ss, n_init, N)
 
-    fig, (axL, axR) = plt.subplots(1, 2, figsize=(10.6, 4.2))
+    fig, (axL, axR) = plt.subplots(1, 2, figsize=(11.0, 4.4),
+                                   gridspec_kw={"width_ratios": [1.7, 1.0]})
     axL.plot(t_us, n_of_t, color=BLUE, lw=2.2)
     axL.axhline(n_steady, color=RED, ls="--", lw=1.2)
-    axL.annotate(f"floor  $\\bar n_z$ ≈ {n_steady:.4f}", xy=(t_us[-1] * 0.45, n_steady),
-                 xytext=(0, 8), textcoords="offset points", color=RED, fontsize=9.5)
+    # This reduced (linearized-recoil, probe-leg-only) solve floors at ~0.0013; the canonical
+    # 3-level number is 0.0020 (full recoil) / 0.0011 (recoil-free) -- see README section 5.
+    axL.annotate(f"reduced-model floor  $\\bar n_z$ ≈ {n_steady:.4f}\n"
+                 f"(canonical 3-level: 0.0020 full recoil, 0.0011 recoil-free)",
+                 xy=(t_us[-1] * 0.42, n_steady), xytext=(0, 9),
+                 textcoords="offset points", color=RED, fontsize=10, ha="center")
     axL.set_xlabel(r"time ($\mu$s)"); axL.set_ylabel(r"$\langle n_z\rangle$")
     axL.set_title(f"exact $\\langle n_z\\rangle(t)$ from $\\bar n_0\\approx{n_of_t[0]:.1f}$ "
-                  f"(1/e $\\approx${tau_cool:.0f} $\\mu$s, multi-modal)")
+                  f"(1/e $\\approx${tau_cool:.0f} $\\mu$s)")
     axL.set_yscale("log")
+    axL.set_ylim(n_steady * 0.6, n_of_t[0] * 1.6)   # trim the empty log decade below the floor
 
-    axR.bar(range(8), pn[:8], color=BLUE, width=0.7)
-    axR.annotate(f"$P(n{{=}}0)$ ≈ {pn[0]:.3f}", xy=(0, pn[0]), xytext=(1.5, pn[0] * 0.9),
-                 color=RED, fontsize=10)
+    nshow = 5                                        # bars beyond n=4 are ~0; showing them wastes the panel
+    axR.bar(range(nshow), pn[:nshow], color=BLUE, width=0.7)
+    axR.annotate(f"$P(n{{=}}0)$ ≈ {pn[0]:.3f}", xy=(0, pn[0]), xytext=(0.55, pn[0] * 0.92),
+                 color=RED, fontsize=11, ha="left")
+    axR.set_xticks(range(nshow))
     axR.set_xlabel("Fock state $n$"); axR.set_ylabel("population")
     axR.set_title("steady-state motional distribution")
     for ax in (axL, axR):
         for s in ("top", "right"):
             ax.spines[s].set_visible(False)
     fig.tight_layout()
-    fig.savefig(os.path.join(IMAGES, "cooling_curve.png"), dpi=150)
+    fig.savefig(os.path.join(IMAGES, "cooling_curve.png"), dpi=150, bbox_inches="tight")
     print("wrote cooling_curve.png")
 
 
@@ -129,30 +155,30 @@ def stark_manifold():
     f3_highest = stark.stark_level(3, 3, th)             # F'3 stretched |3,+-3> -> HIGHEST at theta=90
     f3_lowest = stark.stark_level(3, 0, th)             # F'3 |3,0>            -> lowest at theta=90
 
-    fig, ax = plt.subplots(figsize=(6.6, 5.0))
+    fig, ax = plt.subplots(figsize=(7.4, 4.6))
     ax.axhline(0, color="k", lw=0.8, alpha=0.4)
-    ax.text(0.5, 2, "free-atom levels (no light)", fontsize=8, color="k", alpha=0.5, ha="center")
+    ax.text(0.5, 3, "free-atom levels (no light)", fontsize=10, color="k", alpha=0.55, ha="center", va="bottom")
     # ground
     ax.hlines(-trap_depth, 0.1, 0.9, color=BLUE, lw=3)
-    ax.text(0.5, -trap_depth - 3, f"5S$_{{1/2}}$ ground: trapped, $U_0$ = {trap_depth:.0f} MHz", color=BLUE, ha="center", fontsize=9)
+    ax.text(0.5, -trap_depth - 3, f"5S$_{{1/2}}$ ground: trapped, $U_0$ = {trap_depth:.0f} MHz", color=BLUE, ha="center", va="top", fontsize=10)
     # excited manifold (F'3 band at the real theta=90 trap: stretched on top, |3,0> at the bottom)
     ax.fill_between([1.1, 1.9], f3_lowest, f3_highest, color=RED, alpha=0.12)
     ax.hlines(scalar_shift, 1.1, 1.9, color=RED, lw=3)
-    ax.text(2.0, scalar_shift, f"|F'2,0⟩  pure scalar  +{scalar_shift:.0f} MHz  (EIT target)", color=RED, va="center", fontsize=9)
+    ax.text(2.05, scalar_shift, f"|F'2,0⟩  pure scalar  +{scalar_shift:.0f} MHz  (EIT target)", color=RED, va="center", fontsize=11)
     ax.hlines(f3_highest, 1.1, 1.9, color=GREY, lw=1.5, ls="--")
-    ax.text(2.0, f3_highest, f"F'=3 stretched |3,±3⟩  +{f3_highest:.0f}  (highest)", color=GREY, va="center", fontsize=8)
+    ax.text(2.05, f3_highest, f"F'=3 stretched |3,±3⟩  +{f3_highest:.0f}  (highest)", color=GREY, va="center", fontsize=10)
     ax.hlines(f3_lowest, 1.1, 1.9, color=GREY, lw=1.5, ls="--")
-    ax.text(2.0, f3_lowest, f"F'=3 |3,0⟩  +{f3_lowest:.0f}  (lowest)", color=GREY, va="center", fontsize=8)
-    ax.text(1.5, f3_highest + 5, "5P$_{3/2}$: anti-trapped\n(tensor splits F'=3 — stretched UP\nat $\\theta{=}90°$; F'=2 tensor = 0)",
-            color=RED, ha="center", fontsize=8)
-    ax.set_xlim(0, 4.6); ax.set_ylim(-trap_depth - 10, f3_highest + 18)
+    ax.text(2.05, f3_lowest, f"F'=3 |3,0⟩  +{f3_lowest:.0f}  (lowest)", color=GREY, va="center", fontsize=10)
+    ax.text(1.5, f3_highest + 4, "5P$_{3/2}$: anti-trapped\n(tensor splits F'=3 — stretched UP\nat $\\theta{=}90°$; F'=2 tensor = 0)",
+            color=RED, ha="center", va="bottom", fontsize=10)
+    ax.set_xlim(0, 4.7); ax.set_ylim(-trap_depth - 10, f3_highest + 22)
     ax.set_ylabel("light shift (2$\\pi$·MHz)")
     ax.set_title("1064 nm lattice (1 W + 1 W): ground trapped, 5P$_{3/2}$ expelled")
     ax.set_xticks([])
     for s in ("top", "right", "bottom"):
         ax.spines[s].set_visible(False)
     fig.tight_layout()
-    fig.savefig(os.path.join(IMAGES, "stark_manifold.png"), dpi=150)
+    fig.savefig(os.path.join(IMAGES, "stark_manifold.png"), dpi=150, bbox_inches="tight")
     print("wrote stark_manifold.png")
 
 
@@ -180,29 +206,29 @@ def lambda_scheme():
 
     # detuning marker
     ax.annotate("", xy=(0.92, ye), xytext=(0.92, yv), arrowprops=dict(arrowstyle="<->", color="#444", lw=1.3))
-    ax.text(1.02, (ye + yv) / 2, r"$\Delta=+45$" + "\n(both blue)", fontsize=9.3, va="center", ha="left", color="#444")
+    ax.text(1.02, (ye + yv) / 2, r"$\Delta=+45$" + "\n(both blue)", fontsize=10.5, va="center", ha="left", color="#444")
 
     # labels (excited-state text sits ABOVE the virtual level, clear of the converging beams)
     ax.text(0, yv + 0.34, r"$|e\rangle = |F'{=}2,\, m'{=}0\rangle$", ha="center", va="bottom", fontsize=12.5, color=RED)
     ax.text(0, yv + 0.12, "anti-trapped $+38$ MHz · pure scalar (tensor-null)", ha="center", va="bottom",
-            fontsize=8.4, color=RED, alpha=0.85)
+            fontsize=10, color=RED, alpha=0.85)
     ax.text(-1.62, 1.95, r"probe $\sigma^+$" + "\n(weak, $\Omega_p$)", color=GREEN, ha="center", va="center", fontsize=10.5)
     ax.text(1.64, 1.95, r"control $\sigma^-$" + "\n(strong, $\Omega_c$)", color=BLUE, ha="center", va="center", fontsize=10.5)
     ax.text(-2.0, yg - 0.26, r"$|g_1\rangle=|F{=}1,m{=}{-}1\rangle$", ha="center", va="top", fontsize=11, color="#111")
     ax.text(2.0, yg - 0.26, r"$|g_2\rangle=|F{=}2,m{=}{+}1\rangle$", ha="center", va="top", fontsize=11, color="#111")
-    ax.text(-2.0, yg - 0.64, r"$g_F m_F=+\frac{1}{2}$", ha="center", va="top", fontsize=9.5, color=GREEN)
-    ax.text(2.0, yg - 0.64, r"$g_F m_F=+\frac{1}{2}$", ha="center", va="top", fontsize=9.5, color=BLUE)
+    ax.text(-2.0, yg - 0.64, r"$g_F m_F=+\frac{1}{2}$", ha="center", va="top", fontsize=10.5, color=GREEN)
+    ax.text(2.0, yg - 0.64, r"$g_F m_F=+\frac{1}{2}$", ha="center", va="top", fontsize=10.5, color=BLUE)
 
     # ground hyperfine spacing + the dark state / clock note
     ax.annotate("", xy=(-1.55, yg), xytext=(1.55, yg), arrowprops=dict(arrowstyle="<->", color="#bbb", lw=1.0))
-    ax.text(0, yg + 0.12, "6.835 GHz (clock splitting)", ha="center", va="bottom", fontsize=8.2, color="#999")
+    ax.text(0, yg + 0.12, "6.835 GHz (clock splitting)", ha="center", va="bottom", fontsize=10, color="#999")
     ax.text(0, -1.18, r"dark state  $|D\rangle \propto \Omega_c|g_1\rangle - \Omega_p|g_2\rangle$"
             "\nboth legs $g_F m_F=+\\frac{1}{2}$  $\\Rightarrow$  first-order $B$-insensitive  ($\\delta_2$ servoed to 0)",
-            ha="center", va="top", fontsize=9.2, color="#333",
+            ha="center", va="top", fontsize=10.5, color="#333",
             bbox=dict(boxstyle="round,pad=0.5", fc="#f6f6f8", ec="#bbb", lw=1.0))
 
-    ax.set_xlim(-3.4, 3.4); ax.set_ylim(-2.05, 4.6)
-    ax.set_title("The clock-EIT $\\Lambda$: both legs to $|F'2,0\\rangle$, blue-detuned by $\\Delta$", fontsize=12.5, pad=8)
+    ax.set_xlim(-3.05, 3.05); ax.set_ylim(-2.05, 4.6)
+    ax.set_title("The clock-EIT $\\Lambda$: both legs to $|F'2,0\\rangle$, blue-detuned by $\\Delta$", fontsize=14, pad=8)
     ax.set_xticks([]); ax.set_yticks([])
     for s in ax.spines.values():
         s.set_visible(False)

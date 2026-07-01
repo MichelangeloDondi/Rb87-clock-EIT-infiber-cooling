@@ -96,7 +96,7 @@ def beam(ax, p0, p1, key, msc=16):
 def dashed_tick(ax, m, y, col):
     ax.plot([m - 0.33, m + 0.33], [y, y], ls=(0, (3, 2)), color=col, lw=1.7, zorder=4)
 def place_label(ax, x, y, key, ha="left", va="center"):
-    ax.annotate(label(key), xy=(x, y), color=C[key], fontsize=7.5, fontweight="bold", ha=ha, va=va, zorder=9)
+    ax.annotate(label(key), xy=(x, y), color=C[key], fontsize=10.0, fontweight="bold", ha=ha, va=va, zorder=9)
 
 
 def draw_reference_lines(ax):
@@ -112,7 +112,7 @@ def draw_reference_lines(ax):
         ax.plot([x0, x1], [yg + to_y(trap_depth)] * 2, ls=(0, (1, 3)), color=grey_bare, lw=1.0, zorder=1)          # bare (no 1064)
         ax.plot([x0, x1], [yg] * 2, ls=(0, (6, 3)), color=grey_scalar, lw=0.9, zorder=1)                   # scalar (= shifted)
     ax.annotate("", xy=(-2.0, yG2), xytext=(-2.0, yG2 + to_y(trap_depth)), arrowprops=dict(arrowstyle="<->", color="#777", lw=1.1))
-    ax.text(-2.12, yG2 + to_y(trap_depth) / 2, "$-%.1f$\nscalar\n(both F)" % trap_depth, color="#666", fontsize=7.8,
+    ax.text(-2.12, yG2 + to_y(trap_depth) / 2, "$-%.1f$\nscalar\n(both F)" % trap_depth, color="#666", fontsize=10.0,
             va="center", ha="right", linespacing=1.1)
 
 
@@ -137,7 +137,7 @@ def draw_broken_axis(ax, with_master):
     ylow = to_y(master_retro_freq) if with_master else to_y(repump2_freq)
     yb = (ylow + (yG2 + to_y(trap_depth))) / 2
     ax.text(-2.75, yb, "optical gap  +  6.835 GHz  —  not to scale", color="#aaa",
-            fontsize=8.4, ha="center", va="center", style="italic")
+            fontsize=10.0, ha="center", va="center", style="italic")
     for yy in (yb + 11, yb - 11):
         ax.plot([-4.30, -4.10], [yy - 6, yy + 6], color="#999", lw=1.4, clip_on=False)
 
@@ -163,18 +163,18 @@ def draw_beams(ax, with_master):
         beam(ax, (-2, yG2), (-1.0, excited_y(1, -1)), "mfwd")                     # |2,-2>->|F'1,-1>  (forward)
         place_label(ax, -2.0, (yG2 + excited_y(1, -1)) / 2, "mfwd", ha="right")
         ax.annotate("master clears $|2,-2\\rangle$ —\nthe one F=2 state the $\\sigma^-$\ncontrol can't reach",
-                    xy=(-2.0, yG2 + 6), xytext=(-3.95, yG2 + 40), color=C["mfwd"], fontsize=7.6, ha="left",
+                    xy=(-2.0, yG2 + 6), xytext=(-3.95, yG2 + 40), color=C["mfwd"], fontsize=10.0, ha="left",
                     va="center", arrowprops=dict(arrowstyle="-", color="#b9a0d0", lw=0.8))
         ax.annotate("the $\\sigma^-$ control clears $|2,+2\\rangle$\n($\\to|F'2,+1\\rangle$) — not a residual",
-                    xy=(2.0, yG2), xytext=(2.45, yG2 + 30), color="#666", fontsize=7.4, ha="left", va="center",
+                    xy=(2.0, yG2), xytext=(2.45, yG2 + 30), color="#666", fontsize=10.0, ha="left", va="center",
                     arrowprops=dict(arrowstyle="-", color="#bbb", lw=0.7))
         # master retro: sigma-, BACKWARD (dashed), 400 MHz below F'1 -> benign byproduct
         dashed_tick(ax, 0.0, to_y(master_retro_freq), C["mret"]); beam(ax, (1, yG2), (0.0, to_y(master_retro_freq) - 7), "mret")   # (retro)
         place_label(ax, 1.20, to_y(master_retro_freq) + 1, "mret", ha="left")
         ax.text(0.0, to_y(master_retro_freq) - 14, "master retro: benign byproduct (400 off F'1)", color=C["mret"],
-                fontsize=7.4, ha="center", va="top")
+                fontsize=10.0, ha="center", va="top")
         ax.annotate("real residual: F=1 ($|1,0\\rangle,|1,\\!+\\!1\\rangle$),\nonly weakly cleared by the probe",
-                    xy=(0.5, yG1), xytext=(2.2, yG1 + 22), color="#b5651d", fontsize=7.6, ha="left",
+                    xy=(0.5, yG1), xytext=(2.2, yG1 + 22), color="#b5651d", fontsize=10.0, ha="left",
                     va="center", arrowprops=dict(arrowstyle="-", color="#d2a679", lw=0.8))
 
 
@@ -188,11 +188,11 @@ def draw_annotations(ax):
                 color="#c62828", fontsize=10, arrowprops=dict(arrowstyle="-", color="#c62828", lw=1.0))
     # F'1 / F'3 tensor fans (shown by solid pulling away from the scalar dashed)
     ax.annotate("F'1 fans: $|1,0\\rangle$ $+%.0f$ (up),\n$|1,\\pm1\\rangle$ $+%.0f$ (down)" % (shift(1, 0), shift(1, 1)),
-                xy=(-1.0, excited_y(1, 0)), xytext=(-3.95, excited_y(1, 0) + 8), color="#666", fontsize=7.8, ha="left", va="center",
+                xy=(-1.0, excited_y(1, 0)), xytext=(-3.95, excited_y(1, 0) + 8), color="#666", fontsize=10.0, ha="left", va="center",
                 arrowprops=dict(arrowstyle="-", color="#bbb", lw=0.8))
     ax.annotate("F'3 fans: stretched $|3,\\pm3\\rangle$ $+%.0f$\n(highest), $|3,0\\rangle$ $+%.0f$ (lowest)"
-                % (shift(3, 3), shift(3, 0)), xy=(3.0, excited_y(3, 3)), xytext=(4.25, excited_y(3, 3) + 8), color="#666",
-                fontsize=7.8, ha="left", va="center", arrowprops=dict(arrowstyle="-", color="#bbb", lw=0.8))
+                % (shift(3, 3), shift(3, 0)), xy=(3.0, excited_y(3, 3)), xytext=(3.55, excited_y(3, 3) + 22), color="#666",
+                fontsize=10.0, ha="left", va="center", arrowprops=dict(arrowstyle="-", color="#bbb", lw=0.8))
 
     # ---- level-family labels + ground kets ----
     family_center = {Fp: float(np.mean([excited_y(Fp, mp) for mp in excited_m[Fp]])) for Fp in excited_m}
@@ -203,10 +203,10 @@ def draw_annotations(ax):
     ax.text(-1, yG1 - 20, r"$|1,-1\rangle$", color=C["probe"], ha="center", va="top", fontsize=10.5)
     ax.text(1.12, yG2 - 20, r"$|2,+1\rangle$", color=C["control"], ha="center", va="top", fontsize=10.5)
     ax.annotate("", xy=(-3.45, yG2), xytext=(-3.45, yG1), arrowprops=dict(arrowstyle="<->", color="#999", lw=1.3))
-    ax.text(-3.57, (yG1 + yG2) / 2, "6.835 GHz", rotation=90, va="center", ha="right", color="#777", fontsize=9)
+    ax.text(-3.57, (yG1 + yG2) / 2, "6.835 GHz", rotation=90, va="center", ha="right", color="#777", fontsize=10.0)
     sb0 = to_y(60)
     ax.plot([-3.95, -3.95], [sb0, sb0 + to_y(100)], color="#444", lw=2.4)
-    ax.text(-4.04, sb0 + to_y(100) / 2, "100 MHz", rotation=90, va="center", ha="right", color="#444", fontsize=8.4)
+    ax.text(-4.04, sb0 + to_y(100) / 2, "100 MHz", rotation=90, va="center", ha="right", color="#444", fontsize=10.0)
 
 
 def draw_legend(ax, with_master):
@@ -230,16 +230,16 @@ def draw_legend(ax, with_master):
            "   arrow WIDTH $\\propto$ Rabi frequency (control thickest). Levels = Stark + Zeeman($B$) + vector(ellipticity).\n"
            "detuning label  $WW(-s-t-g=ZZ)$:  WW = $\\Delta$ from the bare_hf (1064-OFF) transition; s,t = excited scalar/tensor\n"
            "shift; g = ground scalar shift; ZZ = the in-trap $\\Delta$.  Each shift raises the transition, so subtracts: ZZ = WW$-$s$-$t$-$g.")
-    bl = ax.legend(handles=leg, loc="upper left", bbox_to_anchor=(0.520, 0.998), frameon=True, fontsize=8.4,
-                   handlelength=2.6, borderpad=0.8, labelspacing=0.55, title=ttl, title_fontsize=8.6)
+    bl = ax.legend(handles=leg, loc="upper right", bbox_to_anchor=(0.998, 0.998), frameon=True, fontsize=10.0,
+                   handlelength=2.6, borderpad=0.8, labelspacing=0.55, title=ttl, title_fontsize=10.0)
     ax.add_artist(bl)
 
     # ---- grey-line key ----
     ghost = [Line2D([0], [0], ls=(0, (1, 3)), color=grey_bare, lw=1.4, label="bare — no 1064 shift"),
              Line2D([0], [0], ls=(0, (6, 3)), color=grey_scalar, lw=1.3, label="scalar only ($+38$ excited, $-23$ ground)"),
              Line2D([0], [0], ls="-", color="#9aa0aa", lw=2.2, label="full (scalar+tensor; $=$ scalar for F'2/F'0/ground)")]
-    ax.legend(handles=ghost, loc="upper left", bbox_to_anchor=(0.002, 0.86), frameon=True, fontsize=8.2,
-              handlelength=2.6, borderpad=0.5, labelspacing=0.45, title="grey reference lines", title_fontsize=8.6)
+    ax.legend(handles=ghost, loc="upper right", bbox_to_anchor=(0.998, 0.83), frameon=True, fontsize=10.0,
+              handlelength=2.6, borderpad=0.5, labelspacing=0.45, title="grey reference lines", title_fontsize=10.0)
 
     # ---- delivery / physics box ----
     common = ("$\\bf{single\\ EOM}$: $f_{mod}=A_{HFS}+2f_A=7.23$ GHz; $2f_A=400$ (tag $\\times2$, DOWN-shifts the retro).\n"
@@ -255,15 +255,15 @@ def draw_legend(ax, with_master):
                "   $|2,\\!-\\!2\\rangle$ — the ONE F=2 sublevel the $\\sigma^-$ control cannot reach ($\\to|F'2,\\!-\\!3\\rangle$ forbidden).\n"
                "$|2,\\!+\\!2\\rangle$ is NOT a residual — the control clears it ($\\to|F'2,\\!+\\!1\\rangle$). The retro is 400 off F'1 (benign).\n"
                "$\\bf{Floor\\ set\\ by\\ the\\ F'1\\ leak}$: the pair is 2-photon resonant on $|F'1,0\\rangle$ too, so the dark state\n"
-               "   scatters there ($\\to$5/6 into F=1). The master can't fix it $\\Rightarrow \\bar n_z\\!\\approx\\!0.06$ (chapter 03).")
-    ax.text(4.45, to_y(-150), txt, fontsize=8.2, va="top", ha="left", linespacing=1.5,
+               "   scatters there ($\\to$5/6 into F=1). The master can't fix it $\\Rightarrow \\bar n_z\\!\\approx\\!0.055$ (chapter 03).")
+    ax.text(0.008, 0.235, txt, transform=ax.transAxes, fontsize=10.0, va="top", ha="left", linespacing=1.5,
             bbox=dict(boxstyle="round,pad=0.7", fc="#f6f6f8", ec="#888", lw=1.0))
 
 
 def draw(with_master, outpath, title):
     """Assemble the level scheme -- reference lines -> levels -> broken axis -> beams -> annotations ->
     legend -> axis cosmetics -- and save it."""
-    fig, ax = plt.subplots(figsize=(18.0, 11.8))
+    fig, ax = plt.subplots(figsize=(13.5, 10.5))
     draw_reference_lines(ax)
     draw_levels(ax)
     draw_broken_axis(ax, with_master)
@@ -271,16 +271,16 @@ def draw(with_master, outpath, title):
     draw_annotations(ax)
     draw_legend(ax, with_master)
 
-    ax.set_title(title, fontsize=13.2, pad=12)
+    ax.set_title(title, fontsize=14.5, pad=12)
     ax.set_xlabel("$m_F$", fontsize=12.5)
     ax.set_xticks(range(-3, 4)); ax.set_xticklabels(range(-3, 4))
-    ax.set_xlim(-4.3, 10.0); ax.set_ylim(yG1 - 40, to_y(repump1_freq) + 40)
+    ax.set_xlim(-4.3, 5.6); ax.set_ylim(yG1 - 40, to_y(repump1_freq) + 120)
     ax.set_yticks([]); ax.tick_params(length=0)
     for s in ax.spines.values():
         s.set_visible(False)
-    ax.text(0.985, 0.985, "config:  $B=%.1f$ G   ellipticity $=%.2f$   $\\theta=%.0f°$   $\\Omega_c=%.1f$"
+    ax.text(0.015, 0.985, "config:  $B=%.1f$ G   ellipticity $=%.2f$   $\\theta=%.0f°$   $\\Omega_c=%.1f$"
             % (c.B_field, c.ellipticity, c.theta_trap, Oc),
-            transform=ax.transAxes, ha="right", va="top", fontsize=8.8, color="#333",
+            transform=ax.transAxes, ha="left", va="top", fontsize=10.0, color="#333",
             bbox=dict(boxstyle="round,pad=0.4", fc="#fffbe6", ec="#ccc", lw=0.8))
     fig.tight_layout()
     fig.savefig(outpath, dpi=150, bbox_inches="tight")
