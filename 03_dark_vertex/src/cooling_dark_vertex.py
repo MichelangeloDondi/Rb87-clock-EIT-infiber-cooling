@@ -33,9 +33,9 @@ Run `python cooling_dark_vertex.py` to reproduce the chapter numbers (needs nump
 
 import os, sys, numpy as np, warnings
 warnings.simplefilter("ignore")
+import config as c                        # chapter-03 config (reuses chapter 02's numbers; edit config.py to explore)
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "02_multilevel", "src"))
-import cooling_multilevel as m            # the chapter-02 solver, untouched
-import config as c
+import cooling_multilevel as m            # the chapter-02 solver, untouched (it picks up the config above)
 from sympy import S
 from sympy.physics.wigner import wigner_6j, clebsch_gordan
 

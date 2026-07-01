@@ -82,7 +82,8 @@ real frontier past the ≈ 0.06 floor.
 
 | file | what it does |
 |---|---|
-| `cooling_dark_vertex.py` | the solver — reuses `02_multilevel/cooling_multilevel.py` verbatim, adds the detuned master and the cancellation knob; prints the numbers above (needs qutip) |
+| `config.py` | the knobs — reuses chapter 02's operating point verbatim (so the two stay in sync); edit the overrides block to try a chapter-03-only value |
+| `cooling_dark_vertex.py` | the solver — reuses `02_multilevel/src/cooling_multilevel.py` verbatim, adds the detuned master and the cancellation knob; prints the numbers above (needs qutip) |
 | `make_figure.py` | the figure (matplotlib only; plots the solver's output, regenerates without a solve) |
 
 **Run:** `python src/cooling_dark_vertex.py` (a few minutes) · `python src/make_figure.py` (instant).
