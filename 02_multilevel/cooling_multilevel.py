@@ -53,7 +53,7 @@ excited_hf_spacings = {Fp: excited_hf_centroids[Fp] - excited_hf_centroids[2] fo
 decay_branching = {0: {1: 1.0, 2: 0.0}, 1: {1: 5/6, 2: 1/6},     # F'->F hyperfine decay branching
       2: {1: 1/2, 2: 1/2}, 3: {1: 0.0, 2: 1.0}}
 emission_recoil = [(-1, 1/6), (0, 2/3), (1, 1/6)]            # dipole emission recoil (delta-m, weight)
-muB = 1.399624                                        # Bohr magneton / h (MHz/G)
+muB = 1.399624                                        # Bohr magneton / frame_energy (MHz/G)
 gF_ground = {1: -0.5, 2: +0.5}                            # ground Lande gF (clock pair: both gF*m=+1/2)
 gF_excited = 2.0 / 3.0                                     # 5P3/2 Lande gF (equal for F'=1,2,3)
 
@@ -130,99 +130,99 @@ def repump_beams(Oc, Op, d2, repump_scale, shift=-1, tag_shift=None):
 
 def decay_channels(Fp, mp):
     """m-resolved spontaneous decay of a (virtual) |Fp,mp> to the ground sublevels: {(Fg,mg): weight}."""
-    ch = {}
+    decay_targets = {}
     for Fg in (1, 2):
         for mg in (mp - 1, mp, mp + 1):
             if abs(mg) <= Fg:
                 cc = clebsch(Fg, mg, mp - mg, Fp, mp)
                 if abs(cc) > 1e-12:
-                    ch[(Fg, mg)] = ch.get((Fg, mg), 0.0) + decay_branching[Fp][Fg] * cc**2
-    return ch
+                    decay_targets[(Fg, mg)] = decay_targets.get((Fg, mg), 0.0) + decay_branching[Fp][Fg] * cc**2
+    return decay_targets
 
 
-def repump_collapse_ops(bm_rep, ground_energies, idx, P, If, displacement, ground_set, B, theta):
+def repump_collapse_ops(repump_tones, ground_energies, idx, P, fock_identity, displacement, ground_set, B, theta):
     """Off-resonant repumpers as INCOHERENT scattering -- frame-free, but a LOW-SATURATION rate (valid repump_scale<~1).
        Each edge (gsrc)->(Fp,mp) at detuning d, edge-Rabi O scatters at R = Gamma (O/2)^2/(d^2+(Gamma/2)^2);
        the virtual excited |Fp,mp> is adiabatically eliminated and decays m-resolved, carrying the
        two-photon (absorb kdir + emit u) recoil. Also returns the off-resonant a.c.-Stark shift per ground."""
-    cops, acshift = [], {}
-    Ev = lambda Fp, mp: excited_energy(Fp, mp, B, theta)                       # virtual excited energy (Stark-shifted)
-    mind = np.inf                                                  # closest any repumper tone comes to a line
-    for b in bm_rep:
+    cops, ac_stark_shift = [], {}
+    shifted_excited_energy = lambda Fp, mp: excited_energy(Fp, mp, B, theta)                       # virtual excited energy (Stark-shifted)
+    min_detuning = np.inf                                                  # closest any repumper tone comes to a line
+    for b in repump_tones:
         (gn, en) = b['named']
-        cnamed = [cc for (g, e, cc) in b['edges'] if g == gn and e == en][0]
-        nu = b['det'] + (Ev(*en) - ground_energies[gn])                        # tone frequency (centered-energy frame)
+        named_coupling = [cc for (g, e, cc) in b['edges'] if g == gn and e == en][0]
+        nu = b['det'] + (shifted_excited_energy(*en) - ground_energies[gn])                        # tone frequency (centered-energy frame)
         b['nu'] = nu
         for (g, e, cc) in b['edges']:
             if g not in ground_set:
                 continue
-            # incoherent rate: sqrt(line_strength) magnitude is fine here -- R and acshift below both go as O**2, so the
+            # incoherent rate: sqrt(line_strength) magnitude is fine here -- R and ac_stark_shift below both go as O**2, so the
             # reduced-element SIGN is irrelevant (unlike the coherent H, which uses the signed line_amplitude ratio).
-            ls = np.sqrt(line_strength(g[0], e[0]) / line_strength(g[0], en[0])) if e[0] != en[0] else 1.0
-            O = b['Rabi'] * ls * (cc / cnamed)                    # this edge's Rabi
-            d = nu - (Ev(*e) - ground_energies[g])                             # this edge's detuning
-            mind = min(mind, abs(d))
+            line_scale = np.sqrt(line_strength(g[0], e[0]) / line_strength(g[0], en[0])) if e[0] != en[0] else 1.0
+            O = b['Rabi'] * line_scale * (cc / named_coupling)                    # this edge's Rabi
+            d = nu - (shifted_excited_energy(*e) - ground_energies[g])                             # this edge's detuning
+            min_detuning = min(min_detuning, abs(d))
             R = GAMMA * (O / 2)**2 / (d**2 + (GAMMA / 2)**2)      # off-resonant scattering rate
-            acshift[g] = acshift.get(g, 0.0) + (O / 2)**2 / d   # GROUND-only shift (eliminated excited's is dropped); physical as the leg DIFFERENTIAL at repump_scale<~1
-            br = decay_channels(e[0], e[1])
-            tot = sum(br.values())
-            if tot <= 0:
+            ac_stark_shift[g] = ac_stark_shift.get(g, 0.0) + (O / 2)**2 / d   # GROUND-only shift (eliminated excited's is dropped); physical as the leg DIFFERENTIAL at repump_scale<~1
+            decay_branch = decay_channels(e[0], e[1])
+            branch_total = sum(decay_branch.values())
+            if branch_total <= 0:
                 continue
-            for (gd, w) in br.items():
-                if gd not in ground_set:
+            for (decay_ground, w) in decay_branch.items():
+                if decay_ground not in ground_set:
                     continue
-                for (u, wem) in emission_recoil:
-                    cops.append(np.sqrt(R * (w / tot) * wem)
-                                * qt.tensor(P(idx[('g', gd)], idx[('g', g)]), displacement(u) * displacement(b['kdir'])))
-    # Guard: the incoherent low-saturation rate (R, acshift) is only valid far off resonance. If a config
+                for (u, emit_weight) in emission_recoil:
+                    cops.append(np.sqrt(R * (w / branch_total) * emit_weight)
+                                * qt.tensor(P(idx[('g', decay_ground)], idx[('g', g)]), displacement(u) * displacement(b['kdir'])))
+    # Guard: the incoherent low-saturation rate (R, ac_stark_shift) is only valid far off resonance. If a config
     # (e.g. a small 2f_A in explore_configs) lands a comb tone within a few linewidths of a line, R approaches
-    # the saturation limit and the acshift ~ Omega^2/d diverges -- a near-resonant tone must be treated
+    # the saturation limit and the ac_stark_shift ~ Omega^2/d diverges -- a near-resonant tone must be treated
     # coherently (in the Hilbert space), not as a rate. We WARN here (the solve still returns a number, but it
     # is NOT trustworthy for such a config); a caller that sweeps configs should flag or skip the warned rows.
-    if mind < 3.0 * c.Gamma:
+    if min_detuning < 3.0 * c.Gamma:
         import warnings
         warnings.warn("a repumper tone sits %.0f MHz (< 3*Gamma) from a line: the incoherent rate model is "
-                      "invalid here (treat it coherently); <n_z> is not trustworthy for this config." % mind,
+                      "invalid here (treat it coherently); <n_z> is not trustworthy for this config." % min_detuning,
                       RuntimeWarning)
-    return cops, acshift
+    return cops, ac_stark_shift
 
 
-def build_rotating_frame(bm, ground_energies, excited_energies):
-    """Breadth-first multi-rotating frame: a level energy h[node] consistent with every tone."""
-    realE = {}
+def build_rotating_frame(tones, ground_energies, excited_energies):
+    """Breadth-first multi-rotating frame: a level energy frame_energy[node] consistent with every tone."""
+    real_energies = {}
     for g in ground_energies:
-        realE[('g', g)] = ground_energies[g]
+        real_energies[('g', g)] = ground_energies[g]
     for e in excited_energies:
-        realE[('e', e)] = excited_energies[e]
-    for b in bm:
-        (g, e), Dn = b['named'], b['det']
-        b['nu'] = Dn + (realE[('e', e)] - realE[('g', g)])         # laser frequency of this tone
-    adj = {}
+        real_energies[('e', e)] = excited_energies[e]
+    for b in tones:
+        (g, e), tone_detuning = b['named'], b['det']
+        b['nu'] = tone_detuning + (real_energies[('e', e)] - real_energies[('g', g)])         # laser frequency of this tone
+    adjacency = {}
     def add(n1, n2, d):
-        adj.setdefault(n1, []).append((n2, d))
-        adj.setdefault(n2, []).append((n1, -d))
-    for b in bm:
+        adjacency.setdefault(n1, []).append((n2, d))
+        adjacency.setdefault(n2, []).append((n1, -d))
+    for b in tones:
         for (g, e, cc) in b['edges']:
-            det_ge = b['nu'] - (realE[('e', e)] - realE[('g', g)])
-            add(('g', g), ('e', e), -det_ge)
-    h = {}
+            detuning_ge = b['nu'] - (real_energies[('e', e)] - real_energies[('g', g)])
+            add(('g', g), ('e', e), -detuning_ge)
+    frame_energy = {}
     max_frame_conflict = 0.0
-    order = [('g', (2, 1))] + [n for n in adj if n != ('g', (2, 1))]
+    order = [('g', (2, 1))] + [n for n in adjacency if n != ('g', (2, 1))]
     for start in order:
-        if start in h or start not in adj:
+        if start in frame_energy or start not in adjacency:
             continue
-        h[start] = 0.0
+        frame_energy[start] = 0.0
         stack = [start]
         while stack:
             n = stack.pop()
-            for (m, d) in adj.get(n, []):
-                hv = h[n] + d
-                if m in h:
-                    max_frame_conflict = max(max_frame_conflict, abs(h[m] - hv))
+            for (m, d) in adjacency.get(n, []):
+                h_candidate = frame_energy[n] + d
+                if m in frame_energy:
+                    max_frame_conflict = max(max_frame_conflict, abs(frame_energy[m] - h_candidate))
                 else:
-                    h[m] = hv
+                    frame_energy[m] = h_candidate
                     stack.append(m)
-    return h, max_frame_conflict
+    return frame_energy, max_frame_conflict
 
 
 def solve(d2=0.0, clean=False, with_repump=True, with_e1=True, with_e3=True,
@@ -234,29 +234,29 @@ def solve(d2=0.0, clean=False, with_repump=True, with_e1=True, with_e3=True,
     theta = c.theta_trap if theta is None else theta
     N_fock = c.N_fock if N_fock is None else N_fock
     repump_scale = c.repump_scale if repump_scale is None else repump_scale
-    eta, nuz = c.eta, c.nu_z
+    eta, nu_z = c.eta, c.nu_z
     Oc, Op = reference_rabis()
 
     if clean:
         with_repump = with_e1 = with_e3 = False
-        Gs, Es = [(1, -1), (2, 1)], [(2, 0)]
+        ground_states, excited_states = [(1, -1), (2, 1)], [(2, 0)]
     else:
-        Gs = [(1, m) for m in (-1, 0, 1)] + [(2, m) for m in range(-2, 3)]
-        Es = [(2, m) for m in range(-2, 3)]              # F'2: the cooling Lambda's upper manifold
+        ground_states = [(1, m) for m in (-1, 0, 1)] + [(2, m) for m in range(-2, 3)]
+        excited_states = [(2, m) for m in range(-2, 3)]              # F'2: the cooling Lambda's upper manifold
         if with_e1:
-            Es = Es + [(1, 0)]                           # F'1 spoiler (cooling-beam off-res leak)
+            excited_states = excited_states + [(1, 0)]                           # F'1 spoiler (cooling-beam off-res leak)
         if with_e3:
-            Es = Es + [(3, 0)]                           # F'3 admixture (control)
+            excited_states = excited_states + [(3, 0)]                           # F'3 admixture (control)
         # the repumpers' F'1/F'2 are VIRTUAL (incoherent, eliminated) -- not in the Hilbert space
-    ground_energies = {g: ground_energy(g[0], g[1], B) for g in Gs}
-    excited_energies = {e: excited_energy(e[0], e[1], B, theta) for e in Es}
+    ground_energies = {g: ground_energy(g[0], g[1], B) for g in ground_states}
+    excited_energies = {e: excited_energy(e[0], e[1], B, theta) for e in excited_states}
 
-    bm = beams(Oc, Op, d2, with_e1, with_e3)
-    ng, ne = set(Gs), set(Es)
-    for b in bm:
-        b['edges'] = [(g, e, cc) for (g, e, cc) in b['edges'] if g in ng and e in ne]
-    bm = [b for b in bm if b['edges'] and b['named'][0] in ng and b['named'][1] in ne]
-    h, frame_conflict = build_rotating_frame(bm, ground_energies, excited_energies)
+    tones = beams(Oc, Op, d2, with_e1, with_e3)
+    kept_grounds, kept_excited = set(ground_states), set(excited_states)
+    for b in tones:
+        b['edges'] = [(g, e, cc) for (g, e, cc) in b['edges'] if g in kept_grounds and e in kept_excited]
+    tones = [b for b in tones if b['edges'] and b['named'][0] in kept_grounds and b['named'][1] in kept_excited]
+    frame_energy, frame_conflict = build_rotating_frame(tones, ground_energies, excited_energies)
     # Guard: a stationary rotating frame exists only if every loop in the tone graph closes (frame_conflict=0).
     # If a future config (e.g. a microwave tone coupling the two grounds) closes a loop, frame_conflict != 0 and
     # the steady state below would be silently unphysical -- warn loudly rather than return a fake number.
@@ -265,39 +265,39 @@ def solve(d2=0.0, clean=False, with_repump=True, with_e1=True, with_e3=True,
         warnings.warn("rotating-frame conflict frame_conflict=%.3g (2pi MHz): no time-independent frame exists for this "
                       "tone set; the steady-state <n_z> is NOT trustworthy." % frame_conflict, RuntimeWarning)
 
-    nodes = [('g', g) for g in Gs] + [('e', e) for e in Es]
+    nodes = [('g', g) for g in ground_states] + [('e', e) for e in excited_states]
     for n in nodes:
-        h.setdefault(n, 0.0)
+        frame_energy.setdefault(n, 0.0)
     idx = {n: i for i, n in enumerate(nodes)}
-    NA = len(nodes)
-    bas = [qt.basis(NA, i) for i in range(NA)]
-    P = lambda i, j: bas[i] * bas[j].dag()
-    If = qt.qeye(N_fock)
-    aop = qt.destroy(N_fock)
+    n_states = len(nodes)
+    basis_kets = [qt.basis(n_states, i) for i in range(n_states)]
+    P = lambda i, j: basis_kets[i] * basis_kets[j].dag()
+    fock_identity = qt.qeye(N_fock)
+    annihilation = qt.destroy(N_fock)
     displacement = lambda s: qt.displace(N_fock, 1j * eta * s)
 
-    H = nuz * qt.tensor(qt.qeye(NA), aop.dag() * aop)
+    H = nu_z * qt.tensor(qt.qeye(n_states), annihilation.dag() * annihilation)
     for n in nodes:
-        H += h[n] * qt.tensor(P(idx[n], idx[n]), If)
-    for b in bm:
+        H += frame_energy[n] * qt.tensor(P(idx[n], idx[n]), fock_identity)
+    for b in tones:
         (gn, en) = b['named']
-        cnamed = [cc for (g, e, cc) in b['edges'] if g == gn and e == en][0]
+        named_coupling = [cc for (g, e, cc) in b['edges'] if g == gn and e == en][0]
         for (g, e, cc) in b['edges']:
-            # ls rescales a cross-manifold (e[0]!=en[0]) leak by the relative line amplitude. The SIGNED ratio
+            # line_scale rescales a cross-manifold (e[0]!=en[0]) leak by the relative line amplitude. The SIGNED ratio
             # line_amplitude/line_amplitude carries the 6j sign of the reduced matrix element -- needed because this is a COHERENT
             # term whose relative phase matters for the with_e1/e3 admixture interference. The primary dark
-            # state lives inside F'=2 and uses the signed CG ratio cc/cnamed, which is exact regardless.
-            ls = (line_amplitude(g[0], e[0]) / line_amplitude(g[0], en[0])) if e[0] != en[0] else 1.0
-            O = b['Rabi'] * ls * (cc / cnamed)
+            # state lives inside F'=2 and uses the signed CG ratio cc/named_coupling, which is exact regardless.
+            line_scale = (line_amplitude(g[0], e[0]) / line_amplitude(g[0], en[0])) if e[0] != en[0] else 1.0
+            O = b['Rabi'] * line_scale * (cc / named_coupling)
             i, j = idx[('g', g)], idx[('e', e)]
             H += -(O / 2) * (qt.tensor(P(j, i), displacement(b['kdir']))
                              + qt.tensor(P(i, j), displacement(b['kdir']).dag()))
 
     cops = []
     legs = [(1, -1), (2, 1)]                    # the Lambda ground states
-    ground_set = set(Gs)
-    for (Fp, mp) in Es:
-        ch = {}
+    ground_set = set(ground_states)
+    for (Fp, mp) in excited_states:
+        decay_targets = {}
         for Fg in (1, 2):
             for mg in (mp - 1, mp, mp + 1):
                 if abs(mg) > Fg:
@@ -307,45 +307,45 @@ def solve(d2=0.0, clean=False, with_repump=True, with_e1=True, with_e3=True,
                     continue
                 w = decay_branching[Fp][Fg] * cc**2
                 if (Fg, mg) in ground_set:
-                    ch[(Fg, mg)] = ch.get((Fg, mg), 0.0) + w     # kept ground: real branch
+                    decay_targets[(Fg, mg)] = decay_targets.get((Fg, mg), 0.0) + w     # kept ground: real branch
                 else:
                     # clean Lambda only: decay to a dropped sublevel = IDEAL repump back to the legs
-                    lw = np.array([clebsch(lf, lm, mp - lm, Fp, mp)**2 for (lf, lm) in legs])
-                    lw = lw / lw.sum() if lw.sum() > 0 else np.ones(len(legs)) / len(legs)
-                    for (lf, lm), ww in zip(legs, lw):
-                        ch[(lf, lm)] = ch.get((lf, lm), 0.0) + w * ww
-        tot = sum(ch.values())
-        if tot <= 0:
+                    leg_weights = np.array([clebsch(lf, lm, mp - lm, Fp, mp)**2 for (lf, lm) in legs])
+                    leg_weights = leg_weights / leg_weights.sum() if leg_weights.sum() > 0 else np.ones(len(legs)) / len(legs)
+                    for (lf, lm), ww in zip(legs, leg_weights):
+                        decay_targets[(lf, lm)] = decay_targets.get((lf, lm), 0.0) + w * ww
+        branch_total = sum(decay_targets.values())
+        if branch_total <= 0:
             continue
-        for (g, w) in ch.items():
-            for (u, wem) in emission_recoil:
-                cops.append(np.sqrt(GAMMA * (w / tot) * wem)
+        for (g, w) in decay_targets.items():
+            for (u, emit_weight) in emission_recoil:
+                cops.append(np.sqrt(GAMMA * (w / branch_total) * emit_weight)
                             * qt.tensor(P(idx[('g', g)], idx[('e', (Fp, mp))]), displacement(u)))
 
     # the off-resonant repumpers: INCOHERENT scattering rates (no rotating-frame loop; low-saturation, valid repump_scale<~1)
-    nu_rep = {}
+    repump_freqs = {}
     if with_repump and not clean:
-        bm_rep = repump_beams(Oc, Op, d2, repump_scale, shift, tag_shift)
-        rc, acsh = repump_collapse_ops(bm_rep, ground_energies, idx, P, If, displacement, ground_set, B, theta)
-        cops += rc
-        for g, sh in acsh.items():
-            H += sh * qt.tensor(P(idx[('g', g)], idx[('g', g)]), If)   # off-resonant a.c.-Stark shift
-        nu_rep = {b['tag']: b['nu'] for b in bm_rep}
+        repump_tones = repump_beams(Oc, Op, d2, repump_scale, shift, tag_shift)
+        repump_ops, ac_stark_shift = repump_collapse_ops(repump_tones, ground_energies, idx, P, fock_identity, displacement, ground_set, B, theta)
+        cops += repump_ops
+        for g, sh in ac_stark_shift.items():
+            H += sh * qt.tensor(P(idx[('g', g)], idx[('g', g)]), fock_identity)   # off-resonant a.c.-Stark shift
+        repump_freqs = {b['tag']: b['nu'] for b in repump_tones}
 
     L = qt.liouvillian(H, cops)
     try:
         rho = qt.steadystate(L, method='direct')
     except Exception:
         rho = qt.steadystate(L, method='svd')
-    nop = qt.tensor(qt.qeye(NA), aop.dag() * aop)
-    nbar = float(np.real(qt.expect(nop, rho)))
+    number_op = qt.tensor(qt.qeye(n_states), annihilation.dag() * annihilation)
+    nbar = float(np.real(qt.expect(number_op, rho)))
     if not want:
         return nbar
-    pn = np.array([float(np.real(qt.expect(qt.tensor(qt.qeye(NA), qt.basis(N_fock, k) * qt.basis(N_fock, k).dag()), rho)))
+    pn = np.array([float(np.real(qt.expect(qt.tensor(qt.qeye(n_states), qt.basis(N_fock, k) * qt.basis(N_fock, k).dag()), rho)))
                    for k in range(N_fock)])
-    pops = {g: float(np.real(qt.expect(qt.tensor(P(idx[('g', g)], idx[('g', g)]), If), rho)))
-            for g in Gs}
-    nu = {**{b['tag']: b['nu'] for b in bm}, **nu_rep}
+    pops = {g: float(np.real(qt.expect(qt.tensor(P(idx[('g', g)], idx[('g', g)]), fock_identity), rho)))
+            for g in ground_states}
+    nu = {**{b['tag']: b['nu'] for b in tones}, **repump_freqs}
     return dict(nbar=nbar, pn=pn, pops=pops, nu=nu, frame_conflict=frame_conflict)
 
 
