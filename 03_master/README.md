@@ -16,7 +16,7 @@ not as the realistic path.
 
 ![floor ladder](floor_ladder.png)
 
-> **What is computed where.** The minimal-chain **~0.10** and the intrinsic limits **0.0032 / 0.0013** are computed
+> **What is computed where.** The minimal-chain **~0.09** and the intrinsic limits **0.0032 / 0.0020** are computed
 > in this repository. The master floor — **≈ 0.06, leak-limited** — is **chapter 04**: it needs the F′1 leak (below)
 > folded into the solve. What is solid here is the *structure*: a dedicated F′1 repumper clears |2,−2⟩ and removes
 > the comb scatter (~0.10 → ≈ 0.06), but the **F′1 leak** then sets the floor — and no repumper can reach it.
@@ -81,6 +81,6 @@ tones, but they do **not** address the F′1 leak — which is independent of th
 **leak-limited at ≈ 0.06**, not worth the much harder build over the single-ended master for a single atom. They
 are reference curiosities, not the recommended path.
 
-The intrinsic cooling limit all of these chase is **0.0032** (full recoil) / 0.0013 (recoil-light: first-order,
-one leg), both computed in this repo; reaching it means beating the F′1 leak (chapter 04). Regenerate every figure here (and the subfolder's)
+The intrinsic cooling limit all of these chase is **0.0032** (full manifold) / 0.0020 (3-level, full recoil) /
+0.0011 (recoil-free mechanism), all computed in this repo; reaching it means beating the F′1 leak (chapter 04). Regenerate every figure here (and the subfolder's)
 with `python upgrade_figures.py` (matplotlib only, no solves).

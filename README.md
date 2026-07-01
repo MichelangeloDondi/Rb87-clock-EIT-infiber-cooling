@@ -16,13 +16,14 @@ resonance (§2). **The question: how low does this model predict the axial motio
 
 | model | floor n̄_z | what it includes | where |
 |---|---|---|---|
-| 3-level Λ (idealized) | **0.0013** | recoil-*light* lower bound (first-order recoil, probe leg only); perfect repumping | [`01_three_level/`](01_three_level/) |
+| 3-level Λ (idealized) | **0.0020** | full recoil (both legs + emission), perfect repumping; recoil-free mechanism floor (Γ/4Δ)² = 0.0011 | [`01_three_level/`](01_three_level/) |
 | multilevel, clean Λ | **0.0032** | full ⁸⁷Rb manifold **+ photon recoil** — the realistic intrinsic cooling limit | [`02_multilevel/`](02_multilevel/) |
 | multilevel, real delivery | **≈ 0.09** | **+ the real off-resonant repumping**, at the servoed δ₂-optimum (≈ 40 % stuck in dark sublevels) | [`02_multilevel/`](02_multilevel/) |
 
 Quote **0.0032** as the intrinsic cooling limit and **≈ 0.09** as what the minimal single-EOM chain delivers. For this
 chain the **repumping**, not the EIT mechanism, sets the floor — [`03_master/`](03_master/README.md) shows how
-a dedicated repumper recovers it. The 0.0013 is the idealized 3-level number: a lower bound, not a result.
+a dedicated repumper recovers it. The 0.0020 is the idealized 3-level number (recoil-free mechanism floor 0.0011):
+a lower bound, not a result.
 
 All frequencies are angular, in 2π·MHz (a literal `6.07` means 2π·6.07 MHz). Every physical number lives in the
 `config.py` of each folder.
@@ -156,14 +157,14 @@ place the 3-level core uses code** — a ~60-line `qutip` master equation (3 lev
 the servo detuning δ₂:
 
 ```
-numeric floor   <n_z> = 0.0013   at delta2 = +0.000 (servo point)
-analytic floor  (Gamma/4Delta)^2 = 0.0011
-ground-state population P(n=0) ~ 0.999
+numeric floor  <n_z> = 0.0020  (full recoil: both legs + emission)  at delta2 = +0.000
+analytic floor (Gamma/4Delta)^2 = 0.0011  (recoil-free mechanism limit)
+ground-state population P(n=0) ~ 0.998
 ```
 
-0.0013 sits just above the formula's 0.0011, and just below the full multilevel solver's clean-Λ **0.0032**
-(§6) — the gap is the rest of the photon recoil (spontaneous-emission recoil, and the second Λ leg) that this
-3-level model, which keeps only first-order absorption recoil on the probe, leaves out.
+0.0020 sits above the recoil-free formula's 0.0011 by the photon recoil (both counter-propagating legs +
+spontaneous emission), and just below the full multilevel solver's clean-Λ **0.0032** (§6) — the remaining gap is
+the full m-resolved D2 decay branching that this 3-level model, with its two-channel decay, leaves out.
 
 ![cooling curve from a hot start, and the final motional distribution](01_three_level/cooling_curve.png)
 
@@ -203,8 +204,9 @@ g = ground scalar shift; ZZ = the in-trap detuning (each shift raises the transi
 [`level_scheme.py`](02_multilevel/level_scheme.py).*
 
 **(i) Manifold + recoil.** With every m-sublevel, the full recoil, and the per-(F′,m′) 1064 Stark, the clean-Λ
-floor is **0.0032** — just above the recoil-light 0.0013 of §5 (the difference *is* the recoil the 3-level
-model dropped). The EIT mechanism and the (Γ/4Δ)² scaling are untouched.
+floor is **0.0032** — just above the 3-level's **0.0020** of §5 (both carry the full photon recoil; the
+difference is the full m-resolved D2 decay branching, which the 3-level's two-channel decay leaves out). The EIT
+mechanism and the (Γ/4Δ)² scaling are untouched.
 
 **(ii) Repumping is essential — and it is the real cost.** Spontaneous decay from F′ spreads population across
 both ground hyperfines into sublevels the Λ never addresses; with the repumpers off, the atom pumps **100 %
@@ -311,7 +313,7 @@ before, and is self-contained (its own `config.py`, runnable on its own). Read t
 
 | # | folder | what it adds | physics in | status |
 |---|---|---|---|---|
-| **01** | [`01_three_level/`](01_three_level/) | the idealized 3-level Λ: trap, Stark shifts, the EIT mechanism, the (Γ/4Δ)² floor | §1–§5 | **built** · n̄_z = 0.0013 |
+| **01** | [`01_three_level/`](01_three_level/) | the idealized 3-level Λ: trap, Stark shifts, the EIT mechanism, the (Γ/4Δ)² floor | §1–§5 | **built** · n̄_z = 0.0020 |
 | **02** | [`02_multilevel/`](02_multilevel/) | the real ⁸⁷Rb D2 manifold + photon recoil + the single-EOM comb delivery (probe, control, retro-reflection) | §6 | **built** · 0.0032 clean / ≈ 0.09 real |
 | **03** | [`03_master/`](03_master/README.md) | the 780 master laser as a dedicated F′1 repumper | §7 | **built** · clears the dark sublevel + comb scatter (~0.10 → ≈ 0.06, leak-limited) |
 | **04** | [`04_dark_vertex/`](04_dark_vertex/README.md) | the second dark vertex: the cooling pair is two-photon resonant on the F′1 m′=0 state too, so the dark state isn't perfectly dark — folds that leak in and computes the master floor | §8 | **built** · ≈ 0.06 (leak-limited) |
@@ -384,9 +386,13 @@ So the numbers above are read with the right scope:
 - **Off-resonant tones treated incoherently** (§6) — they are in fact phase-locked to the Λ; the incoherent rate
   is valid because they sit 100s of MHz off (interference suppressed), while the near-resonant master repumper
   of chapter 03 is treated coherently.
-- **Lamb–Dicke regime** (η = 0.094) — the multilevel solver uses the exact displacement operator on both
-  counter-propagating Λ legs; the 3-level `cooling.py` keeps only first-order recoil on the probe leg — harmless
-  for the floor (a rate ratio, so η² cancels), though not for the 3-level cooling *time*.
+- **Recoil is on every channel, but only its axial projection.** In *both* solvers the two counter-propagating
+  Λ legs (absorption) and the spontaneous emission carry the exact recoil (via the displacement operator, Lamb–Dicke
+  η = 0.094); the multilevel adds it to the repumper scattering too. All of it acts on the single **axial**
+  oscillator. The atom's **radial** motion is not modelled, so the *radial* component of the emission recoil —
+  the 3D heating of the transverse motion — is out of scope here; the parent study treats that radial walk
+  separately, and in this repo it is the planned chapter 06 (the off-axis cloud). The on-axis axial floor quoted
+  here is therefore a radially-cold best case (see the first bullet).
 - **Perfect two-photon servo** — the servo is taken to hold δ₂ exactly on the dark resonance (δ₂ = 0 in the
   3-level, ≈ −0.15 in the multilevel; §6) with zero two-photon linewidth. Because the floor is steep in δ₂ (§6),
   this is the load-bearing idealisation: in practice the Raman-coherence linewidth — laser phase noise, servo
@@ -396,7 +402,7 @@ So the numbers above are read with the right scope:
 - **Detuning reference** — the per-(F′,m′) 1064 tensor Stark on F′1/F′3 *is* included (via `stark.py`); sub-MHz
   residuals in the bare-F′ hyperfine reference are not.
 - **The quoted digits are computed values** at the `config.py` parameters, not a claim of physical precision to
-  that many figures — read 0.0013 as ≈ 1.3×10⁻³.
+  that many figures — read 0.0020 as ≈ 2×10⁻³.
 
 **Sensitivity.** The floor scales as (Γ/4Δ)², so a ±10 % drift in Δ shifts it by ≈ ∓20 %. The cooling itself
 relies on the AC-Stark condition Ω_c²/4Δ = ν_z holding, so the bright peak stays on the cooling sideband; a

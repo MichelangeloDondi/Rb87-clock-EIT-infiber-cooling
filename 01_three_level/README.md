@@ -6,14 +6,14 @@ The physics is derived in the [top-level README](../README.md) (§1–§5); this
 **What it computes — the idealized EIT cooling floor:**
 
 ```
-numeric floor   <n_z> = 0.0013   (servo point delta2 = 0)
+numeric floor  <n_z> = 0.0020  (full recoil: both legs + emission)   (servo point delta2 = 0)
 analytic floor  (Gamma/4Delta)^2 = 0.0011
 ground-state population P(n=0) ~ 0.999
 ```
 
-The 0.0013 is a **recoil-light lower bound** — this 3-level model keeps only first-order recoil on the probe leg
-and assumes perfect repumping; the realistic intrinsic cooling limit, with the full photon recoil (emission +
-both legs), is 0.0032 — see [`../02_multilevel/`](../02_multilevel/).
+The **0.0020** is the 3-level floor with the **full photon recoil** (both counter-propagating legs + spontaneous
+emission) and perfect repumping; the recoil-free mechanism floor is (Γ/4Δ)² = 0.0011. The realistic intrinsic
+limit, with the full ⁸⁷Rb decay branching, is 0.0032 — see [`../02_multilevel/`](../02_multilevel/).
 
 **Files**
 
