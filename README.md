@@ -1,8 +1,9 @@
 # Clock-EIT cooling of a single ⁸⁷Rb atom in a fibre trap — a numerical study
 
-A **numerical feasibility study** — theory plus simulation, with experimentally motivated parameters (*not* an
-experiment) — of EIT sideband cooling of a single ⁸⁷Rb atom on the **axial** motion of a 1064 nm optical-lattice
-trap inside a hollow-core photonic-crystal fibre. The Λ legs are |F=1,m=−1⟩ σ⁺ and |F=2,m=+1⟩ σ⁻, both to
+A **numerical modelling and design study** — theory plus simulation, with experimentally realistic parameters —
+for a **planned** EIT sideband-cooling experiment: a single ⁸⁷Rb atom on the **axial** motion of a 1064 nm
+optical-lattice trap inside a hollow-core photonic-crystal fibre. It fixes the operating point, the delivery, and
+the achievable floor ahead of the build. The Λ legs are |F=1,m=−1⟩ σ⁺ and |F=2,m=+1⟩ σ⁻, both to
 |F′=2,m′=0⟩. This is a **g_F·m_F-matched "clock" pair** (both legs have g_F·m_F = +½) — *not* the usual
 m_F=0↔m_F=0 clock pair, but it serves the same purpose: a first-order magnetically insensitive two-photon
 resonance (§2). **The question: how low does this model predict the axial motion cools?**
@@ -33,15 +34,24 @@ All frequencies are angular, in 2π·MHz (a literal `6.07` means 2π·6.07 MHz).
 
 The three questions a reader asks first:
 
-- **Why EIT, not resolved-sideband Raman (RSC)?** The trap is weak — ν_z/Γ ≈ 0.07, deep in the *unresolved*-sideband
-  regime, where RSC fails. EIT builds its own narrow dark-resonance feature, so it cools where the bare linewidth
-  cannot (§3).
-- **Why the D2 line (780 nm)?** The delivery is a telecom chain seeded at 1560 nm and frequency-doubled — 1560/2 =
-  780 nm lands on D2. And on D2 the target |F′2,0⟩ is **tensor-null** (§1): a light-shift-stable, geometry-independent
-  upper state amid the otherwise tensor-split 5P₃/₂ manifold.
-- **Why this g_F·m_F-matched pair, not m_F=0↔m_F=0?** The σ⁺/σ⁻ Λ fits the fibre geometry (axial beams, axial B);
-  m_F=0 states would need π light (transverse B). And a g_F·m_F-matched pair is first-order B-insensitive at *any*
-  field, whereas m_F=0 states are insensitive only near B=0 (§2).
+- **Why EIT?** The trap is weak — ν_z/Γ ≈ 0.07, deep in the *unresolved*-sideband regime, so plain
+  resolved-sideband cooling on the bare optical line is out. EIT sidesteps that: it builds its own narrow
+  dark-resonance feature (its width set by the drive, not by Γ) and cools a broad range of n **continuously**,
+  using the D2 beams themselves — no pulse train, no extra lasers. (Degenerate-Raman sideband cooling *also* works
+  in this regime and is the nearest alternative, but it needs *separate* near-detuned Raman beams — see the
+  [appendix](appendix/options.md).)
+- **Why the D2 line (780 nm)?** A hardware choice: the delivery is a telecom chain seeded at 1560 nm and
+  frequency-doubled (1560/2 = 780 nm = D2) — a mature, low-noise source — and on D2 the cooling target |F′2,0⟩ is
+  **tensor-null** (§1), a light-shift-stable upper state. The honest trade-off: the **D1** line (795 nm) has a
+  ~41× *weaker* F′1 leak and would cool *colder* ([appendix](appendix/d1_comparison.md)), but 795 nm is off the
+  telecom-doubling chain. D2 is the practical line; D1 is the physically cleaner one.
+- **Why this g_F·m_F-matched pair, not the m_F=0↔m_F=0 clock pair? Geometry decides it.** With B along the fibre
+  axis and the beams *also* along the axis, the light is **σ-only** (a transverse wave has no π component along B),
+  so the Λ must use two m_F=±1 legs — |1,−1⟩ σ⁺ and |2,+1⟩ σ⁻; a pure m_F=0 Λ would need π light (a transverse B),
+  which the geometry forbids. The **bonus**: both legs share the same linear Zeeman shift (g_F·m_F = +½), so it
+  cancels in the two-photon resonance — first-order field-insensitive, *like* the m_F=0 clock states, with a small
+  quadratic residual the δ₂ servo absorbs (§2). Field-insensitivity is a bonus here, not the reason — the reason is
+  the σ-only geometry.
 
 ---
 
