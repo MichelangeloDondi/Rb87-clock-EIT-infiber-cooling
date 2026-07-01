@@ -1,9 +1,8 @@
 # Clock-EIT cooling of a single ⁸⁷Rb atom in a fibre trap — a numerical study
 
-A **numerical modelling and design study** — theory plus simulation, with experimentally realistic parameters —
-for a **planned** EIT sideband-cooling experiment: a single ⁸⁷Rb atom on the **axial** motion of a 1064 nm
-optical-lattice trap inside a hollow-core photonic-crystal fibre. It fixes the operating point, the delivery, and
-the achievable floor ahead of the build. The Λ legs are |F=1,m=−1⟩ σ⁺ and |F=2,m=+1⟩ σ⁻, both to
+A **numerical feasibility study** of EIT sideband cooling of a single ⁸⁷Rb atom on the **axial** motion of a
+1064 nm optical-lattice trap inside a hollow-core photonic-crystal fibre. The Λ legs are |F=1,m=−1⟩ σ⁺ and
+|F=2,m=+1⟩ σ⁻, both to
 |F′=2,m′=0⟩. This is a **g_F·m_F-matched "clock" pair** (both legs have g_F·m_F = +½) — *not* the usual
 m_F=0↔m_F=0 clock pair, but it serves the same purpose: a first-order magnetically insensitive two-photon
 resonance (chapter 01). **The question: how low does this model predict the axial motion cools?**
@@ -29,22 +28,6 @@ laser pushes it (≈ 0.055, leak-limited). The 0.0020 is the idealized 3-level n
 
 All frequencies are angular, in 2π·MHz (a literal `6.07` means 2π·6.07 MHz). Every physical number lives in the
 `src/config.py` of each chapter.
-
-## Why these choices
-
-Three design choices, each worked out in full where it is used:
-
-- **EIT** (not resolved-sideband cooling) — the trap is deep in the *unresolved*-sideband regime (ν_z/Γ ≈ 0.07),
-  where EIT still cools, continuously and using the D2 beams themselves ([chapter 01](01_three_level/README.md)).
-  The nearest alternative, degenerate-Raman sideband cooling, needs separate Raman beams
-  ([appendix](appendix/options.md)).
-- **The D2 line (780 nm)** — a hardware choice: the delivery is a telecom chain seeded at 1560 nm and
-  frequency-doubled to 780 nm, and on D2 the cooling target |F′2,0⟩ is **tensor-null**
-  ([chapter 01](01_three_level/README.md)). D1 (795 nm) has a weaker F′1 leak and would cool a little colder, but
-  sits on a different telecom band ([appendix](appendix/d1_comparison.md)).
-- **The Λ legs |1,−1⟩ σ⁺ + |2,+1⟩ σ⁻** — with B and the beams along the fibre axis the light is **σ-only**, so
-  the legs are m_F=±1; of those, the g_F·m_F-matched pair makes the two-photon resonance first-order
-  field-insensitive ([chapter 01](01_three_level/README.md)).
 
 ## The chapters
 
