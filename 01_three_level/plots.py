@@ -25,24 +25,24 @@ BLUE, RED, GREY, GREEN = "#1565c0", "#c0392b", "#7f8c8d", "#2e7d32"
 def eit_spectrum():
     """Excited-state population (~absorption) vs probe two-photon detuning, electronic only."""
     g1, g2, e = basis(3, 0), basis(3, 1), basis(3, 2)
-    Pe = e * e.dag()
-    d2 = np.linspace(-3 * c.nu_z, 4 * c.nu_z, 600)
-    pe = []
-    for d in d2:
+    excited_proj = e * e.dag()
+    detunings = np.linspace(-3 * c.nu_z, 4 * c.nu_z, 600)
+    excited_pop = []
+    for d in detunings:
         H = ((c.Delta + d) * g1 * g1.dag() + c.Delta * g2 * g2.dag()
              + (c.Omega_c / 2) * (e * g2.dag() + g2 * e.dag())
              + (c.Omega_p / 2) * (e * g1.dag() + g1 * e.dag()))
         cops = [np.sqrt(c.Gamma / 2) * g1 * e.dag(), np.sqrt(c.Gamma / 2) * g2 * e.dag()]
-        pe.append(expect(Pe, steadystate(H, cops)))
-    pe = np.array(pe)
+        excited_pop.append(expect(excited_proj, steadystate(H, cops)))
+    excited_pop = np.array(excited_pop)
 
     fig, ax = plt.subplots(figsize=(7.2, 4.4))
-    ax.plot(d2, pe, color=BLUE, lw=2.2)
+    ax.plot(detunings, excited_pop, color=BLUE, lw=2.2)
     for x, col, lab, ha in [(0.0, GREY, "carrier\n(dark — no heating)", "center"),
                             (+c.nu_z, RED, "cooling sideband\n(on the bright peak)", "left"),
                             (-c.nu_z, GREEN, "heating sideband\n(suppressed)", "right")]:
         ax.axvline(x, color=col, ls="--", lw=1.2, alpha=0.8)
-        ax.annotate(lab, xy=(x, pe.max() * 0.92), fontsize=8.5, color=col, ha=ha)
+        ax.annotate(lab, xy=(x, excited_pop.max() * 0.92), fontsize=8.5, color=col, ha=ha)
     ax.set_xlabel(r"probe two-photon detuning  $\delta_2$  (2$\pi$·MHz)")
     ax.set_ylabel(r"excited population $P_e$  ($\propto$ absorption)")
     ax.set_title("EIT spectrum: dark carrier, bright cooling sideband, suppressed heating\n"
@@ -73,26 +73,26 @@ def cooling_curve(n_init=3.0, N=16):
             np.sqrt(c.Gamma / 2) * tensor(g2 * e.dag(), qeye(N))]
     L = liouvillian(H, cops)
     rho_ss = steadystate(H, cops)
-    n_ss = float(expect(n, rho_ss))
+    n_steady = float(expect(n, rho_ss))
     pn = np.real(rho_ss.ptrace(1).diag())
 
     # exact modal reconstruction: rho(t) = sum_k exp(w_k t) |r_k><l_k|rho0>  =>  <n>(t) = sum_k amp_k exp(w_k t)
-    w, Vr = sla.eig(L.full())
-    rv = operator_to_vector(tensor(g1 * g1.dag(), thermal_dm(N, n_init))).full().ravel()
-    nv = operator_to_vector(n).full().ravel()
-    amp = (nv.conj() @ Vr) * (sla.solve(Vr, rv))
+    w, right_modes = sla.eig(L.full())
+    rho0_vec = operator_to_vector(tensor(g1 * g1.dag(), thermal_dm(N, n_init))).full().ravel()
+    n_vec = operator_to_vector(n).full().ravel()
+    mode_amps = (n_vec.conj() @ right_modes) * (sla.solve(right_modes, rho0_vec))
     t_us = np.linspace(0, 700, 400)
-    nt = np.clip(np.real([np.sum(amp * np.exp(w * (t / 0.159))) for t in t_us]), 1e-6, None)
-    tau_e = t_us[int(np.argmin(np.abs(nt - (n_ss + (nt[0] - n_ss) / np.e))))]
+    n_of_t = np.clip(np.real([np.sum(mode_amps * np.exp(w * (t / 0.159))) for t in t_us]), 1e-6, None)
+    tau_cool = t_us[int(np.argmin(np.abs(n_of_t - (n_steady + (n_of_t[0] - n_steady) / np.e))))]
 
     fig, (axL, axR) = plt.subplots(1, 2, figsize=(10.6, 4.2))
-    axL.plot(t_us, nt, color=BLUE, lw=2.2)
-    axL.axhline(n_ss, color=RED, ls="--", lw=1.2)
-    axL.annotate(f"floor  $\\bar n_z$ ≈ {n_ss:.4f}", xy=(t_us[-1] * 0.45, n_ss),
+    axL.plot(t_us, n_of_t, color=BLUE, lw=2.2)
+    axL.axhline(n_steady, color=RED, ls="--", lw=1.2)
+    axL.annotate(f"floor  $\\bar n_z$ ≈ {n_steady:.4f}", xy=(t_us[-1] * 0.45, n_steady),
                  xytext=(0, 8), textcoords="offset points", color=RED, fontsize=9.5)
     axL.set_xlabel(r"time ($\mu$s)"); axL.set_ylabel(r"$\langle n_z\rangle$")
-    axL.set_title(f"exact $\\langle n_z\\rangle(t)$ from $\\bar n_0\\approx{nt[0]:.1f}$ "
-                  f"(1/e $\\approx${tau_e:.0f} $\\mu$s, multi-modal)")
+    axL.set_title(f"exact $\\langle n_z\\rangle(t)$ from $\\bar n_0\\approx{n_of_t[0]:.1f}$ "
+                  f"(1/e $\\approx${tau_cool:.0f} $\\mu$s, multi-modal)")
     axL.set_yscale("log")
 
     axR.bar(range(8), pn[:8], color=BLUE, width=0.7)
@@ -111,28 +111,28 @@ def cooling_curve(n_init=3.0, N=16):
 # ---------------------------------------------------------------- 3. Stark manifold
 def stark_manifold():
     th = 90.0                                      # the REAL trap: transverse lattice (theta=90 deg)
-    U0 = -stark.shift(c.alpha0_5S)                 # ground trap depth (down)
-    sca = stark.stark_level(2, 0, th)              # F'2: pure scalar (tensor-null), any geometry
-    f3hi = stark.stark_level(3, 3, th)             # F'3 stretched |3,+-3> -> HIGHEST at theta=90
-    f3lo = stark.stark_level(3, 0, th)             # F'3 |3,0>            -> lowest at theta=90
+    trap_depth = -stark.shift(c.alpha0_5S)                 # ground trap depth (down)
+    scalar_shift = stark.stark_level(2, 0, th)              # F'2: pure scalar (tensor-null), any geometry
+    f3_highest = stark.stark_level(3, 3, th)             # F'3 stretched |3,+-3> -> HIGHEST at theta=90
+    f3_lowest = stark.stark_level(3, 0, th)             # F'3 |3,0>            -> lowest at theta=90
 
     fig, ax = plt.subplots(figsize=(6.6, 5.0))
     ax.axhline(0, color="k", lw=0.8, alpha=0.4)
     ax.text(0.5, 2, "free-atom levels (no light)", fontsize=8, color="k", alpha=0.5, ha="center")
     # ground
-    ax.hlines(-U0, 0.1, 0.9, color=BLUE, lw=3)
-    ax.text(0.5, -U0 - 3, f"5S$_{{1/2}}$ ground: trapped, $U_0$ = {U0:.0f} MHz", color=BLUE, ha="center", fontsize=9)
+    ax.hlines(-trap_depth, 0.1, 0.9, color=BLUE, lw=3)
+    ax.text(0.5, -trap_depth - 3, f"5S$_{{1/2}}$ ground: trapped, $U_0$ = {trap_depth:.0f} MHz", color=BLUE, ha="center", fontsize=9)
     # excited manifold (F'3 band at the real theta=90 trap: stretched on top, |3,0> at the bottom)
-    ax.fill_between([1.1, 1.9], f3lo, f3hi, color=RED, alpha=0.12)
-    ax.hlines(sca, 1.1, 1.9, color=RED, lw=3)
-    ax.text(2.0, sca, f"|F'2,0⟩  pure scalar  +{sca:.0f} MHz  (EIT target)", color=RED, va="center", fontsize=9)
-    ax.hlines(f3hi, 1.1, 1.9, color=GREY, lw=1.5, ls="--")
-    ax.text(2.0, f3hi, f"F'=3 stretched |3,±3⟩  +{f3hi:.0f}  (highest)", color=GREY, va="center", fontsize=8)
-    ax.hlines(f3lo, 1.1, 1.9, color=GREY, lw=1.5, ls="--")
-    ax.text(2.0, f3lo, f"F'=3 |3,0⟩  +{f3lo:.0f}  (lowest)", color=GREY, va="center", fontsize=8)
-    ax.text(1.5, f3hi + 5, "5P$_{3/2}$: anti-trapped\n(tensor splits F'=3 — stretched UP\nat $\\theta{=}90°$; F'=2 tensor = 0)",
+    ax.fill_between([1.1, 1.9], f3_lowest, f3_highest, color=RED, alpha=0.12)
+    ax.hlines(scalar_shift, 1.1, 1.9, color=RED, lw=3)
+    ax.text(2.0, scalar_shift, f"|F'2,0⟩  pure scalar  +{scalar_shift:.0f} MHz  (EIT target)", color=RED, va="center", fontsize=9)
+    ax.hlines(f3_highest, 1.1, 1.9, color=GREY, lw=1.5, ls="--")
+    ax.text(2.0, f3_highest, f"F'=3 stretched |3,±3⟩  +{f3_highest:.0f}  (highest)", color=GREY, va="center", fontsize=8)
+    ax.hlines(f3_lowest, 1.1, 1.9, color=GREY, lw=1.5, ls="--")
+    ax.text(2.0, f3_lowest, f"F'=3 |3,0⟩  +{f3_lowest:.0f}  (lowest)", color=GREY, va="center", fontsize=8)
+    ax.text(1.5, f3_highest + 5, "5P$_{3/2}$: anti-trapped\n(tensor splits F'=3 — stretched UP\nat $\\theta{=}90°$; F'=2 tensor = 0)",
             color=RED, ha="center", fontsize=8)
-    ax.set_xlim(0, 4.6); ax.set_ylim(-U0 - 10, f3hi + 18)
+    ax.set_xlim(0, 4.6); ax.set_ylim(-trap_depth - 10, f3_highest + 18)
     ax.set_ylabel("light shift (2$\\pi$·MHz)")
     ax.set_title("1064 nm lattice (1 W + 1 W): ground trapped, 5P$_{3/2}$ expelled")
     ax.set_xticks([])

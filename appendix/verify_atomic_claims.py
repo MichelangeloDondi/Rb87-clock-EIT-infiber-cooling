@@ -48,10 +48,10 @@ check("|R_c-R_p| ratio D1/D2 (leak NOT cancelled on D1)", abs(Rc1-Rp1)/abs(Rc2-R
 print("\n" + "=" * 84)
 print("2. Why D1's leak is small: it is the DETUNING, not the amplitude, not the branching")
 check("F'1-F'2 splitting ratio D1/D2", SPLIT["D1"]/SPLIT["D2"], 5.20)
-def fom(line, D):                          # leak figure of merit ~ Gamma (R_c-R_p)^2 / (Delta+split)^2
+def leak_figure_of_merit(line, D):                          # leak figure of merit ~ Gamma (R_c-R_p)^2 / (Delta+split)^2
     Rc, Rp = R_legs(line); return GAMMA[line]*(Rc-Rp)**2 / (D + SPLIT[line])**2
 for D in (0.0, 25.0):
-    check("leak suppression D2/D1 at Delta=%2.0f" % D, fom("D2", D)/fom("D1", D), 51.5 if D == 0 else 40.7)
+    check("leak suppression D2/D1 at Delta=%2.0f" % D, leak_figure_of_merit("D2", D)/leak_figure_of_merit("D1", D), 51.5 if D == 0 else 40.7)
 check("  detuning factor (split_D2/split_D1)^-2 ... (split_D1/split_D2)^2", (SPLIT["D1"]/SPLIT["D2"])**2, 27.08)
 check("  amplitude factor ((R_c-R_p)_D2/(R_c-R_p)_D1)^2",  (abs(Rc2-Rp2)/abs(Rc1-Rp1))**2, 1.800)
 
@@ -66,9 +66,9 @@ print("  GEM: |2,0>->|F'1,0> pi = %+.4f (ALLOWED, pure F'1 knob);  |2,0>->|F'2,0
 
 print("\n" + "=" * 84)
 print("4. Magnetic field slopes (g_F*m*muB)")
-gm = {(1,-1): -0.5*-1, (2,+1): 0.5*1, (2,-1): 0.5*-1, (2,-2): 0.5*-2, (2,0): 0.5*0}
-check("clock pair two-photon slope: gm(2,+1)-gm(1,-1)", (gm[(2,1)]-gm[(1,-1)])*muB, 0.0)
-check("stretched axial baseline |1,-1>+|2,-1> slope (MHz/G)", (gm[(1,-1)]-gm[(2,-1)])*muB, 1.40)
-check("stretched tilted-B (pi) |1,-1>+|2,-2| slope (MHz/G)", (gm[(1,-1)]-gm[(2,-2)])*muB, 2.10)
-check("|2,0> knob coherence drift vs clock dark (MHz/G)", abs(gm[(2,0)] - 0.5)*muB, 0.70)
+gF_times_m = {(1,-1): -0.5*-1, (2,+1): 0.5*1, (2,-1): 0.5*-1, (2,-2): 0.5*-2, (2,0): 0.5*0}
+check("clock pair two-photon slope: gF_times_m(2,+1)-gF_times_m(1,-1)", (gF_times_m[(2,1)]-gF_times_m[(1,-1)])*muB, 0.0)
+check("stretched axial baseline |1,-1>+|2,-1> slope (MHz/G)", (gF_times_m[(1,-1)]-gF_times_m[(2,-1)])*muB, 1.40)
+check("stretched tilted-B (pi) |1,-1>+|2,-2| slope (MHz/G)", (gF_times_m[(1,-1)]-gF_times_m[(2,-2)])*muB, 2.10)
+check("|2,0> knob coherence drift vs clock dark (MHz/G)", abs(gF_times_m[(2,0)] - 0.5)*muB, 0.70)
 print("\nDONE.")

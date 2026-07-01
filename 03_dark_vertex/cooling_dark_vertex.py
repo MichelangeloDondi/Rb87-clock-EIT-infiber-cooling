@@ -60,7 +60,7 @@ def reduced_ratio(F):
 # control sigma- leg |2,+1>->F'(m'=0); probe sigma+ leg |1,-1>->F'(m'=0)
 R_c = reduced_ratio(2) * (clebsch(2, 1, -1, 1, 0) / clebsch(2, 1, -1, 2, 0))   # ~ -0.346
 R_p = reduced_ratio(1) * (clebsch(1, -1, 1, 1, 0) / clebsch(1, -1, 1, 2, 0))   # ~ +1.732
-F_NULL = R_c / R_p                                                     # probe scale that nulls the residual
+null_scale = R_c / R_p                                                     # probe scale that nulls the residual
 
 
 # ----------------------------------------------------------------------------------
@@ -69,20 +69,20 @@ F_NULL = R_c / R_p                                                     # probe s
 # ----------------------------------------------------------------------------------
 _orig_beams = m.beams
 _orig_repump = m.repump_beams
-CFG = {"master": None, "fscale": 1.0}        # set by floor(); master = dict(det=, rabi=)
+override_state = {"master": None, "fscale": 1.0}        # set by floor(); master = dict(det=, rabi=)
 
 def _beams(Oc, Op, d2, with_e1, with_e3):
     bm = _orig_beams(Oc, Op, d2, with_e1, with_e3)
-    if with_e1 and CFG["fscale"] != 1.0:
+    if with_e1 and override_state["fscale"] != 1.0:
         for b in bm:
             if b["tag"] == "probe":
-                b["edges"] = [(g, e, (cc * CFG["fscale"] if e == (1, 0) else cc))
+                b["edges"] = [(g, e, (cc * override_state["fscale"] if e == (1, 0) else cc))
                               for (g, e, cc) in b["edges"]]
     return bm
 
 def _repump(Oc, Op, d2, repump_scale, shift=-1, tag_shift=None):
     bm = _orig_repump(Oc, Op, d2, repump_scale, shift, tag_shift)
-    M = CFG["master"]
+    M = override_state["master"]
     if M is not None:
         # dedicated master: sigma+ on F=2->F'1 (the ladder also picks up the far-off F'2,F'3),
         # referenced to F2->F'1 so `det` is the master's red detuning from that line.
@@ -108,8 +108,8 @@ def floor(Delta=45.0, with_leak=True, comb=0.0, master=None, fscale=1.0,
     fscale    : multiply the probe's |1,-1>->|F'1,0> edge (cancellation knob; 1.0 = physical)
     """
     c.Delta = float(Delta)
-    CFG["master"] = master
-    CFG["fscale"] = fscale
+    override_state["master"] = master
+    override_state["fscale"] = fscale
     return min(m.solve(d2=d, repump_scale=comb, with_e1=with_leak, with_e3=with_leak, N_fock=N_fock)
                for d in d2s)
 
@@ -127,7 +127,7 @@ if __name__ == "__main__":
     print("      probe    |1,-1>:  R_p = % .3f   <-- probe couples %.2fx STRONGER to F'1 than to F'2"
           % (R_p, abs(R_p)))
     print("      R_c != R_p  =>  |D2> cannot be dark on BOTH F'2 and F'1.  The residual is the leak.")
-    print("      (the probe scale that would null the residual:  f = R_c/R_p = % .3f)" % F_NULL)
+    print("      (the probe scale that would null the residual:  f = R_c/R_p = % .3f)" % null_scale)
 
     print("\n" + "=" * 82)
     print("2.  The master floor  (master = a detuned dedicated F2->F'1 sigma+ repumper):\n")
@@ -155,8 +155,8 @@ if __name__ == "__main__":
 
     print("\n" + "=" * 82)
     print("3.  Can the leak be cancelled?  Scale the probe's F'1 edge (constructive dark engineering):\n")
-    for f in (1.0, 0.5, 0.0, round(F_NULL, 2), -0.5):
-        tag = "   <- residual nulled" if abs(f - F_NULL) < 0.02 else ""
+    for f in (1.0, 0.5, 0.0, round(null_scale, 2), -0.5):
+        tag = "   <- residual nulled" if abs(f - null_scale) < 0.02 else ""
         print("      probe-F'1 scale f = %+5.2f   n_z = %.4f%s" % (f, floor(45, True, 0.0, MASTER, fscale=f), tag))
     print("      no-leak ideal (with_e1 off):              n_z = %.4f" % floor(45, False, 0.0, MASTER))
     print("\n      Suppressing the dominant probe-F'1 term recovers ~0.08 -> ~0.04, toward the no-leak")
