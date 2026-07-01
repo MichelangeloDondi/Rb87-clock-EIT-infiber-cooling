@@ -225,51 +225,25 @@ def build_rotating_frame(tones, ground_energies, excited_energies):
     return frame_energy, max_frame_conflict
 
 
-def solve(d2=0.0, clean=False, with_repump=True, with_e1=True, with_e3=True,
-          N_fock=None, B=None, theta=None, repump_scale=None, shift=-1, tag_shift=None, want=False):
-    """Steady-state axial <n_z> of the multilevel system. clean=True -> the bare 3-level Lambda.
-       repump_scale multiplies the (chain-natural) off-resonant repumper Rabis; shift/tag_shift pick the
-       EOM/AOM configuration (see repump_beams)."""
-    B = c.B_field if B is None else B
-    theta = c.theta_trap if theta is None else theta
-    N_fock = c.N_fock if N_fock is None else N_fock
-    repump_scale = c.repump_scale if repump_scale is None else repump_scale
-    eta, nu_z = c.eta, c.nu_z
-    Oc, Op = reference_rabis()
-
+def build_state_sets(clean, with_e1, with_e3):
+    """The ground and excited sublevels in play. clean=True is the bare 3-level Lambda; otherwise the
+    full 87Rb ground manifold + F'2, optionally the F'1 spoiler and the F'3 admixture. (The repumpers'
+    F'1/F'2 are VIRTUAL -- incoherent, eliminated -- so they are NOT in the Hilbert space.)"""
     if clean:
-        with_repump = with_e1 = with_e3 = False
-        ground_states, excited_states = [(1, -1), (2, 1)], [(2, 0)]
-    else:
-        ground_states = [(1, m) for m in (-1, 0, 1)] + [(2, m) for m in range(-2, 3)]
-        excited_states = [(2, m) for m in range(-2, 3)]              # F'2: the cooling Lambda's upper manifold
-        if with_e1:
-            excited_states = excited_states + [(1, 0)]                           # F'1 spoiler (cooling-beam off-res leak)
-        if with_e3:
-            excited_states = excited_states + [(3, 0)]                           # F'3 admixture (control)
-        # the repumpers' F'1/F'2 are VIRTUAL (incoherent, eliminated) -- not in the Hilbert space
-    ground_energies = {g: ground_energy(g[0], g[1], B) for g in ground_states}
-    excited_energies = {e: excited_energy(e[0], e[1], B, theta) for e in excited_states}
+        return [(1, -1), (2, 1)], [(2, 0)]
+    ground_states = [(1, m) for m in (-1, 0, 1)] + [(2, m) for m in range(-2, 3)]
+    excited_states = [(2, m) for m in range(-2, 3)]                  # F'2: the cooling Lambda's upper manifold
+    if with_e1:
+        excited_states = excited_states + [(1, 0)]                  # F'1 spoiler (cooling-beam off-res leak)
+    if with_e3:
+        excited_states = excited_states + [(3, 0)]                  # F'3 admixture (control)
+    return ground_states, excited_states
 
-    tones = beams(Oc, Op, d2, with_e1, with_e3)
-    kept_grounds, kept_excited = set(ground_states), set(excited_states)
-    for b in tones:
-        b['edges'] = [(g, e, cc) for (g, e, cc) in b['edges'] if g in kept_grounds and e in kept_excited]
-    tones = [b for b in tones if b['edges'] and b['named'][0] in kept_grounds and b['named'][1] in kept_excited]
-    frame_energy, frame_conflict = build_rotating_frame(tones, ground_energies, excited_energies)
-    # Guard: a stationary rotating frame exists only if every loop in the tone graph closes (frame_conflict=0).
-    # If a future config (e.g. a microwave tone coupling the two grounds) closes a loop, frame_conflict != 0 and
-    # the steady state below would be silently unphysical -- warn loudly rather than return a fake number.
-    if frame_conflict > 1e-6:
-        import warnings
-        warnings.warn("rotating-frame conflict frame_conflict=%.3g (2pi MHz): no time-independent frame exists for this "
-                      "tone set; the steady-state <n_z> is NOT trustworthy." % frame_conflict, RuntimeWarning)
 
-    nodes = [('g', g) for g in ground_states] + [('e', e) for e in excited_states]
-    for n in nodes:
-        frame_energy.setdefault(n, 0.0)
-    idx = {n: i for i, n in enumerate(nodes)}
-    n_states = len(nodes)
+def build_hamiltonian(tones, frame_energy, nodes, idx, n_states, nu_z, N_fock, eta):
+    """The Hamiltonian and the shared QuTiP primitives (projector P, Lamb-Dicke displacement,
+    annihilation, Fock identity). H = trap (nu_z n) + rotating-frame level energies + the coherent
+    Lambda couplings, each dressed by the displacement of its beam direction (kdir)."""
     basis_kets = [qt.basis(n_states, i) for i in range(n_states)]
     P = lambda i, j: basis_kets[i] * basis_kets[j].dag()
     fock_identity = qt.qeye(N_fock)
@@ -292,7 +266,13 @@ def solve(d2=0.0, clean=False, with_repump=True, with_e1=True, with_e3=True,
             i, j = idx[('g', g)], idx[('e', e)]
             H += -(O / 2) * (qt.tensor(P(j, i), displacement(b['kdir']))
                              + qt.tensor(P(i, j), displacement(b['kdir']).dag()))
+    return H, P, displacement, annihilation, fock_identity
 
+
+def decay_collapse_ops(excited_states, ground_states, idx, P, displacement):
+    """Spontaneous-decay collapse operators for each excited sublevel: m-resolved CG branching, each
+    decay carrying the 3-point emission recoil. For the clean Lambda, decay into a DROPPED sublevel is
+    treated as ideal repumping straight back to the two Lambda legs."""
     cops = []
     legs = [(1, -1), (2, 1)]                    # the Lambda ground states
     ground_set = set(ground_states)
@@ -321,22 +301,13 @@ def solve(d2=0.0, clean=False, with_repump=True, with_e1=True, with_e3=True,
             for (u, emit_weight) in emission_recoil:
                 cops.append(np.sqrt(GAMMA * (w / branch_total) * emit_weight)
                             * qt.tensor(P(idx[('g', g)], idx[('e', (Fp, mp))]), displacement(u)))
+    return cops
 
-    # the off-resonant repumpers: INCOHERENT scattering rates (no rotating-frame loop; low-saturation, valid repump_scale<~1)
-    repump_freqs = {}
-    if with_repump and not clean:
-        repump_tones = repump_beams(Oc, Op, d2, repump_scale, shift, tag_shift)
-        repump_ops, ac_stark_shift = repump_collapse_ops(repump_tones, ground_energies, idx, P, fock_identity, displacement, ground_set, B, theta)
-        cops += repump_ops
-        for g, sh in ac_stark_shift.items():
-            H += sh * qt.tensor(P(idx[('g', g)], idx[('g', g)]), fock_identity)   # off-resonant a.c.-Stark shift
-        repump_freqs = {b['tag']: b['nu'] for b in repump_tones}
 
-    L = qt.liouvillian(H, cops)
-    try:
-        rho = qt.steadystate(L, method='direct')
-    except Exception:
-        rho = qt.steadystate(L, method='svd')
+def measure_state(rho, n_states, N_fock, annihilation, idx, P, fock_identity,
+                  ground_states, tones, repump_freqs, frame_conflict, want):
+    """Read the axial <n_z> from the steady state; with want=True also return the Fock populations,
+    the ground-sublevel populations, and the tone frequencies (for the reports/placement tables)."""
     number_op = qt.tensor(qt.qeye(n_states), annihilation.dag() * annihilation)
     nbar = float(np.real(qt.expect(number_op, rho)))
     if not want:
@@ -347,6 +318,72 @@ def solve(d2=0.0, clean=False, with_repump=True, with_e1=True, with_e3=True,
             for g in ground_states}
     nu = {**{b['tag']: b['nu'] for b in tones}, **repump_freqs}
     return dict(nbar=nbar, pn=pn, pops=pops, nu=nu, frame_conflict=frame_conflict)
+
+
+def solve(d2=0.0, clean=False, with_repump=True, with_e1=True, with_e3=True,
+          N_fock=None, B=None, theta=None, repump_scale=None, shift=-1, tag_shift=None, want=False):
+    """Steady-state axial <n_z> of the multilevel system. clean=True -> the bare 3-level Lambda.
+       repump_scale multiplies the (chain-natural) off-resonant repumper Rabis; shift/tag_shift pick the
+       EOM/AOM configuration (see repump_beams). Reads like a recipe: states -> tones+frame ->
+       Hamiltonian -> decay -> repumpers -> steady state -> measure."""
+    B = c.B_field if B is None else B
+    theta = c.theta_trap if theta is None else theta
+    N_fock = c.N_fock if N_fock is None else N_fock
+    repump_scale = c.repump_scale if repump_scale is None else repump_scale
+    eta, nu_z = c.eta, c.nu_z
+    Oc, Op = reference_rabis()
+    if clean:
+        with_repump = with_e1 = with_e3 = False
+
+    # --- states and their (Zeeman + Stark) energies ---
+    ground_states, excited_states = build_state_sets(clean, with_e1, with_e3)
+    ground_energies = {g: ground_energy(g[0], g[1], B) for g in ground_states}
+    excited_energies = {e: excited_energy(e[0], e[1], B, theta) for e in excited_states}
+
+    # --- the coherent tones, kept to the states in play, and the multi-rotating frame ---
+    tones = beams(Oc, Op, d2, with_e1, with_e3)
+    kept_grounds, kept_excited = set(ground_states), set(excited_states)
+    for b in tones:
+        b['edges'] = [(g, e, cc) for (g, e, cc) in b['edges'] if g in kept_grounds and e in kept_excited]
+    tones = [b for b in tones if b['edges'] and b['named'][0] in kept_grounds and b['named'][1] in kept_excited]
+    frame_energy, frame_conflict = build_rotating_frame(tones, ground_energies, excited_energies)
+    # Guard: a stationary rotating frame exists only if every loop in the tone graph closes (frame_conflict=0).
+    # If a future config (e.g. a microwave tone coupling the two grounds) closes a loop, frame_conflict != 0 and
+    # the steady state below would be silently unphysical -- warn loudly rather than return a fake number.
+    if frame_conflict > 1e-6:
+        import warnings
+        warnings.warn("rotating-frame conflict frame_conflict=%.3g (2pi MHz): no time-independent frame exists for this "
+                      "tone set; the steady-state <n_z> is NOT trustworthy." % frame_conflict, RuntimeWarning)
+
+    nodes = [('g', g) for g in ground_states] + [('e', e) for e in excited_states]
+    for n in nodes:
+        frame_energy.setdefault(n, 0.0)
+    idx = {n: i for i, n in enumerate(nodes)}
+    n_states = len(nodes)
+
+    # --- Hamiltonian, decay collapse ops, then the off-resonant repumpers ---
+    H, P, displacement, annihilation, fock_identity = build_hamiltonian(
+        tones, frame_energy, nodes, idx, n_states, nu_z, N_fock, eta)
+    cops = decay_collapse_ops(excited_states, ground_states, idx, P, displacement)
+
+    # the off-resonant repumpers: INCOHERENT scattering rates (no rotating-frame loop; low-saturation, valid repump_scale<~1)
+    repump_freqs = {}
+    if with_repump and not clean:
+        repump_tones = repump_beams(Oc, Op, d2, repump_scale, shift, tag_shift)
+        repump_ops, ac_stark_shift = repump_collapse_ops(repump_tones, ground_energies, idx, P, fock_identity, displacement, set(ground_states), B, theta)
+        cops += repump_ops
+        for g, sh in ac_stark_shift.items():
+            H += sh * qt.tensor(P(idx[('g', g)], idx[('g', g)]), fock_identity)   # off-resonant a.c.-Stark shift
+        repump_freqs = {b['tag']: b['nu'] for b in repump_tones}
+
+    # --- steady state and the measurement ---
+    L = qt.liouvillian(H, cops)
+    try:
+        rho = qt.steadystate(L, method='direct')
+    except Exception:
+        rho = qt.steadystate(L, method='svd')
+    return measure_state(rho, n_states, N_fock, annihilation, idx, P, fock_identity,
+                         ground_states, tones, repump_freqs, frame_conflict, want)
 
 
 if __name__ == "__main__":

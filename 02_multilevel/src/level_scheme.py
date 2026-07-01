@@ -85,21 +85,23 @@ def label(key):
     return "%+.0f(%+.0f%+.0f%+.0f=%+.0f)" % (WW, -s, tterm, -g, ZZ)
 
 
-def draw(with_master, outpath, title):
-    fig, ax = plt.subplots(figsize=(18.0, 11.8))
-    half_width = 0.30
-    def level_line(m, y, col="#9aa0aa", lw=2.0, z=2):
-        ax.plot([m - half_width, m + half_width], [y, y], color=col, lw=lw, solid_capstyle="round", zorder=z)
-    def beam(p0, p1, key, lw=None, msc=16):
-        w = lw_of(key)          # WIDTH proportional to this tone's Rabi frequency
-        ax.add_patch(FancyArrowPatch(p0, p1, arrowstyle="-|>", mutation_scale=msc, color=C[key], lw=w,
-                     zorder=5, shrinkA=6, shrinkB=5, linestyle=("-" if is_forward[key] else "--")))
-    def dashed_tick(m, y, col):
-        ax.plot([m - 0.33, m + 0.33], [y, y], ls=(0, (3, 2)), color=col, lw=1.7, zorder=4)
-    def place_label(x, y, key, ha="left", va="center"):
-        ax.annotate(label(key), xy=(x, y), color=C[key], fontsize=7.5, fontweight="bold", ha=ha, va=va, zorder=9)
+# ---- drawing primitives (each takes the axes; width/colour come from the tone dictionaries above) ----
+HALF_WIDTH = 0.30
+def level_line(ax, m, y, col="#9aa0aa", lw=2.0, z=2):
+    ax.plot([m - HALF_WIDTH, m + HALF_WIDTH], [y, y], color=col, lw=lw, solid_capstyle="round", zorder=z)
+def beam(ax, p0, p1, key, msc=16):
+    w = lw_of(key)          # WIDTH proportional to this tone's Rabi frequency
+    ax.add_patch(FancyArrowPatch(p0, p1, arrowstyle="-|>", mutation_scale=msc, color=C[key], lw=w,
+                 zorder=5, shrinkA=6, shrinkB=5, linestyle=("-" if is_forward[key] else "--")))
+def dashed_tick(ax, m, y, col):
+    ax.plot([m - 0.33, m + 0.33], [y, y], ls=(0, (3, 2)), color=col, lw=1.7, zorder=4)
+def place_label(ax, x, y, key, ha="left", va="center"):
+    ax.annotate(label(key), xy=(x, y), color=C[key], fontsize=7.5, fontweight="bold", ha=ha, va=va, zorder=9)
 
-    # ---- grey reference lines: bare (dotted) + scalar-only (dashed) for EVERY level family ----
+
+def draw_reference_lines(ax):
+    """Grey reference lines: bare (dotted) + scalar-only (dashed) for EVERY level family, plus the
+    ground scalar-shift arrow."""
     for Fp, ms in excited_m.items():
         x0, x1 = min(ms) - 0.42, max(ms) + 0.42
         ax.plot([x0, x1], [to_y(bare_hf[Fp])] * 2, ls=(0, (1, 3)), color=grey_bare, lw=1.0, zorder=1)        # bare
@@ -113,20 +115,25 @@ def draw(with_master, outpath, title):
     ax.text(-2.12, yG2 + to_y(trap_depth) / 2, "$-%.1f$\nscalar\n(both F)" % trap_depth, color="#666", fontsize=7.8,
             va="center", ha="right", linespacing=1.1)
 
-    # ---- solid (full scalar+tensor) levels ----
+
+def draw_levels(ax):
+    """The solid (full scalar+tensor) excited levels, the ground sublevels fanned by Zeeman(B)+vector,
+    and the two Lambda-leg dots."""
     for Fp, ms in excited_m.items():
         for mp in ms:
             hot = (Fp == 2 and mp == 0)
-            level_line(mp, excited_y(Fp, mp), "#c62828" if hot else "#9aa0aa", 4.2 if hot else 2.0, 4 if hot else 2)
+            level_line(ax, mp, excited_y(Fp, mp), "#c62828" if hot else "#9aa0aa", 4.2 if hot else 2.0, 4 if hot else 2)
     for F, ms in ground_m.items():
         yg = yG2 if F == 2 else yG1
         for m in ms:                     # fan the ground sublevels by Zeeman(B) + vector(ellipticity)
             dy = to_y(zeeman(gF_ground[F], m) + stark.stark_vector(c.alpha1_5S, F, m, c.ellipticity))
-            level_line(m, yg + dy, "#2b2b2b", 2.6)
+            level_line(ax, m, yg + dy, "#2b2b2b", 2.6)
     ax.plot(-1, yG1, "o", color=C["probe"], ms=11, zorder=6, mec="white", mew=1.1)     # |1,-1>
     ax.plot(+1, yG2, "o", color=C["control"], ms=11, zorder=6, mec="white", mew=1.1)   # |2,+1>
 
-    # ---- broken-axis marker (the 6.835 GHz gap to the ground is not to scale) ----
+
+def draw_broken_axis(ax, with_master):
+    """The 'not to scale' marker across the 6.835 GHz optical gap down to the ground states."""
     ylow = to_y(master_retro_freq) if with_master else to_y(repump2_freq)
     yb = (ylow + (yG2 + to_y(trap_depth))) / 2
     ax.text(-2.75, yb, "optical gap  +  6.835 GHz  —  not to scale", color="#aaa",
@@ -134,23 +141,27 @@ def draw(with_master, outpath, title):
     for yy in (yb + 11, yb - 11):
         ax.plot([-4.30, -4.10], [yy - 6, yy + 6], color="#999", lw=1.4, clip_on=False)
 
+
+def draw_beams(ax, with_master):
+    """The EIT Lambda (control + probe), the two EOM-comb repumpers, and -- if with_master -- the master
+    forward/retro tones with their annotations."""
     # ---- the EIT Lambda: control sigma- (carrier, is_forward solid), probe sigma+ (sideband, RETRO dashed) ----
     ax.plot([-0.42, 0.42], [to_y(control_probe_freq), to_y(control_probe_freq)], ls=(0, (4, 3)), color="#777", lw=1.3, zorder=3)
-    beam((+1, yG2), (0.05, to_y(control_probe_freq)), "control", 3.0)          # control |2,+1> -> |F'2,0>  dm=-1  (forward)
-    beam((-1, yG1), (-0.05, to_y(control_probe_freq)), "probe", 2.6)           # probe   |1,-1> -> |F'2,0>  dm=+1  (retro)
-    place_label(1.20, to_y(40), "control", ha="left")
-    place_label(-1.18, to_y(40), "probe", ha="right")
+    beam(ax, (+1, yG2), (0.05, to_y(control_probe_freq)), "control")          # control |2,+1> -> |F'2,0>  dm=-1  (forward)
+    beam(ax, (-1, yG1), (-0.05, to_y(control_probe_freq)), "probe")           # probe   |1,-1> -> |F'2,0>  dm=+1  (retro)
+    place_label(ax, 1.20, to_y(40), "control", ha="left")
+    place_label(ax, -1.18, to_y(40), "probe", ha="right")
 
     # ---- the two EOM-comb repumpers: rep1 (sideband, is_forward solid), rep2 (carrier, RETRO dashed) ----
-    dashed_tick(0.0, to_y(repump1_freq), C["rep1"]); beam((1, yG1), (0.0, to_y(repump1_freq) - 7), "rep1", 2.3)   # |1,+1>->F'2  (forward)
-    place_label(0.0, to_y(repump1_freq) + 16, "rep1", ha="center", va="bottom")
-    dashed_tick(0.0, to_y(repump2_freq), C["rep2"]); beam((-1, yG2), (0.0, to_y(repump2_freq) + 7), "rep2", 2.3)  # |2,-1>->F'1  (retro)
-    place_label(0.42, to_y(repump2_freq) + 1, "rep2", ha="left")
+    dashed_tick(ax, 0.0, to_y(repump1_freq), C["rep1"]); beam(ax, (1, yG1), (0.0, to_y(repump1_freq) - 7), "rep1")   # |1,+1>->F'2  (forward)
+    place_label(ax, 0.0, to_y(repump1_freq) + 16, "rep1", ha="center", va="bottom")
+    dashed_tick(ax, 0.0, to_y(repump2_freq), C["rep2"]); beam(ax, (-1, yG2), (0.0, to_y(repump2_freq) + 7), "rep2")  # |2,-1>->F'1  (retro)
+    place_label(ax, 0.42, to_y(repump2_freq) + 1, "rep2", ha="left")
 
     if with_master:
         # master fwd: sigma+ ON F'1, FORWARD (solid). Clears |2,-2> -- the one F=2 state the sigma- control misses.
-        beam((-2, yG2), (-1.0, excited_y(1, -1)), "mfwd", 2.8)                     # |2,-2>->|F'1,-1>  (forward)
-        place_label(-2.0, (yG2 + excited_y(1, -1)) / 2, "mfwd", ha="right")
+        beam(ax, (-2, yG2), (-1.0, excited_y(1, -1)), "mfwd")                     # |2,-2>->|F'1,-1>  (forward)
+        place_label(ax, -2.0, (yG2 + excited_y(1, -1)) / 2, "mfwd", ha="right")
         ax.annotate("master clears $|2,-2\\rangle$ —\nthe one F=2 state the $\\sigma^-$\ncontrol can't reach",
                     xy=(-2.0, yG2 + 6), xytext=(-3.95, yG2 + 40), color=C["mfwd"], fontsize=7.6, ha="left",
                     va="center", arrowprops=dict(arrowstyle="-", color="#b9a0d0", lw=0.8))
@@ -158,14 +169,18 @@ def draw(with_master, outpath, title):
                     xy=(2.0, yG2), xytext=(2.45, yG2 + 30), color="#666", fontsize=7.4, ha="left", va="center",
                     arrowprops=dict(arrowstyle="-", color="#bbb", lw=0.7))
         # master retro: sigma-, BACKWARD (dashed), 400 MHz below F'1 -> benign byproduct
-        dashed_tick(0.0, to_y(master_retro_freq), C["mret"]); beam((1, yG2), (0.0, to_y(master_retro_freq) - 7), "mret", 2.0)   # (retro)
-        place_label(1.20, to_y(master_retro_freq) + 1, "mret", ha="left")
+        dashed_tick(ax, 0.0, to_y(master_retro_freq), C["mret"]); beam(ax, (1, yG2), (0.0, to_y(master_retro_freq) - 7), "mret")   # (retro)
+        place_label(ax, 1.20, to_y(master_retro_freq) + 1, "mret", ha="left")
         ax.text(0.0, to_y(master_retro_freq) - 14, "master retro: benign byproduct (400 off F'1)", color=C["mret"],
                 fontsize=7.4, ha="center", va="top")
         ax.annotate("real residual: F=1 ($|1,0\\rangle,|1,\\!+\\!1\\rangle$),\nonly weakly cleared by the probe",
                     xy=(0.5, yG1), xytext=(2.2, yG1 + 22), color="#b5651d", fontsize=7.6, ha="left",
                     va="center", arrowprops=dict(arrowstyle="-", color="#d2a679", lw=0.8))
 
+
+def draw_annotations(ax):
+    """The Delta bracket, the |F'2,0> callout, the F'1/F'3 tensor-fan notes, the level-family labels,
+    the ground kets, and the scale bars."""
     # ---- Delta bracket + |F'2,0> callout ----
     ax.annotate("", xy=(0.60, excited_y(2, 0)), xytext=(0.60, to_y(control_probe_freq)), arrowprops=dict(arrowstyle="<->", color="#333", lw=1.4))
     ax.text(0.70, (excited_y(2, 0) + to_y(control_probe_freq)) / 2, r"$\Delta=+45$", color="#111", fontsize=10.5, va="center", ha="left", fontweight="bold")
@@ -193,6 +208,10 @@ def draw(with_master, outpath, title):
     ax.plot([-3.95, -3.95], [sb0, sb0 + to_y(100)], color="#444", lw=2.4)
     ax.text(-4.04, sb0 + to_y(100) / 2, "100 MHz", rotation=90, va="center", ha="right", color="#444", fontsize=8.4)
 
+
+def draw_legend(ax, with_master):
+    """The beam legend (colour = comb line, solid/dashed = forward/retro), the grey-line key, and the
+    delivery/physics text box."""
     # ---- beam legend (colour = comb line; solid/dashed = forward/retro; with the decomposition label) ----
     def leglab(name, pol, tr, key):
         return r"%s $%s$ · %s · %s" % (name, pol, tr, label(key))
@@ -239,6 +258,18 @@ def draw(with_master, outpath, title):
                "   scatters there ($\\to$5/6 into F=1). The master can't fix it $\\Rightarrow \\bar n_z\\!\\approx\\!0.06$ (chapter 03).")
     ax.text(4.45, to_y(-150), txt, fontsize=8.2, va="top", ha="left", linespacing=1.5,
             bbox=dict(boxstyle="round,pad=0.7", fc="#f6f6f8", ec="#888", lw=1.0))
+
+
+def draw(with_master, outpath, title):
+    """Assemble the level scheme -- reference lines -> levels -> broken axis -> beams -> annotations ->
+    legend -> axis cosmetics -- and save it."""
+    fig, ax = plt.subplots(figsize=(18.0, 11.8))
+    draw_reference_lines(ax)
+    draw_levels(ax)
+    draw_broken_axis(ax, with_master)
+    draw_beams(ax, with_master)
+    draw_annotations(ax)
+    draw_legend(ax, with_master)
 
     ax.set_title(title, fontsize=13.2, pad=12)
     ax.set_xlabel("$m_F$", fontsize=12.5)

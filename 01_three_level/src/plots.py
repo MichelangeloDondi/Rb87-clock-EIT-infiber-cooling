@@ -20,6 +20,7 @@ import stark
 HERE = os.path.dirname(os.path.abspath(__file__))
 IMAGES = os.path.join(os.path.dirname(HERE), "images")   # figures -> the chapter's images/ (this file lives in src/)
 BLUE, RED, GREY, GREEN = "#1565c0", "#c0392b", "#7f8c8d", "#2e7d32"
+TIME_UNIT_US = 0.159        # 1/(2pi*nu_z) in us -- converts the dimensionless (2pi*MHz) time axis to microseconds
 
 
 # ---------------------------------------------------------------- 1. EIT spectrum
@@ -56,12 +57,10 @@ def eit_spectrum():
 
 
 # ---------------------------------------------------------------- 2. cooling curve + final Fock
-def cooling_curve(n_init=3.0, N=16):
-    """EXACT <n_z>(t) from a hot start. The master equation is linear, so <n_z>(t) is an exact sum of
-    decaying Liouvillian modes; we get it by eigendecomposition (no stiff Delta=45 time-stepping needed,
-    and no single-exponential assumption). The relaxation is multi-modal, and the rate that matters is
-    set by the modes <n_z> actually couples to -- NOT the slowest Liouvillian mode (which <n_z> barely
-    touches). [A direct mesolve gives the same curve; it is just slow here because of the Delta=45 stiffness.]"""
+def build_cooling_liouvillian(N):
+    """The 3-level Lambda + oscillator as a Liouvillian: returns (L, rho_ss, n). The probe leg carries
+    the Lamb-Dicke recoil (recoil_op); control + trap complete H; the two c_ops are the spontaneous-decay
+    channels back to the ground pair (i.e. perfect repumping)."""
     a = tensor(qeye(3), destroy(N)); n = a.dag() * a
     g1, g2, e = basis(3, 0), basis(3, 1), basis(3, 2)
     recoil_op = tensor(qeye(3), qeye(N)) + 1j * c.eta * (a + a.dag())
@@ -72,19 +71,32 @@ def cooling_curve(n_init=3.0, N=16):
          + (c.Omega_p / 2) * (probe + probe.dag()))
     cops = [np.sqrt(c.Gamma / 2) * tensor(g1 * e.dag(), qeye(N)),
             np.sqrt(c.Gamma / 2) * tensor(g2 * e.dag(), qeye(N))]
-    L = liouvillian(H, cops)
-    rho_ss = steadystate(H, cops)
-    n_steady = float(expect(n, rho_ss))
-    pn = np.real(rho_ss.ptrace(1).diag())
+    return liouvillian(H, cops), steadystate(H, cops), n
 
-    # exact modal reconstruction: rho(t) = sum_k exp(w_k t) |r_k><l_k|rho0>  =>  <n>(t) = sum_k amp_k exp(w_k t)
+
+def cooling_trajectory(L, n, rho_ss, n_init, N):
+    """EXACT <n_z>(t) from a hot thermal start. The master equation is linear, so <n_z>(t) is an exact
+    sum of decaying Liouvillian modes; we get it by eigendecomposition (no stiff Delta=45 time-stepping,
+    no single-exponential assumption). The rate that matters is set by the modes <n_z> actually couples
+    to -- NOT the slowest Liouvillian mode (which <n_z> barely touches). Returns (t_us, n_of_t, tau_cool,
+    n_steady). [A direct mesolve gives the same curve; it is just slow here because of the Delta=45 stiffness.]"""
+    n_steady = float(expect(n, rho_ss))
+    # rho(t) = sum_k exp(w_k t) |r_k><l_k|rho0>  =>  <n>(t) = sum_k amp_k exp(w_k t)
     w, right_modes = sla.eig(L.full())
-    rho0_vec = operator_to_vector(tensor(g1 * g1.dag(), thermal_dm(N, n_init))).full().ravel()
+    rho0_vec = operator_to_vector(tensor(basis(3, 0) * basis(3, 0).dag(), thermal_dm(N, n_init))).full().ravel()
     n_vec = operator_to_vector(n).full().ravel()
     mode_amps = (n_vec.conj() @ right_modes) * (sla.solve(right_modes, rho0_vec))
     t_us = np.linspace(0, 700, 400)
-    n_of_t = np.clip(np.real([np.sum(mode_amps * np.exp(w * (t / 0.159))) for t in t_us]), 1e-6, None)
+    n_of_t = np.clip(np.real([np.sum(mode_amps * np.exp(w * (t / TIME_UNIT_US))) for t in t_us]), 1e-6, None)
     tau_cool = t_us[int(np.argmin(np.abs(n_of_t - (n_steady + (n_of_t[0] - n_steady) / np.e))))]
+    return t_us, n_of_t, tau_cool, n_steady
+
+
+def cooling_curve(n_init=3.0, N=16):
+    """<n_z>(t) from a hot start (exact modal reconstruction) + the steady-state Fock distribution."""
+    L, rho_ss, n = build_cooling_liouvillian(N)
+    pn = np.real(rho_ss.ptrace(1).diag())
+    t_us, n_of_t, tau_cool, n_steady = cooling_trajectory(L, n, rho_ss, n_init, N)
 
     fig, (axL, axR) = plt.subplots(1, 2, figsize=(10.6, 4.2))
     axL.plot(t_us, n_of_t, color=BLUE, lw=2.2)
