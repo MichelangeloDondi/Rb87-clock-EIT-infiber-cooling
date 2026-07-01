@@ -30,6 +30,7 @@ def R_legs(line):                          # per-leg F'1/F'2 coupling ratio for 
     Rp = reduced_ratio(1, line) * (clebsch(1, -1,  1, 1, 0) / clebsch(1, -1,  1, 2, 0))   # probe   sigma+ |1,-1>
     return Rc, Rp
 
+# check(label, computed, want): `want` = the target value quoted in the appendix .md tables / prose (the docs these claims back).
 def check(label, got, want, tol=2e-3):
     ok = abs(got - want) <= tol * max(1.0, abs(want))
     print("  %-52s %+11.5f   (want %+.4f)  %s" % (label, got, want, "PASS" if ok else "** CHECK **"))
@@ -55,7 +56,7 @@ def claim2_detuning_not_amplitude():
     for D in (0.0, 25.0):
         check("leak suppression D2/D1 at Delta=%2.0f" % D, leak_figure_of_merit("D2", D)/leak_figure_of_merit("D1", D), 51.5 if D == 0 else 40.7)
     Rc2, Rp2 = R_legs("D2"); Rc1, Rp1 = R_legs("D1")
-    check("  detuning factor (split_D2/split_D1)^-2 ... (split_D1/split_D2)^2", (SPLIT["D1"]/SPLIT["D2"])**2, 27.08)
+    check("  detuning factor (split_D1/split_D2)^2", (SPLIT["D1"]/SPLIT["D2"])**2, 27.08)
     check("  amplitude factor ((R_c-R_p)_D2/(R_c-R_p)_D1)^2",  (abs(Rc2-Rp2)/abs(Rc1-Rp1))**2, 1.800)
 
 

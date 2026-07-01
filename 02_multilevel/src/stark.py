@@ -1,9 +1,9 @@
 """
 stark.py -- the optical chain -> the trap. CLOSED FORM (no master equation, no solver):
-this is the arithmetic of README "The trap and the Stark shifts", runnable so you can
+this is the arithmetic of the chapter-01 README trap/Stark section, runnable so you can
 plug in your own power/waist.
 
-Light shift of a level of polarizability alpha in intensity I:   U = - alpha * I / (2 eps0 c).
+Light shift of a level of polarizability alpha in intensity I:   U = - alpha * I / (2 eps0 c)  (the optical-dipole potential, Grimm et al. 2000).
 alpha > 0 is pulled DOWN (trapped); alpha < 0 is pushed UP (anti-trapped).
 Two 1 W beams counter-propagate; at a lattice antinode the field doubles, so I = 4 x the
 single-beam peak 2P/(pi w0^2).
@@ -29,7 +29,7 @@ def shift(alpha_au):
 # Geometric factor (normalized so F_geom(3,3)=1):
 #   F_geom(F',m') = [ (2F'+1){F' 2 F'; 3/2 3/2 3/2} / (7 {3 2 3; 3/2 3/2 3/2}) ]
 #                   * (3 m'^2 - F'(F'+1)) / (F'(2F'-1))
-# The two Wigner-6j (recomputed exactly with sympy in stark_validate.py, which checks these):
+# The two Wigner-6j (recomputed exactly with sympy in 01_three_level/src/stark_validate.py, which checks these):
 #   {2 2 2; 3/2 3/2 3/2} = 0          -> F'=2 tensor NULL: the EIT target is pure scalar (any geometry)
 #   {1 2 1; 3/2 3/2 3/2} = -0.16330 ; {3 2 3; 3/2 3/2 3/2} = +0.13093
 #   -> F'-prefactor ratios (relative to F'=3): F'=0: 0, F'=1: -0.5345, F'=2: 0, F'=3: +1.

@@ -2,10 +2,9 @@
 make_figure.py -- the chapter-03 figure: (left) the floor ladder with the F'1 leak folded in,
 (right) the leak-cancellation curve.
 
-Pure matplotlib (no solve), like 04_master/master_figures.py. The plotted floors are the output
-of cooling_dark_vertex.py (run it to reproduce them); they are written here as constants so the
-figure regenerates without qutip. All values are ~10% Delta-/run-dependent -- read them as "a few
-x 10^-2", not to the last digit.
+Pure matplotlib (no solve), like 04_master/master_figures.py. The floor-ladder values (panel a) are
+READ from results.json (written by cooling_dark_vertex.py); panel (b)'s cancellation curve is a static
+illustration. All values are ~10% Delta-/run-dependent -- read them as "a few x 10^-2", not to the last digit.
 
 Run:  python make_figure.py
 """
@@ -23,28 +22,36 @@ plt.rcParams.update({
     "ytick.labelsize": 11,
 })
 
+import json
 HERE = os.path.dirname(os.path.abspath(__file__))
 IMAGES = os.path.join(os.path.dirname(HERE), "images")   # figures -> the chapter's images/ (this file lives in src/)
-R_c, R_p = -0.35, 1.73          # the atomic F'1/F'2 coupling ratios (from cooling_dark_vertex.py)
 
-# --- floors from cooling_dark_vertex.py (a few x 10^-2). Panel (a) compares at a FIXED Delta=45 so the
-#     master's effect and the F'1 leak are not confounded with the Delta change; MASTER_OPT notes the
-#     leak-aware Delta=30 optimum (the headline). ---
-CHAIN      = 0.088  # minimal single-EOM chain (comb), leak ON, Delta=45   (chapter 02's ~0.10)
-MASTER     = 0.082  # + dedicated master, comb off, leak ON, Delta=45      (same Delta as the chain)
-MASTER_OPT = 0.058  # the master re-optimised to the leak-aware Delta=30   (the ~0.06 headline)
-IDEAL      = 0.029  # the no-leak ideal (F'1 leak cancelled), Delta=45
-RECOIL     = 0.0032 # intrinsic recoil limit (chapter 01)
+# --- every floor is READ from results.json, the single source of truth written by
+#     `python cooling_dark_vertex.py`. The floor ladder (panel a) is fully driven by it; panel (b)'s
+#     cancellation curve is a static illustration. The fallback
+#     lets it still draw before the (slow) solve has been run. Values are ~10% Delta-/run-dependent. ---
+_RESULTS = os.path.join(os.path.dirname(HERE), "results.json")
+_fallback = {"R_c": -0.346, "R_p": 1.732,
+             "no_master": {"delta": 45, "floor": 0.087}, "master": {"delta": 25, "floor": 0.055},
+             "master_d45": 0.082, "no_leak_ideal": {"delta": 45, "floor": 0.029}, "intrinsic_multilevel": 0.0032}
+res = json.load(open(_RESULTS)) if os.path.exists(_RESULTS) else _fallback
+R_c, R_p   = res["R_c"], res["R_p"]                 # atomic F'1/F'2 coupling ratios of the two dark-state legs
+CHAIN      = res["no_master"]["floor"]              # minimal single-EOM chain (comb + leak), its optimal Delta
+MASTER     = res["master_d45"]                      # + master at the SAME fixed Delta=45 (clean comparison)
+MASTER_OPT = res["master"]["floor"]                 # the master re-optimised over Delta -- the headline
+MASTER_D   = res["master"]["delta"]                 # the Delta at that optimum
+IDEAL      = res["no_leak_ideal"]["floor"]          # the no-leak ideal (F'1 leak cancelled)
+RECOIL     = res["intrinsic_multilevel"]            # intrinsic recoil limit (chapter 02, multilevel clean)
 
 fig, (axL, axR) = plt.subplots(1, 2, figsize=(13.2, 5.2), gridspec_kw=dict(width_ratios=[1.32, 1]))
 
 # ---------- panel (a): the floor ladder ----------
 rungs = [
     ("minimal single-EOM chain\n(comb repumpers + F'1 leak), Δ=45",   CHAIN,  "#c0392b", "o", "computed"),
-    ("+ dedicated master, Δ=45  (Δ≈30 optimum: %.3f)\n(clears |2,-2>, kills comb scatter)" % MASTER_OPT,
+    ("+ dedicated master, Δ=45  (Δ≈%d optimum: %.3f)\n(clears |2,-2>, kills comb scatter)" % (MASTER_D, MASTER_OPT),
                                                                       MASTER, "#e67e22", "o", "computed"),
     ("if the F'1 leak were cancelled\n(no-leak ideal), Δ=45",          IDEAL,  "#2980b9", "o", "computed"),
-    ("intrinsic recoil limit (ch. 01)",                               RECOIL, "#2e7d32", "X", "limit"),
+    ("intrinsic recoil limit (ch. 02)",                               RECOIL, "#2e7d32", "X", "limit"),
 ]
 y = np.arange(len(rungs))[::-1]
 # the leak-limited band (at a FIXED Delta=45): the master is stuck above the no-leak ideal by the F'1 leak
@@ -70,7 +77,6 @@ for s in ("top", "right", "left"):
 # ---------- panel (b): the cancellation curve (swept at Delta=45) ----------
 fs = np.array([-0.5, -0.20, 0.0, 0.5, 1.0])              # scale on the probe's |1,-1>->|F'1,0> edge
 fl = np.array([0.050, 0.043, 0.043, 0.054, 0.082])       # floor at each scale (cooling_dark_vertex.py)
-IDEAL = 0.029                                            # no-leak ideal (with_e1 off), Delta=45
 axR.axhline(IDEAL, color="#2e7d32", ls="--", lw=1.6)
 axR.text(0.96, IDEAL * 1.03, "no-leak ideal $\\approx %.3f$" % IDEAL, color="#2e7d32",
          fontsize=10.5, va="bottom", ha="right")

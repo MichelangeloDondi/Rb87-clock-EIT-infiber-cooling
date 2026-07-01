@@ -90,3 +90,10 @@ nothing over the much simpler single-ended build for a single atom.
 The intrinsic cooling limit all of these chase is **0.0032** (full manifold) / 0.0020 (3-level, full recoil) /
 0.0011 (recoil-free mechanism), all computed in this repo; reaching it means beating the F′1 leak (chapter 03).
 Regenerate every figure here with `python src/master_figures.py` (matplotlib only, no solves).
+
+## References
+
+Full entries in [`../references/`](../references/README.md).
+
+- **Morigi, Eschner & Keitel (2000)**, PRL **85**, 4458 — the EIT-cooling mechanism; the master is a dedicated F′1 repumper added on top of it, not a change to the cooling itself.
+- **Huang *et al.* (2021)** / **Xin *et al.* (2025)** — EIT / dark-state cooling of neutral Rb, the method's neutral-atom demonstrations.

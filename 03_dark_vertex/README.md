@@ -41,11 +41,12 @@ over Δ with the leak in — and, as a *preview* of chapter 04, adds a **detuned
 repumper, det ≫ 3Γ so the incoherent-rate model stays valid) to show how far the leak lets you go:
 
 ```
-   minimal single-EOM chain (comb),  leak ON,  Δ = 45    n̄_z ≈ 0.088     (≈ chapter 02's 0.10)
+   minimal single-EOM chain (comb),  leak ON,  Δ = 45    n̄_z ≈ 0.088     (≈ chapter 02's 0.09)
    minimal single-EOM chain (comb),  leak OFF, Δ = 45    n̄_z ≈ 0.042
    master config (comb suppressed),  leak ON,  Δ = 45    n̄_z ≈ 0.082     (same Δ as the chain)
    master config (comb suppressed),  leak OFF, Δ = 45    n̄_z ≈ 0.029
-   master config (comb suppressed),  leak ON,  Δ = 30    n̄_z ≈ 0.058     (leak-aware optimum → the headline)
+   master config (comb suppressed),  leak ON,  Δ = 30    n̄_z ≈ 0.058
+   master config (comb suppressed),  leak ON,  Δ = 25    n̄_z ≈ 0.055     (leak-aware optimum → the headline)
 ```
 
 ![the master floor with the F′1 leak folded in, and the cancellation curve](images/dark_vertex_floor.png)
@@ -53,7 +54,7 @@ repumper, det ≫ 3Γ so the incoherent-rate model stays valid) to show how far 
 Reading these:
 
 - **Without the master, ≈ 0.087 is the floor.** The comb chain (first row) is repump-limited: its tones sit near
-  F′2 and cannot follow the leak to small Δ, so optimising over Δ does not beat ≈ 0.087 — that is the best this
+  F′2 and cannot follow the leak to small Δ, so it stays near ≈ 0.087 (at Δ = 45) — that is the best this
   hardware delivers. *(The master rows preview chapter 04: at a fixed Δ = 45 the master buys 0.088 → 0.082, and
   enabling the small Δ ≈ 25–30 then reaches ≈ 0.055 — whether that gain earns the extra laser is chapter 04's call.)*
 - **But the floor is the leak.** At the *same* Δ = 45, turning the leak off drops the master config from
@@ -61,7 +62,7 @@ Reading these:
   the dark state itself scattering, not an unpumped reservoir, so the master (a different transition)
   cannot touch it.
 - **Smaller Δ is colder once the leak dominates.** The leak's scatter ∝ Δ/(Δ+157)² *grows* with Δ in
-  the operating range, so the leak-aware optimum is at *smaller* Δ (≈ 30, giving ≈ 0.058) — the opposite
+  the operating range, so the leak-aware optimum is at *smaller* Δ (≈ 25, giving ≈ 0.055) — the opposite
   of the detune-harder instinct that holds when the dark state is perfect. (The numbers are ~10% Δ-/run-
   dependent; read them as "a few × 10⁻²".)
 
@@ -92,3 +93,10 @@ real frontier past the ≈ 0.055 floor.
 the incoherent-repumper model requires every repumper (master included) to sit ≫ 3Γ off resonance; the
 Floquet cancellation of §3 is outside this static-frame solver; and ≈ 0.055 is a steady-state ground-band
 number, not a measured n̄ — the experiment is the arbiter.*
+
+## References
+
+Full entries in [`../references/`](../references/README.md).
+
+- **Chow *et al.* (2023)**, [arXiv:2312.06438](https://arxiv.org/abs/2312.06438) — single-neutral-⁸⁷Rb EIT cooling; the F′-manifold off-resonant scattering it identifies as a heating floor is the same class of leak folded in here.
+- **Morigi, Eschner & Keitel (2000)**, PRL **85**, 4458 — the EIT-cooling mechanism the F′1 leak degrades.

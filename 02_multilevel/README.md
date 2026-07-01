@@ -10,10 +10,11 @@ delivers, **≈ 0.09**.
 
 It is a standard multilevel Lindblad solve; the CG / line-strength conventions are checked against the known D2
 branching by [`clebsch_gordan_checks.py`](src/clebsch_gordan_checks.py), and the per-(F′,m′) 1064 Stark comes from
-the same [`stark.py`](src/stark.py) as chapter 01. With every m-sublevel, the full recoil, and the per-(F′,m′) 1064
+the same [`stark.py`](src/stark.py) as chapter 01 (the 6j / Clebsch–Gordan conventions follow Edmonds 1957). With
+every m-sublevel, the full recoil, and the per-(F′,m′) 1064
 Stark, the clean-Λ floor is **0.0032** — just above the 3-level's **0.0020** of chapter 01 (both carry the full
 photon recoil; the difference is the full m-resolved D2 decay branching, which the 3-level's two-channel decay
-leaves out). The EIT mechanism and the (Γ/4Δ)² scaling are untouched.
+leaves out). The EIT mechanism and the (Γ/4Δ)² scaling (Morigi, Eschner & Keitel 2000) are untouched.
 
 ## 2. The delivery — one seed, one EOM
 
@@ -24,7 +25,9 @@ EBLANA (1560) → EOM → EDFA → PPLN (SHG 780) → HCPCF (trap + delivery) �
 ```
 
 a **single seed and one EOM**: f_mod = A_HFS + 2f_A = 6.83 + 0.40 = 7.23 GHz, with a 200 MHz tag AOM
-double-passed to 2f_A = 400 MHz. The tag **down-shifts** the retro (retro = forward − 2f_A).
+double-passed to 2f_A = 400 MHz. The tag **down-shifts** the retro (retro = forward − 2f_A). This single-fibre-EOM
+common-mode delivery follows the host-group HCPCF interferometer (Xin, Lan *et al.* 2018) and the no-OPLL
+common-mode approach demonstrated at the 6.83 GHz clock splitting by Agnew *et al.* (2024).
 
 ![the 24-level scheme on the 1064-shifted 5P₃/₂ manifold](images/level_scheme.png)
 
@@ -98,3 +101,15 @@ whose only workaround with hardware is the optional dedicated F′1 repumper, th
 
 *Validity note:* the off-resonant repumpers are incoherent low-saturation rates — trust the natural-power point,
 not the high-power trend (the rate omits saturation and the a.c.-Stark shift above ~natural power).
+
+## References
+
+Full entries and links in [`../references/`](../references/README.md).
+
+- **Steck**, *Rubidium 87 D Line Data* — the D2 manifold constants (A_HFS, Γ, hyperfine centroids); tagged in `config.py` / `cooling_multilevel.py`.
+- **Edmonds (1957)**, *Angular Momentum in Quantum Mechanics* — the Clebsch–Gordan / Wigner-6j line-strength conventions (checked in `clebsch_gordan_checks.py`).
+- **Chen & Raithel (2015)**, PRA **92**, 060501(R) — the 1064 nm polarizabilities behind the per-(F′,m′) Stark shifts.
+- **Morigi, Eschner & Keitel (2000)**, PRL **85**, 4458 — the EIT-cooling mechanism the multilevel solve preserves.
+- **Xin, Lan *et al.* (2018)**, Sci. Adv. **4**, eaat9989 — the host-group HCPCF fibre-EOM delivery this chain inherits.
+- **Agnew *et al.* (2024)**, arXiv:2404.16806 — single-EOM common-mode generation at the 6.83 GHz clock splitting (no OPLL).
+- **Huang *et al.* (2021)** / **Xin *et al.* (2025)** — EIT / dark-state cooling of neutral Rb, the closest prior art for the manifold-level scheme.

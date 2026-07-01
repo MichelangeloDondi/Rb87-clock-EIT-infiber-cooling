@@ -1,12 +1,12 @@
 # Can the F′1 leak be cancelled? — the Floquet verdict
 
-Chapter 04 caps the master floor at ≈ 0.055 because the EIT dark state keeps a residual coupling onto |F′1,0⟩.
+The F′1 leak (chapter 03) is what caps the D2 scheme: even with the master (chapter 04) the EIT dark state keeps a residual coupling onto |F′1,0⟩.
 **Can that coupling be cancelled?** The honest answer is **no, not by a co-propagating tone** — and the D2 scheme
 bottoms out at **n̄_z ≈ 0.055**.
 
 ## 1. The question chapter 03 left open
 
-Chapter 04 showed that *if* the dark state's coupling onto |F′1,0⟩ could be nulled, the floor would recover
+Chapter 03 showed that *if* the dark state's coupling onto |F′1,0⟩ could be nulled, the floor would recover
 toward the ≈ 0.03 no-leak ideal — but it tested this by *scaling the probe's coherent F′1 edge*, which is not
 something a laser can do. A real cancellation tone is a beam at a real frequency; the only sensible one is tuned
 to |1,−1⟩→|F′1,0⟩ (the F1→F′1 line), to interfere with the probe's leak onto that state. Does it cancel?
@@ -26,7 +26,7 @@ scatters *nothing*:
 ![the canceller verdict and the leak-aware Δ optimum](images/cancellation_verdict.png)
 
 - **The principle is real.** At g_X = Ω_p(R_c−R_p) the static canceller makes |D2⟩ dark on |F′1,0⟩ as well as
-  |F′2,0⟩, and the scatter collapses to ~10⁻¹⁶ — a perfect dark state. Chapter 04 was right that *if* you could
+  |F′2,0⟩, and the scatter collapses to ~10⁻¹⁶ — a perfect dark state. Chapter 03 was right that *if* you could
   null the leak, the cold comes back.
 - **The physical tone does the opposite.** At the same amplitude the real resonant tone gives ~4× the
   no-canceller scatter, and only climbs from there. The Δ+157 beat means it never lines up with the leak; it just

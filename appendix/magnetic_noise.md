@@ -9,7 +9,7 @@ vertex — but the clean candidate is **field-sensitive**, so the choice becomes
 - **Clock pair** (this repo): |1,−1⟩(σ⁻) + |2,+1⟩(σ⁻… σ⁺) → |F′2,0⟩. Both legs have g_F·m_F = +½, so the
   two-photon resonance is **first-order field-insensitive** (slope 0, exact). It pays the F′1 leak — floor
   ≈ 0.055–0.086 (chapter 03 / [cancellation.md](cancellation.md)).
-- **Stretched** ([colleague's scheme](https://github.com/valepioli/EIT_cooling_simulation),
+- **Stretched** ([external reference implementation](https://github.com/valepioli/EIT_cooling_simulation),
   `EIT_cooling_Rb_F1_axial`): with **B along the fibre axis** the axial beams drive only σ (π would need a field
   component along the beams, which the axial geometry lacks), so both legs are σ⁻ at m_F = −1 —
   |1,−1⟩(σ⁻) + |2,−1⟩(σ⁻) → |F′2,−2⟩, the dark state at the edge m′=−2. F′=1 has no m′=−2 sublevel (max |m′|=1),
@@ -25,7 +25,7 @@ vertex — but the clean candidate is **field-sensitive**, so the choice becomes
 | limited by | the leak | magnetic noise |
 
 (The 0, 1.4, and 2.10 MHz/G slopes are verified in [`verify_atomic_claims.py`](src/verify_atomic_claims.py); the
-≈ 0.086 / ≈ 0.041 anchors are chapter-02 leak-on / leak-off floors, used as best-case proxies.)
+≈ 0.086 / ≈ 0.041 anchors are chapter-03 leak-on / leak-off floors, used as best-case proxies.)
 
 ## 2. The crossover  *(model-dependent — a precise value needs the σ-only stretched solve)*
 
@@ -35,8 +35,8 @@ enable the π variant), averaged over a quasi-static Gaussian. The two cross whe
 penalty overtakes the clock pair's leak penalty. That crossover moves with **both** inputs, in opposite
 directions: the smaller axial slope (1.4 vs 2.10 MHz/G) pushes it **higher**, while anchoring the clock pair at
 its leak-aware optimum **≈ 0.055** ([cancellation.md](cancellation.md)) rather than the Δ = 45 value 0.086 pulls
-it **lower**. A precise number therefore needs a faithful σ-only stretched-scheme solve (the sibling stretched
-study), not the proxy floors used here.
+it **lower**. A precise number therefore needs a faithful σ-only stretched-scheme solve (an external σ-only reference
+implementation), not the proxy floors used here.
 
 Qualitatively the crossover sits at **a few tens of mG** of quasi-static field noise: below it the stretched
 scheme is the colder *cooler*; above it the field-insensitive clock pair wins. In a typical shielded lab

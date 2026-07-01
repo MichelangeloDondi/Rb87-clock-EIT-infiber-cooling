@@ -5,6 +5,7 @@ Run:  python plots.py     (writes the PNGs next to this file)
   eit_spectrum.png    EIT absorption vs probe detuning -- the cooling mechanism   (README "How EIT cools")
   cooling_curve.png   <n_z>(t) from a hot start, + the final Fock distribution    (README "The number")
   stark_manifold.png  the 1064 trap + the 5P_3/2 anti-trap shifts                 (README "The trap")
+  lambda_scheme.png   the clock-EIT Lambda scheme (probe/control -> |F'2,0>)            (README "The Lambda scheme")
 """
 import os
 import numpy as np
@@ -12,7 +13,7 @@ import scipy.linalg as sla
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from qutip import (basis, qeye, destroy, tensor, steadystate, expect, liouvillian,
+from qutip import (basis, qeye, destroy, displace, tensor, steadystate, expect, liouvillian,
                    operator_to_vector, thermal_dm)
 import config as c
 import stark
@@ -20,7 +21,7 @@ import stark
 HERE = os.path.dirname(os.path.abspath(__file__))
 IMAGES = os.path.join(os.path.dirname(HERE), "images")   # figures -> the chapter's images/ (this file lives in src/)
 BLUE, RED, GREY, GREEN = "#1565c0", "#c0392b", "#7f8c8d", "#2e7d32"
-TIME_UNIT_US = 0.159        # 1/(2pi*nu_z) in us -- converts the dimensionless (2pi*MHz) time axis to microseconds
+TIME_UNIT_US = 0.159        # 1/(2pi*MHz) in us: the Hamiltonian is angular 2pi*MHz, so one code time-unit = 1/(2pi*1e6 s) = 0.159 us
 
 # Uniform readability floor for every figure (embedded in READMEs at ~700-900 px):
 # ticks >= 11pt, axis labels >= 12.5pt, titles >= 14pt, inline text >= 10pt.
@@ -76,19 +77,22 @@ def eit_spectrum():
 
 # ---------------------------------------------------------------- 2. cooling curve + final Fock
 def build_cooling_liouvillian(N):
-    """The 3-level Lambda + oscillator as a Liouvillian: returns (L, rho_ss, n). The probe leg carries
-    the Lamb-Dicke recoil (recoil_op); control + trap complete H; the two c_ops are the spontaneous-decay
-    channels back to the ground pair (i.e. perfect repumping)."""
+    """The 3-level Lambda + oscillator as a Liouvillian: returns (L, rho_ss, n). Same recoil model as
+    cooling.py -- BOTH counter-propagating legs carry opposite absorption recoil (probe kdir -1, control
+    kdir +1) via the exact displacement, and the spontaneous emission carries the axial three-point recoil;
+    the two decay channels return to the ground pair (perfect repumping)."""
     a = tensor(qeye(3), destroy(N)); n = a.dag() * a
     g1, g2, e = basis(3, 0), basis(3, 1), basis(3, 2)
-    recoil_op = tensor(qeye(3), qeye(N)) + 1j * c.eta * (a + a.dag())
-    probe = tensor(e * g1.dag(), qeye(N)) * recoil_op
+    displacement = lambda s: tensor(qeye(3), displace(N, 1j * c.eta * s))
+    probe   = tensor(e * g1.dag(), qeye(N)) * displacement(-1)      # |e><g1| * recoil (probe leg)
+    control = tensor(e * g2.dag(), qeye(N)) * displacement(+1)      # |e><g2| * recoil (control leg)
     H = (c.Delta * tensor(g1 * g1.dag(), qeye(N)) + c.Delta * tensor(g2 * g2.dag(), qeye(N))
          + c.nu_z * n
-         + (c.Omega_c / 2) * (tensor(e * g2.dag(), qeye(N)) + tensor(g2 * e.dag(), qeye(N)))
+         + (c.Omega_c / 2) * (control + control.dag())
          + (c.Omega_p / 2) * (probe + probe.dag()))
-    cops = [np.sqrt(c.Gamma / 2) * tensor(g1 * e.dag(), qeye(N)),
-            np.sqrt(c.Gamma / 2) * tensor(g2 * e.dag(), qeye(N))]
+    emission_recoil = [(-1, 1 / 6), (0, 2 / 3), (1, 1 / 6)]         # axial emission recoil (u = k_z/eta, weight); isotropic <u^2>=1/3
+    cops = [np.sqrt(c.Gamma / 2 * w) * tensor(gk * e.dag(), qeye(N)) * displacement(u)
+            for gk in (g1, g2) for (u, w) in emission_recoil]
     return liouvillian(H, cops), steadystate(H, cops), n
 
 
@@ -120,10 +124,7 @@ def cooling_curve(n_init=3.0, N=16):
                                    gridspec_kw={"width_ratios": [1.7, 1.0]})
     axL.plot(t_us, n_of_t, color=BLUE, lw=2.2)
     axL.axhline(n_steady, color=RED, ls="--", lw=1.2)
-    # This reduced (linearized-recoil, probe-leg-only) solve floors at ~0.0013; the canonical
-    # 3-level number is 0.0020 (full recoil) / 0.0011 (recoil-free) -- see README section 5.
-    axL.annotate(f"reduced-model floor  $\\bar n_z$ ≈ {n_steady:.4f}\n"
-                 f"(canonical 3-level: 0.0020 full recoil, 0.0011 recoil-free)",
+    axL.annotate(f"floor  $\\bar n_z$ ≈ {n_steady:.4f}  (full recoil; recoil-free (Γ/4Δ)² = 0.0011)",
                  xy=(t_us[-1] * 0.42, n_steady), xytext=(0, 9),
                  textcoords="offset points", color=RED, fontsize=10, ha="center")
     axL.set_xlabel(r"time ($\mu$s)"); axL.set_ylabel(r"$\langle n_z\rangle$")

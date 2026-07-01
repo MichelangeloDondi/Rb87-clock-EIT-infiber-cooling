@@ -59,7 +59,7 @@ def scatter(canceller_amp=0.0, resonant=True):
         return float(qt.expect(_Pe1, rho) + qt.expect(_Pe2, rho))
     H = [_H0, [canceller_amp*_op(3, 1), lambda t: np.exp(-1j*beat_freq*t)],
               [canceller_amp*_op(1, 3), lambda t: np.exp(1j*beat_freq*t)]]
-    tl = np.linspace(0, 14.0, 7000)
+    tl = np.linspace(0, 14.0, 7000)   # to t=14 (~85x the 1/Gamma relaxation time -> steady state); 7000 pts resolve the Delta+157 beat
     r = qt.mesolve(H, qt.steadystate(_H0, _cops), tl, c_ops=_cops, e_ops=[_Pe1, _Pe2])
     n = int((2*np.pi/beat_freq) / (tl[1]-tl[0])) * 4        # average over the last ~4 beat periods
     return float(np.mean(r.expect[0][-n:]) + np.mean(r.expect[1][-n:]))

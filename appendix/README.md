@@ -1,6 +1,6 @@
 # Appendix — the leak frontier
 
-This appendix sits **outside the numbered 01–08 chapters**. Those build the model up in realism; this is a set of
+This appendix sits **outside the numbered chapters** (01–04 are built; 05–08 are deferred). Those build the model up in realism; this is a set of
 focused deep-dives on the question chapter 03 raised — the **F′1 leak** that caps the D2 master floor at ≈ 0.055 —
 and on what, if anything, beats it.
 
@@ -16,7 +16,15 @@ field slopes) are recomputed from first principles in [`verify_atomic_claims.py`
 `python src/verify_atomic_claims.py` prints them against the quoted values.
 
 **Bottom line.** On D2 the leak is irreducible: the clock pair delivers ≈ 0.055 (field-insensitive) and the only
-colder D2 option is the colleague's field-sensitive stretched scheme (≈ 0.041 below ~40 mG noise). The clean way
+colder D2 option is a field-sensitive stretched scheme (a different Lambda) (≈ 0.041 below ~40 mG noise). The clean way
 past the leak is a different transition — **D1**, where the spoiler is 5× further off resonance — or **dRSC**,
 which sidesteps the dark-resonance class altogether. The floor numbers for those are future work (the D1 chapter
 is deferred until its from-scratch solver is verified).
+
+## References
+
+Full entries in [`../references/`](../references/README.md).
+
+- **Chow *et al.* (2023)**, [arXiv:2312.06438](https://arxiv.org/abs/2312.06438) — F′-manifold off-resonant scattering as a heating floor (the D2 leak; motivates the D1 comparison here).
+- **Steck**, *Rubidium 87 D Line Data* — the D1/D2 line data behind the "spoiler 5× further off resonance" argument.
+- **Chicireanu *et al.* (2011)**, PRL **106**, 063002 — the ⁸⁷Rb field-insensitive clock pair, the alternative to the field-sensitive stretched scheme weighed here.

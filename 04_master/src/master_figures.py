@@ -1,7 +1,7 @@
 """
 master_figures.py -- figures for chapter 04 (the master laser).
 
-  floor_ladder.png            the floor across configs (the upgrade path), honestly sourced
+  floor_ladder.png            the floor across configs (the upgrade path)
   bench_single_end.png        the MASTER upgrade bench: single-end tagged retro + the master repumper
   bench_dual_end.png          the dual-end double-injection bench -- a more hardware-demanding
                               alternative, kept for completeness (see the README "curiosities" section)
@@ -19,34 +19,47 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
 
+import json
 BLUE, GREEN, RED, ORANGE, GREY = "#1565c0", "#2e7d32", "#c0392b", "#e67e22", "#7f8c8d"
 HERE = os.path.dirname(os.path.abspath(__file__))
 IMAGES = os.path.join(os.path.dirname(HERE), "images")   # figures -> the chapter's images/ (this file lives in src/)
 
+# the master + no-master floors are the OUTPUT of chapter 03's solver -- read them from its results.json
+# (the single source of truth) so this figure can never disagree with it. Fallback lets it draw beforehand.
+_R3 = os.path.join(os.path.dirname(os.path.dirname(HERE)), "03_dark_vertex", "results.json")
+_fb = {"no_master": {"floor": 0.087}, "master": {"delta": 25, "floor": 0.055}, "intrinsic_multilevel": 0.0032}
+try:
+    _r3 = json.load(open(_R3))                             # chapter 03's cached floors
+except (OSError, ValueError):
+    _r3 = _fb                                              # missing or malformed -> draw with the fallback
+NO_MASTER = _r3["no_master"]["floor"]                       # best floor without the master (leak, repump-limited)
+MASTER    = _r3["master"]["floor"]                          # best floor with the master (leak-limited) -- the headline
+INTRINSIC = _r3["intrinsic_multilevel"]                     # the intrinsic recoil limit (chapter 02)
+MFLOOR    = ("%.3f" % MASTER).rstrip("0")                   # the master floor as a label string (trailing zeros stripped)
+
 
 # ---------------------------------------------------------------- 1. the floor ladder
 def floor_ladder():
-    # (label, floor, color, source)   source: where the number comes from -- be honest
+    # (label, floor, color, source)   source: which chapter computed the number
     rows = [
-        ("Minimal single-EOM chain\n(comb repumpers + F'1 leak)",  0.087, RED,    "computed here"),
-        ("Master upgrade\n(clears |2,-2> + comb scatter)",         0.055, ORANGE, "chapter 03"),
+        ("Minimal single-EOM chain\n(comb repumpers + F'1 leak)",  NO_MASTER, RED,    "computed here"),
+        ("Master upgrade\n(clears |2,-2> + comb scatter)",         MASTER,    ORANGE, "chapter 03"),
     ]
     fig, ax = plt.subplots(figsize=(9.8, 3.5))
     y = np.arange(len(rows))[::-1]
     x0 = 0.0029
-    # the F'1 leak holds the floor between the intrinsic limit and ~0.055 -- master-proof (chapter 03)
-    ax.axvspan(0.0032, 0.055, color="#7b2fb5", alpha=0.11, zorder=0)
-    ax.text(np.sqrt(0.0032 * 0.055), 1.6, "the F'1 leak\n(master-proof; chapter 03)",
+    # the F'1 leak holds the floor between the intrinsic limit and the master floor -- master-proof (chapter 03)
+    ax.axvspan(INTRINSIC, MASTER, color="#7b2fb5", alpha=0.11, zorder=0)
+    ax.text(np.sqrt(INTRINSIC * MASTER), 1.6, "the F'1 leak\n(master-proof; chapter 03)",
             color="#7b2fb5", fontsize=11, ha="center", va="top", fontweight="bold")
     for yi, (lab, val, col, src) in zip(y, rows):
         ax.hlines(yi, x0, val, color=col, lw=2.0, alpha=0.7)
         ax.plot(val, yi, "o", ms=13, color=col, zorder=5)
-        lab_val = f"{val:.3f}".rstrip("0") if abs(val - 0.055) < 1e-9 else f"{val:.2f}"
-        ax.text(val * 1.13, yi, f"$\\bar n_z\\approx${lab_val}   ({src})", va="center", ha="left",
-                fontsize=11, color=col, fontweight="bold")
+        ax.text(val * 1.13, yi, r"$\bar n_z\approx$%s   (%s)" % (("%.3f" % val).rstrip("0"), src),
+                va="center", ha="left", fontsize=11, color=col, fontweight="bold")
     # the intrinsic mechanism floor (with recoil), computed in this repo -- the wall the leak holds you off
-    ax.axvline(0.0032, color="#444", ls=(0, (4, 3)), lw=1.3)
-    ax.text(0.00335, 0.5, "intrinsic recoil limit  0.0032\n(this repo)",
+    ax.axvline(INTRINSIC, color="#444", ls=(0, (4, 3)), lw=1.3)
+    ax.text(INTRINSIC * 1.05, 0.5, "intrinsic recoil limit  %s\n(this repo)" % INTRINSIC,
             color="#444", fontsize=10.5, va="center", ha="left", rotation=90)
     ax.set_yticks(y); ax.set_yticklabels([r[0] for r in rows], fontsize=11.5)
     ax.set_xscale("log"); ax.set_xlim(x0, 0.16); ax.set_ylim(-0.45, 1.75)
@@ -125,9 +138,9 @@ def bench_single_end():
     _arrow(ax, 11.35, 4.05, 11.6, 4.05, "#333")
     _arrow(ax, 13.5, 3.5, 8.55, 3.5, RED, "retro $\\to$ $\\sigma^+$ probe (tagged +400)\n— also leaves rejected comb tones near F'2", 11.0, 2.95, dashed=True, ha="center")
     ax.text(7.0, 0.3, "ONE fibre end + retro mirror. The double-passed tag AOM (2$\\times$200 = 400 MHz) tags the retro as the $\\sigma^+$ probe.\n"
-            "The master clears $|2,-2\\rangle$ + the comb scatter, but the F'1 leak remains  $\\Rightarrow$  $\\bar n_z\\approx$ 0.055 (leak-limited, chapter 03).",
+            "The master clears $|2,-2\\rangle$ + the comb scatter, but the F'1 leak remains  $\\Rightarrow$  $\\bar n_z\\approx$ %s (leak-limited, chapter 03)." % MFLOOR,
             ha="center", va="bottom", fontsize=11, color="#333")
-    ax.set_title("The master upgrade — single-end tagged retro  +  the dedicated F'1 repumper   ($\\bar n_z\\approx$ 0.055, leak-limited)", fontsize=14.5, pad=10)
+    ax.set_title("The master upgrade — single-end tagged retro  +  the dedicated F'1 repumper   ($\\bar n_z\\approx$ %s, leak-limited)" % MFLOOR, fontsize=14.5, pad=10)
     fig.tight_layout()
     fig.savefig(os.path.join(IMAGES, "bench_single_end.png"), dpi=150, bbox_inches="tight")
     print("wrote bench_single_end.png")
@@ -154,16 +167,16 @@ def bench_dual_end():
     _box(ax, 4.3, 1.1, 3.4, 0.85, "780 master  +  363 MHz AOM\n(dedicated F'1 repump2)", ec=ORANGE, fc="#fdf2e7", fs=10)
     _arrow(ax, 6.0, 1.95, 6.0, 2.97, ORANGE, "repump2 $\\sigma^+$ (master)", 6.2, 2.46, ha="left")
     ax.text(7.0, 0.3, "BOTH fibre ends injected (double injection): control $\\sigma^-$ one end, the carrier-suppressed comb $\\sigma^+$ the other.\n"
-            "NO retro / tag AOM, but it does NOT touch the F'1 leak  $\\Rightarrow$  $\\bar n_z\\approx$ 0.055 (same as the master); needs access to BOTH HCPCF ends.",
+            "NO retro / tag AOM, but it does NOT touch the F'1 leak  $\\Rightarrow$  $\\bar n_z\\approx$ %s (same as the master); needs access to BOTH HCPCF ends." % MFLOOR,
             ha="center", va="bottom", fontsize=11, color="#333")
-    ax.set_title("Dual-end double injection (more hardware demanding)   ($\\bar n_z\\approx$ 0.055, leak-limited)", fontsize=14.5, pad=10)
+    ax.set_title("Dual-end double injection (more hardware demanding)   ($\\bar n_z\\approx$ %s, leak-limited)" % MFLOOR, fontsize=14.5, pad=10)
     fig.tight_layout()
     fig.savefig(os.path.join(IMAGES, "bench_dual_end.png"), dpi=150, bbox_inches="tight")
     print("wrote bench_dual_end.png")
 
 
 # The master-upgrade level scheme (level_scheme_dedicated.png) is generated by
-# ../02_multilevel/level_scheme.py (the with_master figure), so the with/without-master
+# ../02_multilevel/src/level_scheme.py (the with_master figure), so the with/without-master
 # schemes stay consistent in one place.
 
 

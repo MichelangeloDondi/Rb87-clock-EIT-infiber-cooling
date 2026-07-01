@@ -10,12 +10,11 @@ between. So the EIT dark state
 
 is NOT dark on F'1: it keeps a residual coupling onto |F'1,0>, which decays 5/6 to F=1 and loads the
 F=1 dark states. That leak -- not repumper inefficiency, not the master placement -- is the dominant,
-master-proof floor term, and it is what sets the master floor at ~0.055 (chapter 04's design only
-called it a target; here it is computed).
+master-proof floor term, and it is what sets the master floor at ~0.055 (computed here).
 
-This module reuses 02_multilevel/cooling_multilevel.py verbatim. Its `with_e1` already carries the
+This module reuses 02_multilevel/src/cooling_multilevel.py verbatim. Its `with_e1` already carries the
 F'1 spoiler edges COHERENTLY at the cooling-Lambda frequency (so the rotating frame still closes,
-frame_conflict=0) -- which is why chapter 02's headline was ~0.10 and not ~0.003. This module adds two things:
+frame_conflict=0) -- which is why chapter 02's real-delivery headline was ~0.09 and not the clean-Lambda ~0.003. This module adds two things:
 
   (1) a DEDICATED master, a detuned F2->F'1 sigma+ repumper. Detuned (not parked on F'1) so the
       incoherent-rate model stays valid (det >> 3*Gamma, outside the engine's near-resonance guard) --
@@ -99,68 +98,74 @@ m.repump_beams = _repump
 #     -nu_z; the multilevel a.c. shift pulls the exact spot).
 # ----------------------------------------------------------------------------------
 def floor(Delta=45.0, with_leak=True, comb=0.0, master=None, fscale=1.0,
-          N_fock=6, d2s=(-0.16, -0.10, -0.04, 0.0)):
-    """
-    Delta     : control detuning above |F'2,0> (in-trap), 2pi*MHz
-    with_leak : keep the F'1/F'3 spoiler edges (the honest model).  False = the old 'perfect dark'.
-    comb      : amplitude of the leftover-comb repumpers (1.0 = single-EOM chain; 0 = suppressed)
-    master    : None, or dict(det=<red detuning from F2->F'1>, rabi=<Rabi>) for the dedicated master
-    fscale    : multiply the probe's |1,-1>->|F'1,0> edge (cancellation knob; 1.0 = physical)
+          N_fock=6, d2s=(-0.16, -0.10, -0.04, 0.0), return_scan=False):
+    """The cooling floor with the two-photon detuning delta2 AUTO-OPTIMISED (= min over d2s).
+
+    Delta       : control detuning above |F'2,0> (in-trap), 2pi*MHz
+    with_leak   : keep the F'1/F'3 spoiler edges (the honest model).  False = the old 'perfect dark'.
+    comb        : amplitude of the leftover-comb repumpers (1.0 = single-EOM chain; 0 = suppressed)
+    master      : None, or dict(det=<red detuning from F2->F'1>, rabi=<Rabi>) for the dedicated master
+    fscale      : multiply the probe's |1,-1>->|F'1,0> edge (cancellation knob; 1.0 = physical)
+    return_scan : also return the [(delta2, <n_z>), ...] scan (the delta2-vs-floor report curve)
     """
     c.Delta = float(Delta)
     override_state["master"] = master
     override_state["fscale"] = fscale
-    return min(m.solve(d2=d, repump_scale=comb, with_e1=with_leak, with_e3=with_leak, N_fock=N_fock)
-               for d in d2s)
+    scan = [(d, m.solve(d2=d, repump_scale=comb, with_e1=with_leak, with_e3=with_leak, N_fock=N_fock)) for d in d2s]
+    nbar = min(n for _, n in scan)
+    return (nbar, scan) if return_scan else nbar
 
 
 # ----------------------------------------------------------------------------------
-# 4.  Reproduce the chapter.
+# 4.  The report: compute every floor (delta2 auto-optimised), find the master's Delta optimum,
+#     and CACHE it to results.json -- the single source of truth that make_figure.py and chapter 04
+#     read, so no floor is ever hard-coded. Re-run after changing a parameter to find the new optimum.
 # ----------------------------------------------------------------------------------
+MASTER = dict(det=-60.0, rabi=1.2)       # the dedicated master: light, detuned (det >> 3*Gamma)
+
+def report(write=True):
+    """Compute the chapter's floors, all with delta2 AUTO-OPTIMISED (min over the d2 scan), find the
+    master's best Delta, and cache the lot to ../results.json. Returns the dict. Slow (~min) at N_fock=6."""
+    import json
+    master_by_delta = {D: floor(D, True, 0.0, MASTER) for D in (25, 30, 45)}     # master floor vs Delta
+    m_delta = min(master_by_delta, key=master_by_delta.get)
+    d2_grid = tuple(round(x, 3) for x in (-0.22, -0.18, -0.14, -0.10, -0.06, -0.02))
+    _, d2_scan = floor(m_delta, True, 0.0, MASTER, d2s=d2_grid, return_scan=True)  # the delta2 servo curve
+    cancel = {f: floor(45, True, 0.0, MASTER, fscale=f) for f in (1.0, 0.5, 0.0)}  # probe-F'1 cancellation
+    res = {
+        "R_c": round(R_c, 3), "R_p": round(R_p, 3), "null_scale": round(null_scale, 3),
+        "no_master":     {"delta": 45,      "floor": round(floor(45, True, 1.0, None), 4)},
+        "master":        {"delta": m_delta, "floor": round(master_by_delta[m_delta], 4)},
+        "master_d45":    round(master_by_delta[45], 4),
+        "no_leak_ideal": {"delta": 45,      "floor": round(floor(45, False, 0.0, MASTER), 4)},
+        "intrinsic_multilevel": 0.0032,
+        "master_delta_scan": {str(D): round(v, 4) for D, v in master_by_delta.items()},
+        "master_d2_scan":    [[d, round(n, 4)] for d, n in d2_scan],
+        "cancellation_scan": {("%.2f" % f): round(v, 4) for f, v in cancel.items()},
+    }
+    if write:
+        path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "results.json")
+        json.dump(res, open(path, "w"), indent=2)
+    return res
+
+
 if __name__ == "__main__":
-    MASTER = dict(det=-60.0, rabi=1.2)       # the dedicated master: light, detuned (det >> 3*Gamma)
-
+    res = report()   # computes + caches results.json
     print(__doc__.split("Run ")[0])
     print("=" * 82)
     print("1.  The leak is atomic.  Signed F'1/F'2 coupling ratios of the two dark-state legs:")
-    print("      control  |2,+1>:  R_c = % .3f" % R_c)
-    print("      probe    |1,-1>:  R_p = % .3f   <-- probe couples %.2fx STRONGER to F'1 than to F'2"
-          % (R_p, abs(R_p)))
-    print("      R_c != R_p  =>  |D2> cannot be dark on BOTH F'2 and F'1.  The residual is the leak.")
-    print("      (the probe scale that would null the residual:  f = R_c/R_p = % .3f)" % null_scale)
-
-    print("\n" + "=" * 82)
-    print("2.  The master floor  (master = a detuned dedicated F2->F'1 sigma+ repumper):\n")
-    rows = [
-        ("minimal single-EOM chain (comb only), leak ON ", floor(45, True,  1.0, None)),
-        ("minimal single-EOM chain (comb only), leak OFF", floor(45, False, 1.0, None)),
-        ("master config (comb suppressed),       leak ON ", floor(45, True,  0.0, MASTER)),
-        ("master config (comb suppressed),       leak OFF", floor(45, False, 0.0, MASTER)),
-        ("master config, leak ON, Delta = 30            ", floor(30, True,  0.0, MASTER)),
-    ]
-    for label, val in rows:
-        print("      %-46s  n_z = %.4f" % (label, val))
-    print("\n      => at fixed Delta=45 the master earns 0.088 -> 0.082 (clears |2,-2> + comb scatter); the")
-    print("         LEAK (0.082 -> 0.029 with the leak off) is the ~0.05 that remains, and it is master-proof.")
-
-    print("\n" + "=" * 82)
-    print("2b. The game-changer test: best floor vs Delta (leak ON), no-master chain vs the master:\n")
-    print("      Delta   no-master (comb)   + master")
-    for D in (25, 30, 35, 45):
-        print("      %4.0f       %.4f           %.4f" % (D, floor(D, True, 1.0, None), floor(D, True, 0.0, MASTER)))
-    print("\n      => WITHOUT the master the comb chain is best at large Delta (~0.087, repump-limited: its")
-    print("         comb tones sit near F'2 and can't follow the leak to small Delta). WITH the master the")
-    print("         leak-favoured small Delta~25 is reachable (~0.055, leak-limited). So the master is a real")
-    print("         but modest upgrade (0.087 -> 0.055), NOT a route to the 0.0032 ideal.")
-
-    print("\n" + "=" * 82)
-    print("3.  Can the leak be cancelled?  Scale the probe's F'1 edge (constructive dark engineering):\n")
-    for f in (1.0, 0.5, 0.0, round(null_scale, 2), -0.5):
-        tag = "   <- residual nulled" if abs(f - null_scale) < 0.02 else ""
-        print("      probe-F'1 scale f = %+5.2f   n_z = %.4f%s" % (f, floor(45, True, 0.0, MASTER, fscale=f), tag))
-    print("      no-leak ideal (with_e1 off):              n_z = %.4f" % floor(45, False, 0.0, MASTER))
-    print("\n      Suppressing the dominant probe-F'1 term recovers ~0.08 -> ~0.04, toward the no-leak")
-    print("      ideal.  But f<1 is not a knob: R_c, R_p are atomic constants, a resonant canceller adds")
-    print("      a 3rd frequency to |F'1,0> (breaks the static frame), and a co-propagating tone at the")
-    print("      probe frequency only rescales Op.  Genuine cancellation needs a time-dependent (Floquet)")
-    print("      co-propagating tone -- a further frontier, outside this static-frame solver.")
+    print("      control |2,+1>:  R_c = % .3f ;  probe |1,-1>:  R_p = % .3f  (probe couples %.1fx stronger to F'1)"
+          % (res["R_c"], res["R_p"], abs(res["R_p"])))
+    print("      R_c != R_p  =>  the dark state cannot be dark on BOTH F'2 and F'1: that residual is the leak.")
+    print("\n2.  The master floor (delta2 auto-optimised):")
+    print("      minimal single-EOM chain (comb + leak), Delta=%s :  n_z = %.4f" % (res["no_master"]["delta"], res["no_master"]["floor"]))
+    print("      + dedicated master, same Delta=45                :  n_z = %.4f" % res["master_d45"])
+    print("      + dedicated master, leak-aware Delta=%-2s          :  n_z = %.4f   <-- the headline" % (res["master"]["delta"], res["master"]["floor"]))
+    print("      no-leak ideal (F'1 leak cancelled)               :  n_z = %.4f   (master-proof gap = the leak)" % res["no_leak_ideal"]["floor"])
+    print("\n2b. master floor vs Delta (delta2 auto-optimised at each -- the leak wants smaller Delta):")
+    for D in sorted(res["master_delta_scan"], key=int):
+        print("      Delta = %2s   n_z = %.4f" % (D, res["master_delta_scan"][D]))
+    print("\n2c. floor vs the two-photon detuning delta2 at the optimal Delta=%s  (the servo curve):" % res["master"]["delta"])
+    for d, n in res["master_d2_scan"]:
+        print("      delta2 = %+.2f   n_z = %.4f" % (d, n))
+    print("\n  All cached to results.json -- make_figure.py and chapter 04 read it, so no floor is hard-coded.")

@@ -21,12 +21,15 @@ alpha1_5P32 =  200.0  # excited 5P_3/2 VECTOR polarizability (a.u.) -- order-of-
                       #   (only used when ellipticity != 0; set from a vector-polarizability reference to trust it)
 
 # --- the atom / cooling transition (87Rb D2; clock-EIT Lambda |1,-1>,|2,+1> -> |F'2,0>) ---
-Gamma = 6.07          # 5P_3/2 natural linewidth (2pi*MHz)
-nu_z  = 0.430         # axial trap frequency (2pi*MHz) = 2pi*430 kHz  (measured)
+Gamma = 6.07          # 5P_3/2 natural linewidth (2pi*MHz)  [Steck, Rubidium 87 D Line Data]
+nu_z  = 0.430         # axial trap frequency (2pi*MHz) = 2pi*430 kHz  (from the 1064 trap depth; recompute if P_beam/w0 change)
 eta   = 0.094         # axial Lamb-Dicke parameter
 
 # --- operating point ---
 Delta = 45.0          # single-photon detuning, blue of |F'2,0>  (2pi*MHz)
+delta2 = -0.15        # two-photon detuning delta2 = probe - control (2pi*MHz). By default the report SCANS
+                      #   delta2 to the cooling floor (optimize_d2=True); this fixed value is used only when
+                      #   that is turned off. Change a parameter and re-run the report -> it finds the new optimum.
 probe_control_ratio   = 0.12          # probe/control Rabi ratio
 
 # --- the FULL multilevel solve (cooling_multilevel.py): real 87Rb D2 manifold + repumpers ---

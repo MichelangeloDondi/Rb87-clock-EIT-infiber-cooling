@@ -1,0 +1,258 @@
+% References cited in this repository.
+% Curated subset of the project bibliography, limited to what the built chapters (01-04) + appendix
+% actually use: the EIT-cooling method, the borrowed Rb-87 atomic data, the HCPCF platform + delivery,
+% and the closest prior art. See references/README.md for a human-readable index.
+
+% ---------------------------------------------------------------------------
+% Atomic data + textbook sources for the constants and algebra used in the code.
+% (Added for this repository; not in the thesis prior-art bibliography.)
+% ---------------------------------------------------------------------------
+
+@misc{steck_rb87,
+  author       = {Steck, Daniel A.},
+  title        = {Rubidium 87 {D} Line Data},
+  year         = {2024},
+  howpublished = {available online at \url{http://steck.us/alkalidata} (revision 2.3.3)},
+  note         = {Source of the ground hyperfine splitting A_HFS, the 5P_3/2 natural linewidth Gamma, the D2 hyperfine centroids and lifetimes}
+}
+
+@article{grimm_dipole_2000,
+  author        = {Grimm, Rudolf and Weidem\"uller, Matthias and Ovchinnikov, Yurii B.},
+  title         = {Optical Dipole Traps for Neutral Atoms},
+  journal       = {Advances in Atomic, Molecular, and Optical Physics},
+  volume        = {42},
+  pages         = {95--170},
+  year          = {2000},
+  doi           = {10.1016/S1049-250X(08)60186-X},
+  eprint        = {physics/9902072},
+  archivePrefix = {arXiv},
+  note          = {Source of the optical-dipole/AC-Stark trap-depth relation U = -alpha I / (2 eps0 c)}
+}
+
+@article{chen_raithel_polarizability_2015,
+  author  = {Chen, Y.-C. and Raithel, G.},
+  title   = {[1064 nm dynamic polarizabilities of the 5S_1/2 and 5P_3/2 states of Rb-87]},
+  journal = {Physical Review A},
+  volume  = {92},
+  pages   = {060501(R)},
+  year    = {2015},
+  doi     = {10.1103/PhysRevA.92.060501},
+  note    = {CONFIRM full author list and exact title. Source of the 1064 nm scalar/tensor polarizabilities (5S alpha0=+687, 5P3/2 alpha0=-1149, alpha2=+563 a.u.). Attributed inline in config.py as "Chen-Raithel".}
+}
+
+@book{edmonds_angmom,
+  author    = {Edmonds, A. R.},
+  title     = {Angular Momentum in Quantum Mechanics},
+  publisher = {Princeton University Press},
+  address   = {Princeton, NJ},
+  year      = {1957},
+  note      = {Wigner 6j / Clebsch-Gordan conventions behind the dipole line strengths and the tensor-Stark 6j-null}
+}
+
+% ---------------------------------------------------------------------------
+% Method, platform, delivery, and prior art (from the project bibliography).
+% ---------------------------------------------------------------------------
+
+@article{morigi2000,
+  title   = {Ground State Laser Cooling Using Electromagnetically Induced Transparency},
+  author  = {Morigi, G. and Eschner, J. and Keitel, C. H.},
+  journal = {Physical Review Letters},
+  volume  = {85},
+  pages   = {4458},
+  year    = {2000},
+  doi     = {10.1103/PhysRevLett.85.4458},
+  keywords = {GroupB, eit-cooling, theory, foundational}
+}
+@article{morigi2003,
+  author  = {Morigi, Giovanna},
+  title   = {Cooling atomic motion with quantum interference},
+  journal = {Physical Review A},
+  volume  = {67},
+  pages   = {033402},
+  year    = {2003},
+  doi     = {10.1103/PhysRevA.67.033402},
+  note    = {The detailed rate-equation theory of EIT cooling (cooling rates A_pm, the floor); companion to Morigi, Eschner & Keitel 2000}
+}
+@article{eschner2003,
+  title   = {Laser cooling of trapped ions},
+  author  = {Eschner, J. and Morigi, G. and Schmidt-Kaler, F. and Blatt, R.},
+  journal = {Journal of the Optical Society of America B},
+  volume  = {20},
+  pages   = {1003},
+  year    = {2003},
+  doi     = {10.1364/JOSAB.20.001003},
+  keywords = {GroupB, eit-cooling, review}
+}
+@article{winelanditano1979,
+  title   = {Laser cooling of atoms},
+  author  = {Wineland, D. J. and Itano, W. M.},
+  journal = {Physical Review A},
+  volume  = {20},
+  pages   = {1521},
+  year    = {1979},
+  doi     = {10.1103/PhysRevA.20.1521},
+  keywords = {GroupB, laser-cooling, foundational}
+}
+@article{huang_darkstate_sbc_2021,
+  title   = {Dark-state sideband cooling in an atomic ensemble},
+  author  = {Huang, Chang and Chai, Shijie and Lan, Shau-Yu},
+  journal = {Physical Review A},
+  volume  = {103},
+  pages   = {013305},
+  year    = {2021},
+  doi     = {10.1103/PhysRevA.103.013305},
+  eprint  = {2101.04309},
+  archivePrefix = {arXiv},
+  keywords = {GroupH, prior-art-P1, EIT-cooling, dark-state-sideband, Lan-group, host-group, Rb}
+}
+@article{xin_quantumgas_natphys_2025,
+  title   = {Fast quantum gas formation via electromagnetically induced transparency cooling},
+  author  = {Xin, Mingjie and Leong, Wui Seng and Chen, Zilong and Wang, Yu and Lan, Shau-Yu},
+  journal = {Nature Physics},
+  volume  = {21},
+  pages   = {63--69},
+  year    = {2025},
+  doi     = {10.1038/s41567-024-02677-9},
+  keywords = {GroupG, eit-cooling, quantum-gas, Lan-group}
+}
+@article{eit_cooling_single_neutral_rb_2023,
+  title = {Fano Resonance in Excitation Spectroscopy and Cooling of an Optically Trapped Single Atom},
+  author = {Chow, C. H. and Ng, B. L. and Prakash, V. and Kurtsiefer, C.},
+  year = {2023},
+  eprint = {2312.06438},
+  archivePrefix = {arXiv},
+  keywords = {GroupB, eit-cooling, neutral-atom, Rb87, fano, off-resonant-heating}
+}
+@article{chicireanu_dls_cancellation_2011,
+  title   = {Differential Light-Shift Cancellation in a Magnetic-Field-Insensitive Transition of {$^{87}$Rb}},
+  author  = {Chicireanu, R. and Nelson, K. D. and Olmschenk, S. and Lundblad, N. and Derevianko, A. and Porto, J. V.},
+  journal = {Physical Review Letters},
+  volume  = {106},
+  pages   = {063002},
+  year    = {2011},
+  doi     = {10.1103/PhysRevLett.106.063002},
+  eprint  = {1010.1520},
+  archivePrefix = {arXiv},
+  keywords = {GroupH, prior-art-pillar2, prior-art-P1, DLS-cancellation, field-insensitive, clock-transition, Rb}
+}
+@article{bajcsy_laser_cooled_hcpcf_2011,
+  title = {Laser-cooled atoms inside a hollow-core photonic-crystal fiber},
+  author = {Bajcsy, M. and Hofferberth, S. and Peyronel, T. and Balic, V. and Liang, Q. and Zibrov, A. S. and Vuletic, V. and Lukin, M. D.},
+  year = {2011},
+  journal = {Physical Review A},
+  volume = {83},
+  pages = {063830},
+  eprint = {1104.5220},
+  archivePrefix = {arXiv},
+  doi = {10.1103/PhysRevA.83.063830},
+  keywords = {GroupD, HCPCF, loading, EIT-storage, platform}
+}
+@article{xin_lan_hcpcf_interferometer_2018,
+  title = {An atom interferometer inside a hollow-core photonic crystal fiber},
+  author = {Xin, M. and Leong, W. S. and Chen, Z. and Lan, S.-Y.},
+  year = {2018},
+  journal = {Science Advances},
+  volume = {4},
+  pages = {e1701723},
+  eprint = {1705.08062},
+  archivePrefix = {arXiv},
+  doi = {10.1126/sciadv.1701723},
+  keywords = {GroupD, GroupF, HCPCF, interferometer, Lan-group, platform, P2-prior-art, EOM-delivery}
+}
+@article{marchesini2024,
+  author  = {Marchesini, F. and Dondi, M. and others},
+  title   = {All-fiber, near-infrared, laser system at 780 nm for atom cooling},
+  journal = {Optics Continuum},
+  volume  = {3},
+  number  = {10},
+  pages   = {1868},
+  year    = {2024},
+  note    = {The host-group all-fiber 780 nm laser system for the MOT + molasses atom-preparation stage -- the apparatus foundation; the EOM two-photon delivery is a LATER addition, not in this paper. CONFIRM full author list + DOI.}
+}
+@article{leong2020,
+  title   = {Large array of {Schr\"odinger} cat states facilitated by an optical waveguide},
+  author  = {Leong, W. S. and Xin, M. and Chen, Z. and Chai, S. and Wang, Y. and Lan, S.-Y.},
+  journal = {Nature Communications},
+  volume  = {11},
+  pages   = {5295},
+  year    = {2020},
+  keywords = {GroupG, GroupD, HCPCF, RSC, ground-state-cooling, Lan-group, prior-art-cooling, must-cite}
+}
+@article{wang_infiber_cooling_2022,
+  title   = {Enhancing fiber atom interferometer by in-fiber laser cooling},
+  author  = {Wang, Yu and Chai, Shijie and Billotte, Thomas and Chen, Zilong and Xin, Mingjie and Leong, Wui Seng and Amrani, Foued and Debord, Benoit and Benabid, Fetah and Lan, Shau-Yu},
+  journal = {Physical Review Research},
+  volume  = {4},
+  pages   = {L022058},
+  year    = {2022},
+  doi     = {10.1103/PhysRevResearch.4.L022058},
+  eprint  = {2112.10088},
+  archivePrefix = {arXiv},
+  keywords = {GroupG, GroupD, HCPCF, in-fiber-cooling, gray-molasses, delta-kick, Lan-group}
+}
+@article{lin_sympathetic_eit_2013,
+  title   = {Sympathetic Electromagnetically-Induced-Transparency Laser Cooling of Motional Modes in an Ion Chain},
+  author  = {Lin, Y. and Gaebler, J. P. and Tan, T. R. and Bowler, R. and Jost, J. D. and Leibfried, D. and Wineland, D. J.},
+  journal = {Physical Review Letters},
+  volume  = {110},
+  pages   = {153002},
+  year    = {2013},
+  doi     = {10.1103/PhysRevLett.110.153002},
+  keywords = {GroupH, prior-art, EIT-cooling, sympathetic, ion-chain, NIST}
+}
+@article{eom_common_mode_phaselocked_lasers_2024,
+  author = {Agnew and Lowit and Arnold},
+  title = {Simple tunable phase-locked lasers for quantum technologies},
+  year = {2024},
+  eprint = {2404.16806},
+  archivePrefix = {arXiv},
+  keywords = {GroupF, P2-prior-art, EOM, common-mode, no-OPLL, method-textbook}
+}
+@article{fbg_ssb_1560_780_raman_2022,
+  title = {Robust single-sideband-modulated Raman light generation for atom interferometry by {FBG}-based optical rectangular filtration},
+  note = {author list to be confirmed; cited by title in the repo},
+  year = {2022},
+  journal = {Optics Express},
+  volume = {30},
+  number = {16},
+  pages = {28658},
+  eprint = {2205.04875},
+  archivePrefix = {arXiv},
+  keywords = {GroupF, P2-prior-art, EOM, 1560-to-780, single-sideband, common-mode, no-OPLL}
+}
+@article{kaufman_coherence_rsc_tweezer_2012,
+  title = {Cooling a single atom in an optical tweezer to its quantum ground state},
+  author = {Kaufman, A. M. and Lester, B. J. and Regal, C. A.},
+  year = {2012},
+  journal = {Physical Review X},
+  volume = {2},
+  pages = {041014},
+  eprint = {1209.3028},
+  archivePrefix = {arXiv},
+  doi = {10.1103/PhysRevX.2.041014},
+  keywords = {GroupE, RSC, tweezer, single-atom, survival}
+}
+@article{multimode_eit_resonances_2017,
+  title = {Experimental and theoretical investigation of a multi-mode cooling scheme using multiple {EIT} resonances},
+  author = {Scharnhorst, N. and Cerrillo, J. and Kramer, J. and Leroux, I. D. and W\"ubbena, J. B. and Retzker, A. and Schmidt, P. O.},
+  year = {2018},
+  journal = {Physical Review A},
+  volume = {98},
+  pages = {023424},
+  eprint = {1711.00732},
+  archivePrefix = {arXiv},
+  doi = {10.1103/PhysRevA.98.023424},
+  keywords = {GroupA, prior-art, radial-limits-axial, spectator-mode, must-cite}
+}
+@article{dark_resonance_thermometry_2014,
+  title = {Fast thermometry for trapped ions using dark resonances},
+  author = {Ro{\ss}nagel, J. and Tolazzi, K. N. and Schmidt-Kaler, F. and Singer, K.},
+  year = {2015},
+  journal = {New Journal of Physics},
+  volume = {17},
+  pages = {045004},
+  eprint = {1412.5014},
+  archivePrefix = {arXiv},
+  doi = {10.1088/1367-2630/17/4/045004},
+  keywords = {GroupB, dark-resonance, thermometry}
+}

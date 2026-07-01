@@ -66,8 +66,7 @@ optical-pumping step. Notes:
 
 ## Decision summary
 
-The F′1 leak is "solved" on D2 only at ≈ 0.055 (the field-insensitive clock pair) or ≈ 0.041 (the colleague's
-field-sensitive stretched scheme, below ~40 mG noise — [magnetic_noise.md](magnetic_noise.md)). Two clean exits:
+The F′1 leak is "solved" on D2 only at ≈ 0.055 (the field-insensitive clock pair) or ≈ 0.041 (a field-sensitive stretched scheme — a different Λ, usable below ~40 mG field noise — [magnetic_noise.md](magnetic_noise.md)). Two clean exits:
 
 - **(a) D1-EIT** — the leak is ~41× off-resonance, floor expected ~0.02 (robust), reuses the EIT apparatus, needs
   795 nm. The recommended path if the wavelength is available.

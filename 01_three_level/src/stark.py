@@ -3,7 +3,7 @@ stark.py -- the optical chain -> the trap. CLOSED FORM (no master equation, no s
 this is the arithmetic of README "The trap and the Stark shifts", runnable so you can
 plug in your own power/waist.
 
-Light shift of a level of polarizability alpha in intensity I:   U = - alpha * I / (2 eps0 c).
+Light shift of a level of polarizability alpha in intensity I:   U = - alpha * I / (2 eps0 c)  (the optical-dipole potential, Grimm et al. 2000).
 alpha > 0 is pulled DOWN (trapped); alpha < 0 is pushed UP (anti-trapped).
 Two 1 W beams counter-propagate; at a lattice antinode the field doubles, so I = 4 x the
 single-beam peak 2P/(pi w0^2).

@@ -4,6 +4,7 @@ are correct, by reconstructing KNOWN 87Rb D2 facts from the raw CG + Wigner-6j.
 
 clebsch(F,m,q,F',m') = <F m; 1 q | F' m'>  (ground F,m  +  photon 1,q  ->  excited F',m'); m'=m+q.
 line_strength(F,F')        = (2F'+1) {1/2 3/2 1; F' F 3/2}^2  = the relative line strength of the F->F' line.
+(6j / Clebsch-Gordan conventions follow Edmonds, Angular Momentum in Quantum Mechanics, 1957.)
 
 Run:  python clebsch_gordan_checks.py     (needs sympy)
 """

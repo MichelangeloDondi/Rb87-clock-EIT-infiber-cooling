@@ -17,8 +17,8 @@ alpha0_5P32 = -1149.0 # excited 5P_3/2 scalar  (<0 -> anti-trapped)
 alpha2_5P32 =  563.0  # excited 5P_3/2 tensor
 
 # --- the atom / cooling transition (87Rb D2; clock-EIT Lambda |1,-1>,|2,+1> -> |F'2,0>) ---
-Gamma = 6.07          # 5P_3/2 natural linewidth (2pi*MHz)
-nu_z  = 0.430         # axial trap frequency (2pi*MHz) = 2pi*430 kHz  (measured)
+Gamma = 6.07          # 5P_3/2 natural linewidth (2pi*MHz)  [Steck, Rubidium 87 D Line Data]
+nu_z  = 0.430         # axial trap frequency (2pi*MHz) = 2pi*430 kHz  (from the 1064 trap depth; recompute if P_beam/w0 change)
 eta   = 0.094         # axial Lamb-Dicke parameter
 
 # --- operating point ---

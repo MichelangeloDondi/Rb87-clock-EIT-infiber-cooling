@@ -44,15 +44,22 @@ from sympy import S
 from sympy.physics.wigner import clebsch_gordan, wigner_6j
 import config as c
 import stark
+from collections import namedtuple
+
+# the shared QuTiP oscillator operators, bundled so they pass as ONE argument (not 3 loose closures)
+Ops = namedtuple("Ops", "P displacement annihilation fock_identity n_states N_fock")
 
 # ---- 87Rb D2 constants ----------------------------------------------------------------------
-A_HFS = 6834.682610                                  # ground hyperfine splitting (2pi MHz)
+A_HFS = 6834.682610                                  # ground hyperfine splitting (2pi MHz)  [Steck, Rb87 D Line Data]
 GAMMA = c.Gamma                                      # 5P3/2 natural linewidth
-excited_hf_centroids = {0: -302.07, 1: -229.85, 2: -72.91, 3: 193.74}  # 5P3/2 hyperfine centroids (2pi MHz)
+excited_hf_centroids = {0: -302.07, 1: -229.85, 2: -72.91, 3: 193.74}  # 5P3/2 hyperfine centroids (2pi MHz) [Steck]
 excited_hf_spacings = {Fp: excited_hf_centroids[Fp] - excited_hf_centroids[2] for Fp in excited_hf_centroids}           # spacings from F'=2 {1:-156.94, 3:+266.65,...}
 decay_branching = {0: {1: 1.0, 2: 0.0}, 1: {1: 5/6, 2: 1/6},     # F'->F hyperfine decay branching
       2: {1: 1/2, 2: 1/2}, 3: {1: 0.0, 2: 1.0}}
-emission_recoil = [(-1, 1/6), (0, 2/3), (1, 1/6)]            # dipole emission recoil (delta-m, weight)
+# axial emission recoil: (u, weight), u = the k_z projection of the emitted photon in units of eta -- NOT delta-m
+# (delta-m is the CG coefficient, applied separately). The weights give the ISOTROPIC axial variance <u^2>=1/3, an
+# approximation to the true polarization-resolved value (1/5 for pi, 2/5 for sigma); harmless for the axial floor.
+emission_recoil = [(-1, 1/6), (0, 2/3), (1, 1/6)]
 muB = 1.399624                                        # Bohr magneton / frame_energy (MHz/G)
 gF_ground = {1: -0.5, 2: +0.5}                            # ground Lande gF (clock pair: both gF*m=+1/2)
 gF_excited = 2.0 / 3.0                                     # 5P3/2 Lande gF (equal for F'=1,2,3)
@@ -140,11 +147,12 @@ def decay_channels(Fp, mp):
     return decay_targets
 
 
-def repump_collapse_ops(repump_tones, ground_energies, idx, P, fock_identity, displacement, ground_set, B, theta):
+def repump_collapse_ops(repump_tones, ground_energies, idx, ops, ground_set, B, theta):
     """Off-resonant repumpers as INCOHERENT scattering -- frame-free, but a LOW-SATURATION rate (valid repump_scale<~1).
        Each edge (gsrc)->(Fp,mp) at detuning d, edge-Rabi O scatters at R = Gamma (O/2)^2/(d^2+(Gamma/2)^2);
        the virtual excited |Fp,mp> is adiabatically eliminated and decays m-resolved, carrying the
        two-photon (absorb kdir + emit u) recoil. Also returns the off-resonant a.c.-Stark shift per ground."""
+    P, displacement = ops.P, ops.displacement
     cops, ac_stark_shift = [], {}
     shifted_excited_energy = lambda Fp, mp: excited_energy(Fp, mp, B, theta)                       # virtual excited energy (Stark-shifted)
     min_detuning = np.inf                                                  # closest any repumper tone comes to a line
@@ -266,13 +274,14 @@ def build_hamiltonian(tones, frame_energy, nodes, idx, n_states, nu_z, N_fock, e
             i, j = idx[('g', g)], idx[('e', e)]
             H += -(O / 2) * (qt.tensor(P(j, i), displacement(b['kdir']))
                              + qt.tensor(P(i, j), displacement(b['kdir']).dag()))
-    return H, P, displacement, annihilation, fock_identity
+    return H, Ops(P, displacement, annihilation, fock_identity, n_states, N_fock)
 
 
-def decay_collapse_ops(excited_states, ground_states, idx, P, displacement):
+def decay_collapse_ops(excited_states, ground_states, idx, ops):
     """Spontaneous-decay collapse operators for each excited sublevel: m-resolved CG branching, each
     decay carrying the 3-point emission recoil. For the clean Lambda, decay into a DROPPED sublevel is
     treated as ideal repumping straight back to the two Lambda legs."""
+    P, displacement = ops.P, ops.displacement
     cops = []
     legs = [(1, -1), (2, 1)]                    # the Lambda ground states
     ground_set = set(ground_states)
@@ -304,10 +313,10 @@ def decay_collapse_ops(excited_states, ground_states, idx, P, displacement):
     return cops
 
 
-def measure_state(rho, n_states, N_fock, annihilation, idx, P, fock_identity,
-                  ground_states, tones, repump_freqs, frame_conflict, want):
+def measure_state(rho, ops, idx, ground_states, tones, repump_freqs, frame_conflict, want):
     """Read the axial <n_z> from the steady state; with want=True also return the Fock populations,
     the ground-sublevel populations, and the tone frequencies (for the reports/placement tables)."""
+    n_states, N_fock, annihilation, P, fock_identity = ops.n_states, ops.N_fock, ops.annihilation, ops.P, ops.fock_identity
     number_op = qt.tensor(qt.qeye(n_states), annihilation.dag() * annihilation)
     nbar = float(np.real(qt.expect(number_op, rho)))
     if not want:
@@ -362,18 +371,17 @@ def solve(d2=0.0, clean=False, with_repump=True, with_e1=True, with_e3=True,
     n_states = len(nodes)
 
     # --- Hamiltonian, decay collapse ops, then the off-resonant repumpers ---
-    H, P, displacement, annihilation, fock_identity = build_hamiltonian(
-        tones, frame_energy, nodes, idx, n_states, nu_z, N_fock, eta)
-    cops = decay_collapse_ops(excited_states, ground_states, idx, P, displacement)
+    H, ops = build_hamiltonian(tones, frame_energy, nodes, idx, n_states, nu_z, N_fock, eta)
+    cops = decay_collapse_ops(excited_states, ground_states, idx, ops)
 
     # the off-resonant repumpers: INCOHERENT scattering rates (no rotating-frame loop; low-saturation, valid repump_scale<~1)
     repump_freqs = {}
     if with_repump and not clean:
         repump_tones = repump_beams(Oc, Op, d2, repump_scale, shift, tag_shift)
-        repump_ops, ac_stark_shift = repump_collapse_ops(repump_tones, ground_energies, idx, P, fock_identity, displacement, set(ground_states), B, theta)
+        repump_ops, ac_stark_shift = repump_collapse_ops(repump_tones, ground_energies, idx, ops, set(ground_states), B, theta)
         cops += repump_ops
         for g, sh in ac_stark_shift.items():
-            H += sh * qt.tensor(P(idx[('g', g)], idx[('g', g)]), fock_identity)   # off-resonant a.c.-Stark shift
+            H += sh * qt.tensor(ops.P(idx[('g', g)], idx[('g', g)]), ops.fock_identity)   # off-resonant a.c.-Stark shift
         repump_freqs = {b['tag']: b['nu'] for b in repump_tones}
 
     # --- steady state and the measurement ---
@@ -382,8 +390,21 @@ def solve(d2=0.0, clean=False, with_repump=True, with_e1=True, with_e3=True,
         rho = qt.steadystate(L, method='direct')
     except Exception:
         rho = qt.steadystate(L, method='svd')
-    return measure_state(rho, n_states, N_fock, annihilation, idx, P, fock_identity,
-                         ground_states, tones, repump_freqs, frame_conflict, want)
+    return measure_state(rho, ops, idx, ground_states, tones, repump_freqs, frame_conflict, want)
+
+
+def optimal_floor(optimize_d2=True, d2_grid=None, **kw):
+    """The multilevel cooling floor at the BEST two-photon detuning. optimize_d2=True (the default) SCANS
+    delta2 and returns its minimum -- so after changing any parameter you automatically find the new
+    optimal floor; optimize_d2=False uses the single fixed config.delta2. Returns (d2_opt, nbar_min, scan)
+    where scan = [(delta2, <n_z>), ...] is the delta2-vs-floor curve reported to the reader."""
+    if optimize_d2:
+        grid = list(d2_grid) if d2_grid is not None else [round(x, 3) for x in np.linspace(-0.28, 0.02, 11)]
+    else:
+        grid = [c.delta2]
+    scan = [(d, solve(d2=d, **kw)) for d in grid]
+    d2_opt, nbar_min = min(scan, key=lambda t: t[1])
+    return d2_opt, nbar_min, scan
 
 
 if __name__ == "__main__":
@@ -407,7 +428,7 @@ if __name__ == "__main__":
     #     admixtures) move the dark resonance OFF the bare two-photon resonance d2=0. Scan d2 to see where the
     #     servo actually sits -- it is NOT at d2=0, and the floor is a steep function of it.
     out("\n  floor vs two-photon detuning d2 (repump_scale=1; the servo tracks the dark resonance, NOT d2=0):")
-    d2scan = [(d, solve(d2=d, repump_scale=1.0)) for d in (0.0, -0.05, -0.10, -0.15, -0.20, -0.25)]
+    d2scan = [(d, solve(d2=d, repump_scale=1.0)) for d in (0.0, -0.10, -0.15, -0.20, -0.30)]
     for d, n in d2scan:
         out(f"    d2 = {d:+.2f}   <n_z> = {n:.4f}")
     D2_OP = min(d2scan, key=lambda t: t[1])[0]
@@ -429,7 +450,7 @@ if __name__ == "__main__":
     out("     Lower repump_scale under-repumps; the further fall at higher repump_scale is the low-saturation rate")
     out("     model breaking (it omits saturation + the a.c.-Stark shift), not physics -- see SCOPE.")
 
-    # 4) the repumper placement -- the offsets you specified (incl. Delta, 2f_A, and the F'1/F'3 Stark)
+    # 4) the repumper placement -- the tone offsets at the atom (Delta, 2f_A, and the F'1/F'3 Stark shifts)
     nu = R['nu']
     out("\n  tone placement (offsets at the atom):")
     out(f"    probe   - control = {nu['probe'] - nu['ctrl']:+8.1f} MHz   (= A_HFS, 6834.7)")

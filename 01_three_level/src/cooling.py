@@ -24,9 +24,10 @@ from qutip import basis, tensor, qeye, destroy, displace, steadystate, expect
 import config as c
 
 
-def nbar(delta2):
+def nbar(delta2, want_p0=False):
     """Steady-state axial <n_z> for a two-photon detuning delta2 (probe - control).
-       Recoil is on BOTH counter-propagating legs and on the spontaneous emission (see the header)."""
+       Recoil is on BOTH counter-propagating legs and on the spontaneous emission (see the header).
+       want_p0=True also returns the true ground-band population P(n=0) from the steady state."""
     N = c.N_fock
     a = tensor(qeye(3), destroy(N))
     n = a.dag() * a
@@ -46,19 +47,29 @@ def nbar(delta2):
          + (c.Omega_c / 2.0) * (control + control.dag())
          + (c.Omega_p / 2.0) * (probe + probe.dag()))
 
-    # spontaneous emission |e> -> |g1>,|g2>, each carrying the three-point axial emission recoil
+    # spontaneous emission |e> -> |g1>,|g2>, each carrying the axial emission recoil: (u, weight), u = the k_z
+    # projection of the emitted photon in units of eta (NOT delta-m). The weights give the isotropic axial variance
+    # <u^2>=1/3 -- an approximation (true 1/5 pi, 2/5 sigma) that is harmless for the axial floor.
     emission_recoil = [(-1, 1 / 6), (0, 2 / 3), (1, 1 / 6)]
     c_ops = [np.sqrt(c.Gamma / 2.0 * w) * tensor(gk * e.dag(), qeye(N)) * displacement(u)
              for gk in (g1, g2) for (u, w) in emission_recoil]
 
-    return float(expect(n, steadystate(H, c_ops)))
+    rho = steadystate(H, c_ops)
+    nz = float(expect(n, rho))
+    if not want_p0:
+        return nz
+    # true P(n=0): the motional ground-band diagonal of the steady state (NOT the thermal 1/(1+n) shortcut)
+    p0 = float(np.real(rho.ptrace(1).diag()[0]))
+    return nz, p0
 
 
 if __name__ == "__main__":
     # delta2 is servoed in the experiment; here we scan it to FIND the floor (the servo point).
     scan = np.linspace(-0.5, 0.5, 41)
-    vals = [nbar(d) for d in scan]
+    results = [nbar(d, want_p0=True) for d in scan]   # (n_z, P(n=0)) at each servo point
+    vals = [nz for nz, _ in results]
     i = int(np.argmin(vals))
+    p0 = results[i][1]
 
     analytic = (c.Gamma / (4.0 * c.Delta)) ** 2
     print("single-atom, on-axis clock-EIT cooling -- Layer 1 (clean 3-level Lambda)")
@@ -66,4 +77,4 @@ if __name__ == "__main__":
           f"nu_z={c.nu_z:g}  eta={c.eta:g}  (2pi*MHz)")
     print(f"  numeric floor  <n_z> = {vals[i]:.4f}  (full recoil: both legs + emission)  at delta2 = {scan[i]:+.3f}")
     print(f"  analytic floor (Gamma/4Delta)^2 = {analytic:.4f}  (recoil-free mechanism limit)")
-    print(f"  ground-state population P(n=0) ~ {1.0/(1.0+vals[i]):.3f}")
+    print(f"  ground-state population P(n=0) = {p0:.3f}  (from the steady-state motional diagonal)")
