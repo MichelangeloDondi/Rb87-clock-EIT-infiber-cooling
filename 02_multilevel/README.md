@@ -26,7 +26,7 @@ EBLANA (1560) → EOM → EDFA → PPLN (SHG 780) → HCPCF (trap + delivery) �
 
 a **single seed and one EOM**: f_mod = A_HFS + 2f_A = 6.83 + 0.40 = 7.23 GHz, with a 200 MHz tag AOM
 double-passed to 2f_A = 400 MHz. The tag **down-shifts** the retro (retro = forward − 2f_A). This single-fibre-EOM
-common-mode delivery follows the host-group HCPCF interferometer (Xin, Lan *et al.* 2018) and the no-OPLL
+common-mode delivery follows the HCPCF interferometer (Xin, Lan *et al.* 2018) and the no-OPLL
 common-mode approach demonstrated at the 6.83 GHz clock splitting by Agnew *et al.* (2024).
 
 ![the 24-level scheme on the 1064-shifted 5P₃/₂ manifold](images/level_scheme.png)
@@ -112,6 +112,6 @@ Full entries and links in [`../references/`](../references/README.md).
 - **Edmonds (1957)**, *Angular Momentum in Quantum Mechanics* — the Clebsch–Gordan / Wigner-6j line-strength conventions (checked in `clebsch_gordan_checks.py`).
 - **Chen & Raithel (2015)**, PRA **92**, 060501(R) — the 1064 nm polarizabilities behind the per-(F′,m′) Stark shifts.
 - **Morigi, Eschner & Keitel (2000)**, PRL **85**, 4458 — the EIT-cooling mechanism the multilevel solve preserves.
-- **Xin, Lan *et al.* (2018)**, Sci. Adv. **4**, eaat9989 — the host-group HCPCF fibre-EOM delivery this chain inherits.
+- **Xin, Lan *et al.* (2018)**, Sci. Adv. **4**, eaat9989 — the HCPCF fibre-EOM delivery this chain inherits.
 - **Agnew *et al.* (2024)**, arXiv:2404.16806 — single-EOM common-mode generation at the 6.83 GHz clock splitting (no OPLL).
 - **Huang *et al.* (2021)** / **Xin *et al.* (2025)** — EIT / dark-state cooling of neutral Rb, the closest prior art for the manifold-level scheme.

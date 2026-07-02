@@ -1,8 +1,7 @@
 # References
 
-The sources cited across this repository, grouped by what they support. This is a **curated
-subset** of the wider project bibliography — only the works the built chapters (01–04) and the
-appendix actually use. The machine-readable form is [`references.bib`](references.bib); each
+The sources cited across this repository, grouped by what they support — the works the built
+chapters (01–04) and the appendix use. The machine-readable form is [`references.bib`](references.bib); each
 chapter's `README.md` ends with a short **References** list of the works it cites.
 
 Two kinds of citation appear in the repo:
@@ -41,9 +40,9 @@ the delivery detunings) carry **no** citation — they are ours, not borrowed.
 ## Prior art — EIT / dark-state cooling of neutral ⁸⁷Rb
 
 - **Huang, Chai & Lan (2021)** — Phys. Rev. A **103**, 013305. [doi](https://doi.org/10.1103/PhysRevA.103.013305) ·
-  [arXiv](https://arxiv.org/abs/2101.04309) — dark-state (EIT) sideband cooling of an ⁸⁵Rb ensemble to sub-recoil. **Host group**; closest prior art for the cooling claim.
+  [arXiv](https://arxiv.org/abs/2101.04309) — dark-state (EIT) sideband cooling of an ⁸⁵Rb ensemble to sub-recoil. The closest prior art for the cooling claim.
 - **Xin *et al.* (2025)** — *Fast quantum gas formation via EIT cooling*, Nat. Phys. **21**, 63.
-  [doi](https://doi.org/10.1038/s41567-024-02677-9) — lattice EIT cooling of neutral ⁸⁷Rb to degeneracy. **Host group.**
+  [doi](https://doi.org/10.1038/s41567-024-02677-9) — lattice EIT cooling of neutral ⁸⁷Rb to degeneracy.
 - **Chow *et al.* (2023)** — *Fano resonance in excitation spectroscopy and cooling of an optically
   trapped single atom*, [arXiv:2312.06438](https://arxiv.org/abs/2312.06438) — single-neutral-⁸⁷Rb EIT cooling; identifies F′-manifold off-resonant scattering as a heating floor (chapter 02, appendix).
 
@@ -53,9 +52,9 @@ the delivery detunings) carry **no** citation — they are ours, not borrowed.
   [arXiv](https://arxiv.org/abs/1104.5220) — the seminal laser-cooled atoms inside a single-mode hollow-core PCF. Platform origin.
 - **Xin, Leong, Chen, Wang & Lan (2018)** — *An atom interferometer inside a hollow-core PCF*, Sci.
   Adv. **4**, eaat9989. [doi](https://doi.org/10.1126/sciadv.1701723) · [arXiv](https://arxiv.org/abs/1705.08062)
-  — **host group**; the fiber-EOM counter-propagating orthogonal-polarization delivery this chain inherits.
+  — the fiber-EOM counter-propagating orthogonal-polarization delivery this chain inherits.
 - **Marchesini, Dondi *et al.* (2024)** — *All-fiber, near-infrared laser system at 780 nm for atom cooling*, Opt.
-  Continuum **3**, 1868. — **host group** (you co-authored it); the all-fiber 780 nm system for the **MOT + molasses** atom-preparation stage — the apparatus foundation. (The EOM-based two-photon delivery of ch02 is a later addition, not in this paper.)
+  Continuum **3**, 1868. — the all-fiber 780 nm system for the **MOT + molasses** atom-preparation stage. (The EOM-based two-photon delivery of ch02 is a later addition, not in this paper.)
 - **Agnew, Lowit & Arnold (2024)** — *Simple tunable phase-locked lasers for quantum technologies*,
   [arXiv:2404.16806](https://arxiv.org/abs/2404.16806) — single fiber-EOM common-mode generation, demonstrated at 6.83 GHz (= the ⁸⁷Rb clock splitting), no OPLL (chapter 02 delivery).
 - **Robust single-sideband Raman generation by FBG filtration (2022)** — Opt. Express,
@@ -66,9 +65,9 @@ the delivery detunings) carry **no** citation — they are ours, not borrowed.
 ## In-fibre cooling & the RSC comparison
 
 - **Leong *et al.* (2020)** — *Large array of Schrödinger-cat states facilitated by an optical
-  waveguide*, Nat. Commun. **11**, 5295 — **host group**; in-fibre resolved-sideband cooling of ⁸⁵Rb to the axial ground state (the RSC contrast to this EIT scheme).
+  waveguide*, Nat. Commun. **11**, 5295 — in-fibre resolved-sideband cooling of ⁸⁵Rb to the axial ground state (the RSC contrast to this EIT scheme).
 - **Wang *et al.* (2022)** — Phys. Rev. Research **4**, L022058. [doi](https://doi.org/10.1103/PhysRevResearch.4.L022058) ·
-  [arXiv](https://arxiv.org/abs/2112.10088) — **host group**; in-fibre Λ-gray-molasses / sub-Doppler cooling.
+  [arXiv](https://arxiv.org/abs/2112.10088) — in-fibre Λ-gray-molasses / sub-Doppler cooling.
 - **Kaufman, Lester & Regal (2012)** — *Cooling a single atom in an optical tweezer to its quantum
   ground state*, Phys. Rev. X **2**, 041014. [doi](https://doi.org/10.1103/PhysRevX.2.041014) · [arXiv](https://arxiv.org/abs/1209.3028) — the canonical single-atom RSC baseline.
 

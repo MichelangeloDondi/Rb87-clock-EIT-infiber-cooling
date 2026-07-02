@@ -63,7 +63,7 @@ links, and each chapter's **References** footer for the works it uses. Design ch
 
 - **Method** — EIT sideband cooling and the (Γ/4Δ)² floor: Morigi, Eschner & Keitel (2000); the recoil limit: Wineland & Itano (1979).
 - **Atomic data** — the ⁸⁷Rb constants (Γ, A_HFS, centroids) are Steck's *Rb 87 D Line Data*; the 1064 nm polarizabilities are Chen–Raithel (2015); the dipole potential is Grimm *et al.* (2000); the 6j/CG algebra is Edmonds (1957).
-- **Closest prior art** — EIT/dark-state cooling of neutral Rb: Huang *et al.* (2021) and Xin *et al.* (2025) (host group), and the single-atom case Chow *et al.* (2023). In-fibre cooling by *other* methods (the contrast to this EIT scheme): Leong *et al.* (2020), Wang *et al.* (2022).
+- **Closest prior art** — EIT/dark-state cooling of neutral Rb: Huang *et al.* (2021) and Xin *et al.* (2025), and the single-atom case Chow *et al.* (2023). In-fibre cooling by *other* methods (the contrast to this EIT scheme): Leong *et al.* (2020), Wang *et al.* (2022).
 - **Platform & delivery** — laser-cooled atoms in a hollow-core PCF: Bajcsy *et al.* (2011); the fibre-EOM delivery this chain inherits: Xin, Lan *et al.* (2018). The lab's all-fiber 780 nm cooling-laser system that prepares the atoms (MOT + molasses; the EOM two-photon delivery is a later addition): Marchesini, Dondi *et al.* (2024).
 
 What distinguishes this work from the prior art above is the *combination* — EIT cooling of a field-insensitive
