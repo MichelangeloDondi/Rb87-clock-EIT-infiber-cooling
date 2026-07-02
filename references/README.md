@@ -54,7 +54,7 @@ the delivery detunings) carry **no** citation — they are ours, not borrowed.
   Adv. **4**, eaat9989. [doi](https://doi.org/10.1126/sciadv.1701723) · [arXiv](https://arxiv.org/abs/1705.08062)
   — the fiber-EOM counter-propagating orthogonal-polarization delivery this chain inherits.
 - **Marchesini, Dondi *et al.* (2024)** — *All-fiber, near-infrared laser system at 780 nm for atom cooling*, Opt.
-  Continuum **3**, 1868. — the all-fiber 780 nm system for the **MOT + molasses** atom-preparation stage. (The EOM-based two-photon delivery of ch02 is a later addition, not in this paper.)
+  Continuum **3**, 1868. [doi](https://doi.org/10.1364/OPTCON.525738) — the all-fiber 780 nm system for the **MOT + molasses** atom-preparation stage. (The EOM-based two-photon delivery of ch02 is a later addition, not in this paper.)
 - **Agnew, Lowit & Arnold (2024)** — *Simple tunable phase-locked lasers for quantum technologies*,
   [arXiv:2404.16806](https://arxiv.org/abs/2404.16806) — single fiber-EOM common-mode generation, demonstrated at 6.83 GHz (= the ⁸⁷Rb clock splitting), no OPLL (chapter 02 delivery).
 - **Robust single-sideband Raman generation by FBG filtration (2022)** — Opt. Express,
